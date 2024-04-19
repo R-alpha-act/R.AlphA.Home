@@ -4,11 +4,16 @@
 \alias{countSwitches}
 \title{get the number, from a vector of starts/stops-----------------------------}
 \usage{
-countSwitches(sttEnd, sttMark, endMark, includeStt = TRUE, includeEnd = TRUE)
+countSwitches(
+  data,
+  colNm,
+  sttMark,
+  endMark,
+  includeStt = TRUE,
+  includeEnd = TRUE
+)
 }
 \arguments{
-\item{sttEnd}{vector of on/off, start/end, or alike switches}
-
 \item{sttMark}{the starting value}
 
 \item{endMark}{the ending value}
@@ -16,6 +21,8 @@ countSwitches(sttEnd, sttMark, endMark, includeStt = TRUE, includeEnd = TRUE)
 \item{includeStt}{should the starting value be counted as part of the series}
 
 \item{includeEnd}{should the ending value be counted as part of the series}
+
+\item{sttEnd}{vector of on/off, start/end, or alike switches}
 }
 \description{
 this function takes as input a vector of values in which

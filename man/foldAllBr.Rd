@@ -4,7 +4,7 @@
 \alias{foldAllBr}
 \title{_FoldAllBr}
 \usage{
-foldAllBr()
+foldAllBr(time = F)
 }
 \description{
 finds open brackets in current code and fold them
