@@ -21,7 +21,7 @@ listVarsUniques <- function(..., pattern = ""){
 	}
 	countVals <- data.table()
 	for (i in 1:length(tablesList)) {
-		tb <- tablesList[[i]]
+		tb <- tablesList[[i]] %>% as.data.table
 		# tb <- tablesList[[1]]
 		countVals_int <- data.table()
 		tbVarNames <- names(tb)
