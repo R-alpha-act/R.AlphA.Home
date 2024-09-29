@@ -58,7 +58,7 @@ importAll <- function(
 		)
 	} else {
 		# with a file list
-		filePaths <- data.table(fulPath = fileList) %>%
+		filePaths <- data.table(fulPath = file.path(path, fileList)) %>%
 			mutate(locPath = fulPath %>% str_remove(".*/")) %>%
 			as.data.table
 	}

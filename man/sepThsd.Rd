@@ -4,7 +4,7 @@
 \alias{sepThsd}
 \title{Quick formatting}
 \usage{
-sepThsd(x, big.mark = " ", digits = 0, scientific = FALSE)
+sepThsd(x, big.mark = " ", digits = 1, scientific = FALSE)
 }
 \arguments{
 \item{big.mark}{separator for thousands}

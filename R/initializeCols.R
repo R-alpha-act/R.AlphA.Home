@@ -8,6 +8,7 @@
 
 initializeCols <- function(data, cols, value){
 	presentNames <- data %>% names
+	if(!is.data.table(data)) setDT(data)
 	toAdd <- setdiff(cols, presentNames)
 	if (length(toAdd)) {
 		data[, (toAdd) := value]

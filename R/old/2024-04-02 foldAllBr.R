@@ -3,10 +3,12 @@
 #' @title _FoldAllBr
 #' @description finds open brackets in current code and fold them
 #' @importFrom tibble rowid_to_column
-#' @importFrom stringr str_detect str_remove_all str_extract str_remove
+#' @importFrom stringr str_detect
 #' @import rstudioapi
 #' @export
+
 foldAllBr <- function(time = F){
+
 
 fnTmr <- timer(start = T, endOf = "start")
 colFact <- 1E-2
@@ -124,16 +126,31 @@ colFact <- 1E-2
 	curPosNum <- retainPos$start %>% DP_PN
 	retainStartRow <- retainPos$start[1]
 	retainStartCol <- retainPos$start[2]
+} # infos on current pos
+
+fnTmr <- timer(fnTmr, endOf = "init, funs")
+{
+	# docContentTokenize <- rstudioapi::getSourceEditorContext()$path %>%
+	# 	sourcetools::tokenize_file() %>%
+	# 	countSwitches("value", "{", "}") %>%
+	# 	select(-matches("^(brut|inc|check|stepStr)")) %>%
+	# 	mutate(conCat = paste("0", ret1, ret2, ret3, sep = "_")) %>%
+	# 	mutate(conCatLim = conCat %>% str_remove_all("_0")) %>%
+	# 	# mutate(isCur = retainStartRow == rowid) %>%
+	# 	# as_tibble %>%
+	# 	# filter(row %in% 8:12)
+	# 	mutate(posNum = row + column * colFact) %>%
+	# 	mutate(dif = posNum - curPosNum) %>%
+	# 	mutate(rowDif = floor(posNum) - floor(curPosNum)) %>% # idem
+	# 	as_tibble %>%
+	# 	identity
+	fnTmr <- timer(fnTmr, endOf = "docCont Tok")
+} # docContentTokenize
+{
 	docContent <- getSourceEditorContext()$contents %>%
 		data.frame(content = .) %>%
 		tibble::rowid_to_column()
 	fnTmr <- timer(fnTmr, endOf = "read Content")
-} # read content, get current position
-
-fnTmr <- timer(fnTmr, endOf = "init, funs")
-browseOption <- getOption("FAB_browse")
-if(!is.null(browseOption)) if(browseOption == 1) browser()
-{
 
 
 
@@ -149,7 +166,6 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 
 	# for tests only - en fait pas tant que ca ?
 	docContentRet <- docContent %>%
-		mutate(content = content %>% str_remove(comPatt)) %>%
 		mutate(
 			opBr = content %>% str_detect(opBrPatt)
 			, clBr = content %>% str_detect(clBrPatt)
@@ -157,6 +173,7 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 			, brTag = paste0(ifelse(opBr, opName, ""), ifelse(clBr, clName, ""))
 		) %>%
 
+		mutate(content = content %>% str_remove(comPatt)) %>%
 		# filter(!isComment) %>%
 		identity
 	fnTmr <- timer(fnTmr, endOf = "tags")
@@ -180,7 +197,7 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 		mutate(isSecStart = rowid == min(rowid)) %>%
 		ungroup %>%
 		mutate(opBrPlace = content %>% str_extract(paste0(".*", opBrPatt)) %>% nchar) %>%
-		# mutate(opBrPlace = ifelse(rowid == 1, 1, opBrPlace)) %>% # pourquoi ??
+		mutate(opBrPlace = ifelse(rowid == 1, 1, opBrPlace)) %>%
 		mutate(opBrPN = rowid + opBrPlace * colFact) %>%
 		# mutate(opBrPN = opBrPN * 100) %>%
 		# print %>%
@@ -194,12 +211,7 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 	curPosSec <- curLine$conCatLim # init before check
 	curPosCat <- curLine$catLvl
 	# message("curPosSec : ", curPosSec)
-	noBracket <- !str_detect(curLine$content, opBrPatt)
-	skipIf <- curPosCat == 0 & noBracket
-	if(skipIf) message("noBr - 0")
-	if(curLine$isSecStart & !skipIf){
-
-		message("test")
+	if(curLine$isSecStart){
 		# brPlace <- curLine$content %>%
 		# 	str_extract(paste0(".*",opBrPatt)) %>%
 		# 	nchar
@@ -229,7 +241,6 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 	subSectionsStarts <- subSections %>%
 		group_by(conCatLim) %>%
 		slice_min(rowid) %>%
-		arrange(rowid) %>%
 		identity
 
 	fnTmr <- timer(fnTmr, endOf = "docCont norm")
@@ -249,7 +260,6 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 	sectionStart_PN <- sectionStartLine %>%
 		pull(opBrPN) %>%
 		magrittr::add(colFact)
-	if(skipIf) sectionStart_PN <- (1 + colFact) %>% round(8)
 	fnTmr <- timer(fnTmr, endOf = "sectionStart line and PN")
 
 } # secStart line and PN
@@ -273,6 +283,7 @@ if(backToInit) {
 }
 fnTmr <- timer(fnTmr, endOf = "put cursor back - end")
 
+
 if(time){
 	# popSize <- nrow(old_pop)
 	# timePerM <- sum(fnTmr$dt_seconds/popSize*1E6) %>% round(2)
@@ -291,7 +302,6 @@ if(time){
 		coord_flip(ylim = c(0,3)) +
 		ggtitle(
 			paste0("function : ", "foldAllBr")
-			, subtitle = paste0("nrows docContent : ", nrow(docContent))
 		)
 	lum_0_100(50)
 	print(timerPlot)

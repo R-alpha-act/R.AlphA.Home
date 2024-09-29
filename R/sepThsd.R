@@ -5,7 +5,7 @@
 #' @param scientific boolean
 #' @export
 
-sepThsd <- function(x, big.mark = " ", digits = 0, scientific = FALSE){
+sepThsd <- function(x, big.mark = " ", digits = 1, scientific = FALSE){
 	formatted <- format(
 		x
 		, big.mark = big.mark

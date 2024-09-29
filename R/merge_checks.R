@@ -7,6 +7,7 @@
 #' @param req_xAllMatch boolean : do you want to ensure that all x values have found a match in y ?
 #' @param behavior character : warning, or error
 #' @param showNotFound if some x are not found in y, do you want to show them
+#' @param keyVars variables used as key for setKey then merge
 #' @return the joined table
 #' @importFrom tibble rowid_to_column rownames_to_column
 #' @importFrom tidyr replace_na
@@ -22,7 +23,7 @@
 # install.packages("xml2")
 
 
-left_join_checks <- function(
+merge_checks <- function(
 		x
 		, y
 		, ...
@@ -31,56 +32,99 @@ left_join_checks <- function(
 		, behavior = "error"
 		, showNotFound = F
 		, time = F
+		, keyVars
 ){
+
 	manualrun <- T
 	manualrun <- F
 	if (manualrun) {
 		rm(list = ls())
 		R.AlphA.Base::getLibsR.AlphA()
-		warning("! parameters manually defined inside function 'left_join_checks' for tests. Do not use results !")
+		warning("! parameters manually defined inside function 'merge_checks' for tests. Do not use results !")
 		workRRoot <- root() %>% str_extract(".*WorkR")
 		tbls <- workRRoot %>%
 			file.path("pop stats", "ex_working_folder", "INPUTS", "ret") %>%
 			list.files(pattern = "IPTables.rds", full.names = T) %>%
 			print %>%
 			readRDS
-		x <- data.table(a = 1, age = c(1:4)) %>% print
-		y <- data.table(a = 1, age = c(2:4, 4), result = "ok") %>% print
+		# x <- data.table(a = 1, age = c(1:4)) %>% print
+		# y <- data.table(a = 1, age = c(2:4, 4), result = "ok") %>% print
 
-		x <- generate_pop(2E5, age_min = 30, age_max = 36) %>%
-			complete_pop
+		x <- generate_pop(2E7, age_min = 30, age_max = 36) %>%
+			complete_pop %>%
+			as_tibble
 		y <- tbls$STMRes$t_vie
+		y <- tbls$classic_ext$t_vie %>% as_tibble
 		req_xAllMatch = 1
 		req_preserved_x = 1
 		req_yNotFound = 0
 		time = T
+		keyVars <- c("inc_age", "dim_sexe")
+		# y <- y %>% mutate(sexe = ifelse(dim_sexe == "F", 2, 1)) # pour test si un num va + vite qu'un texte mais pas tant que ca
 	}
+
 	fnTmr <- timer(start = T, endOf = "Start --")
 	# a voir plus tard - verif que pas de vars deja avec ljc_
 	# R.AlphA::compareVars(x, y, pattern = "ljc_")
 
 	# preparation pour merge
-	xMerge <- x %>% rowid_to_column(var = "ljc_xID") %>% mutate(ljc_inX = 1)
-	yMerge <- y %>% rowid_to_column(var = "ljc_yID") %>% mutate(ljc_inY = 1)
-	fnTmr <- timer(fnTmr, endOf = "indexes - inX, inY")
+	setDT(x)
+	setDT(y)
+	x[, ljc_xID := 1:.N]
+	y[, ljc_yID := 1:.N]
+	fnTmr <- timer(fnTmr, endOf = "convert to DT")
+	setkeyv(x, keyVars)
+	setkeyv(y, keyVars)
+	x[, ljc_inX := 1]
+	y[, ljc_inY := 1]
+	# xMerge <- x %>% rowid_to_column(var = "ljc_xID") %>% mutate(ljc_inX = 1)
+	# yMerge <- y %>% rowid_to_column(var = "ljc_yID") %>% mutate(ljc_inY = 1)
+	fnTmr <- timer(fnTmr, endOf = "set key for DTs")
+
+	# test comparaison DT vs left_join
+
+	{
+
+		# tmpTmr <- timer(start = T, endOf = "to compare merge and lj")
+		# joinXY_LJ <- left_join(xMerge, yMerge)
+		# tmpTmr <- timer(tmpTmr, endOf = "left join")
+		# joinXY_mg <- merge(xMerge, yMerge)
+		# tmpTmr <- timer(tmpTmr, endOf = "merge")
+		# setDT(xMerge)
+		# setDT(yMerge)
+		# tmpTmr <- timer(tmpTmr, endOf = "setDT")
+		# joinXY_mDT <- merge(xMerge, yMerge)
+		# tmpTmr <- timer(tmpTmr, endOf = "mergeDT")
+		# # joinXY_mDT <- merge(xMerge, yMerge, by = c("dim_sexe", "inc_age"))
+		# # tmpTmr <- timer(tmpTmr, endOf = "mergeDT")
+		# setkey(xMerge, dim_sexe, inc_age)
+		# setkey(yMerge, dim_sexe, inc_age)
+		# tmpTmr <- timer(tmpTmr, endOf = "mergeDT_wKey")
+
+		# tmpTmr
+	} # compare join times --> plutot sortir les 2 fonctions et verifier
 
 	# merge
-	joinXY <- left_join(
-		xMerge
-		, yMerge
-		, ...
-	) %>% replace_na(list(ljc_inX = 0, ljc_inY = 0))
+	# if(manualrun) joinXY <- left_join(xMerge, yMerge)
+	# testMerge <- merge(xMerge, yMerge) %>% print
+	joinXY <- merge(x, y, ...)
+	# if(!manualrun) joinXY <- left_join(xMerge, yMerge, ...)
 	fnTmr <- timer(fnTmr, endOf = "join itself")
+	joinXY <- joinXY %>% replace_na(list(ljc_inX = 0, ljc_inY = 0))
+	fnTmr <- timer(fnTmr, endOf = "replace_na")
 
 	# check
-	xMerge;yMerge;joinXY
-	fnTmr <- timer(fnTmr, endOf = "only calling")
-
-	chk_preserved_x <- all.equal(joinXY$ljc_xID, xMerge$ljc_xID) %>% isTRUE
+	# xMerge;yMerge;joinXY
+	# fnTmr <- timer(fnTmr, endOf = "only calling")
+	# x %>% arrange(ljc_xID)
+	# setcolorder(joinXY, "ljc_xID")
+	chk_preserved_x <- all.equal(joinXY$ljc_xID, x$ljc_xID) %>% isTRUE
 	fnTmr <- timer(fnTmr, endOf = "chk_preserved_x")
 	chk_dups_x <- duplicated(joinXY$ljc_xID) %>% sum
+	# anyDuplicated(joinXY$ljc_xID)
+	# unique(joinXY$ljc_xID)
 	fnTmr <- timer(fnTmr, endOf = "chk_dups_x")
-	chk_preserved_y <- all.equal(joinXY$ljc_yID, yMerge$ljc_yID) %>% isTRUE
+	chk_preserved_y <- all.equal(joinXY$ljc_yID, y$ljc_yID) %>% isTRUE
 	fnTmr <- timer(fnTmr, endOf = "chk_preserved_y")
 	chk_dups_y <- duplicated(joinXY$ljc_yID) %>% sum
 	fnTmr <- timer(fnTmr, endOf = "chk_dups_y")
@@ -93,6 +137,7 @@ left_join_checks <- function(
 	chk_yNotFound <- joinMatch %>% filter(!ljc_inY) %>% pull(n) %>% sum
 	chk_xAllMatch <- chk_yNotFound == 0
 	fnTmr <- timer(fnTmr, endOf = "chk_*")
+
 
 	chk_preserved_x
 	chk_preserved_y
@@ -143,7 +188,6 @@ left_join_checks <- function(
 	fnTmr <- timer(fnTmr, endOf = "counting problems")
 
 	joinXY_select <- joinXY %>% select(-starts_with("ljc_"))
-	fnTmr <- timer(fnTmr, endOf = "select")
 	# timer plots
 	if(time){
 		xSize <- nrow(x)
@@ -161,7 +205,7 @@ left_join_checks <- function(
 			)) +
 			coord_flip(ylim = c(0,3)) +
 			ggtitle(
-				paste0("function : ", "left_join_checks")
+				paste0("function : ", "merge_checks")
 				, paste0(
 					"total time per M: ", timePerM, " s"
 					, "   -   "
