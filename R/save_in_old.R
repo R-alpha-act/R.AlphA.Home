@@ -4,6 +4,7 @@
 #' @export
 #' @import ggplot2
 #' @importFrom R.utils copyDirectory
+#' @importFrom tools file_path_sans_ext file_ext
 
 save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL){
 	requireNamespace("rstudioapi")
@@ -12,6 +13,7 @@ save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL){
 	if (is.null(sav_filepath)) {
 		sav_filepath <- rstudioapi::getSourceEditorContext()$path #chemin complet fichier
 	}
+	# sav_fileNote <- "test" # manual
 	sav_filename <- sav_filepath %>% basename #uniquement le nom de fichier
 	# sav_filename <- stringr::str_remove(sav_filepath, ".*/") #uniquement le nom de fichier
 	sav_dirname <- dirname(sav_filepath) # nom du dossier
@@ -23,8 +25,8 @@ save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL){
 
 	# ajout note apres nom de fichier
 	if (!is.null(sav_fileNote)) {
-		sav_fileNameNoExt <- sav_filename %>% file_path_sans_ext # flexion
-		sav_fileExt <- sav_filename %>% file_ext # extension
+		sav_fileExt <- tools::file_ext(sav_filename) # extension
+		sav_fileNameNoExt <- tools::file_path_sans_ext(sav_filename) # flexion
 		sav_filename <- paste0(
 			sav_fileNameNoExt, " (", sav_fileNote, ")", ".", sav_fileExt
 		)
