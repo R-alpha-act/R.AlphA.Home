@@ -4,7 +4,14 @@
 \alias{save_in_old}
 \title{fonction de sauvegarde dans un dossier old}
 \usage{
-save_in_old(sav_filepath = NULL, sav_fileNote = NULL)
+save_in_old(sav_filepath = NULL, sav_fileNote = NULL, overwrite = F)
+}
+\arguments{
+\item{sav_filepath}{file path of the file to save, default to current source}
+
+\item{sav_fileNote}{note to be added in the save name}
+
+\item{overwrite}{should an existing save with same name be overwritten}
 }
 \value{
 nothing, only saves

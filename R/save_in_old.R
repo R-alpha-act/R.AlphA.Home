@@ -1,12 +1,15 @@
 #' @title fonction de sauvegarde dans un dossier old
 #' @description This function saves the project with date in its name in an "old" dir
 #' @return nothing, only saves
+#' @param sav_filepath file path of the file to save, default to current source
+#' @param sav_fileNote note to be added in the save name
+#' @param overwrite should an existing save with same name be overwritten
 #' @export
 #' @import ggplot2
 #' @importFrom R.utils copyDirectory
 #' @importFrom tools file_path_sans_ext file_ext
 
-save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL){
+save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL, overwrite = F){
 	requireNamespace("rstudioapi")
 	requireNamespace("stringr")
 	requireNamespace("tools")
@@ -35,15 +38,17 @@ save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL){
 	isDir <- dir.exists(sav_filepath)
 	sav_savename <- paste0(Sys.Date(), " ", sav_filename)
 	sav_savepath <- file.path(sav_olddirname, sav_savename)
-	if (!file.exists(sav_savepath))  {#si n'existe pas déjà : ok on sauvegarde
-		if(isDir){
-			message("(copying a dir)")
-			R.utils::copyDirectory(sav_filepath, sav_savepath)
-		} else {
-			file.copy(from = sav_filepath, to = sav_savepath)
-		}
-		print(paste0("file saved under : ", sav_savepath))
+
+	message("saving under : ", sav_savepath)
+	if(file.exists(sav_savepath)){
+		if(overwrite) message("file already exists, will be overwritten")
+		if(!overwrite) message("file already exists : remove first")
+	}
+
+	if(isDir){
+		message("(copying a dir)")
+		R.utils::copyDirectory(sav_filepath, sav_savepath, overwrite = overwrite)
 	} else {
-		print(paste0("file already exists (remove first) : ", sav_savepath))
+		file.copy(from = sav_filepath, to = sav_savepath, overwrite = overwrite)
 	}
 }
