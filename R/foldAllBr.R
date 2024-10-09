@@ -134,21 +134,18 @@ fnTmr <- timer(fnTmr, endOf = "init, funs")
 browseOption <- getOption("FAB_browse")
 if(!is.null(browseOption)) if(browseOption == 1) browser()
 {
-
-
-
-
 	opName <- "+"
 	clName <- "-"
 	# opBrPatt <- "(?<!\t.{0,80})\\{$"
 	# clBrPatt <- "^\\}"
-	opBrPatt <- "\\{$" # new one
+	opBrPatt <- "^[ \t]*(function\\(.*\\))\\{$" # new one
 	# clBrPatt <- "(^|\t)+\\}" # new one
-	clBrPatt <- "^\t*\\}" # again : only tabs before the bracket
+	# clBrPatt <- "^\t*\\}" # again : only tabs before the bracket
+	clBrPatt <- "^\t*\\} #" # 2024.10.10 - only the commented ones
 	comPatt <- "^( |\t)*#.*"
 
 	# for tests only - en fait pas tant que ca ?
-	docContentRet <- docContent %>%
+	docContent_tags <- docContent %>%
 		mutate(content = content %>% str_remove(comPatt)) %>%
 		mutate(
 			opBr = content %>% str_detect(opBrPatt)
@@ -161,12 +158,12 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 		identity
 	fnTmr <- timer(fnTmr, endOf = "tags")
 
-	docContentRet <- docContentRet %>%
+	docContent_incs <- docContent_tags %>%
 		countSwitches("brTag", opName, clName) %>%
 		identity
 	fnTmr <- timer(fnTmr, endOf = "countSwitches")
 
-	docContentRet <- docContentRet %>%
+	docContentRet <- docContent_incs %>%
 		# filter(anyBr == 1) %>%
 		# mutate(brPairNb = countSwitches(brTag, opName, clName)) %>%
 		# mutate(expected = ceiling(1:n() / 2)) %>%
@@ -242,8 +239,8 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 	fnTmr <- timer(fnTmr, endOf = "check if 1 big")
 } # check if only 1 big section
 {
-	sectionStartLine <- docContentRet %>%
-		filter(conCatLim == curPosSec) %>%
+	sectionStartLine <- curSection %>%
+		# filter(conCatLim == curPosSec) %>%
 		slice_min(rowid)
 
 	sectionStart_PN <- sectionStartLine %>%
