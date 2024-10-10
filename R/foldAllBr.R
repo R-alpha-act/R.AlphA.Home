@@ -138,7 +138,8 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 	clName <- "-"
 	# opBrPatt <- "(?<!\t.{0,80})\\{$"
 	# clBrPatt <- "^\\}"
-	opBrPatt <- "^[ \t]*(.*function\\(.*\\))\\ *{$" # new one
+	# opBrPatt <- "^[ \t]*(.*function\\(.*\\))\\ *{$" # new one
+	opBrPatt <- "^[ \t]*(.*function\\(.*\\)) *\\{$" # correction
 	# clBrPatt <- "(^|\t)+\\}" # new one
 	# clBrPatt <- "^\t*\\}" # again : only tabs before the bracket
 	clBrPatt <- "^\t*\\} #" # 2024.10.10 - only the commented ones
