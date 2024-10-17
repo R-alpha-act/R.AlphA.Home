@@ -4,7 +4,12 @@
 \alias{foldAllBr}
 \title{_FoldAllBr}
 \usage{
-foldAllBr(time = F)
+foldAllBr(time = F, debug_getTbl = F)
+}
+\arguments{
+\item{time}{get a timer on the function steps}
+
+\item{debug_getTbl}{for debugging : return the docContent table with tags}
 }
 \description{
 finds open brackets in current code and fold them

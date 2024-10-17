@@ -2,11 +2,13 @@
 # fold brackets --------
 #' @title _FoldAllBr
 #' @description finds open brackets in current code and fold them
+#' @param time get a timer on the function steps
+#' @param debug_getTbl for debugging : return the docContent table with tags
 #' @importFrom tibble rowid_to_column
 #' @importFrom stringr str_detect str_remove_all str_extract str_remove
 #' @import rstudioapi
 #' @export
-foldAllBr <- function(time = F){
+foldAllBr <- function(time = F, debug_getTbl = F){
 
 fnTmr <- timer(start = T, endOf = "start")
 colFact <- 1E-2
@@ -184,6 +186,8 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 		# mutate(opBrPN = opBrPN * 100) %>%
 		# print %>%
 		identity
+
+	if(debug_getTbl) return(docContentRet) # only for debugging
 	fnTmr <- timer(fnTmr, endOf = "ret : other treatments")
 } # back to docContent normal
 
