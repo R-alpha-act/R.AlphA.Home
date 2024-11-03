@@ -145,7 +145,8 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 	opBrPatt <- "^[ \t]*(.*function\\(.*\\))? *\\{$" # REcorrection
 	# clBrPatt <- "(^|\t)+\\}" # new one
 	# clBrPatt <- "^\t*\\}" # again : only tabs before the bracket
-	clBrPatt <- "^\t*\\} #" # 2024.10.10 - only the commented ones
+	# clBrPatt <- "^\t*\\} #" # 2024.10.10 - only the commented ones
+	clBrPatt <- "^\t*\\}(\\))? #" # 2024.11.03 - can also be "})"
 	comPatt <- "^( |\t)*#.*"
 
 	# for tests only - en fait pas tant que ca ?
