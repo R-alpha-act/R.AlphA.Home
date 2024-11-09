@@ -48,11 +48,14 @@ colFact <- 1E-2
 
 
 	# foldBrLine : given a line, fold the bracket ending it ====================
-	foldBrLine <- function(opLine){
+	foldBrLine <- function(opLine, waitTime = 0){
 		# opLine <- opBrList[2]
 		setCursorPosition(document_position(opLine, 999))
+		Sys.sleep(waitTime)
 		executeCommand("expandToMatching")
+		Sys.sleep(waitTime)
 		executeCommand("fold")
+		Sys.sleep(waitTime)
 		# return(getPos())
 	}
 
@@ -188,7 +191,12 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 		# print %>%
 		identity
 
-	if(debug_getTbl) return(docContentRet) # only for debugging
+	if(debug_getTbl) {
+		interm_tbl_debug <- docContentRet %>%
+			select(rowid, content, anyBr, brTag, catLvl,
+				   conCatLim, isCur, isSecStart, opBrPN)
+		return(interm_tbl_debug) # only for debugging
+	}
 	fnTmr <- timer(fnTmr, endOf = "ret : other treatments")
 } # back to docContent normal
 
@@ -258,7 +266,12 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 
 } # secStart line and PN
 
-subSectionsStarts %>% pull(rowid) %>% lapply(foldBrLine) # fold lines
+waitOption <- getOption("FAB_wait") # pour decomposer ce que fait la fct
+if(is.null(waitOption)) waitOption = 0
+
+subSectionsStarts %>%
+	pull(rowid) %>%
+	lapply(foldBrLine, waitTime = waitOption) # fold lines
 fnTmr <- timer(fnTmr, endOf = "fold")
 
 sectionStart_DP <- sectionStart_PN %>% PN_DP
