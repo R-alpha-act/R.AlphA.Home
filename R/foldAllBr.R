@@ -8,45 +8,12 @@
 #' @importFrom stringr str_detect str_remove_all str_extract str_remove
 #' @import rstudioapi
 #' @export
+options(FAB_wait = 0.5)
 foldAllBr <- function(time = F, debug_getTbl = F){
 
 fnTmr <- timer(start = T, endOf = "start")
 colFact <- 1E-2
 {
-	# foldBr : given a line, fold the bracket ending it ========================
-	foldBr <- function(posNum){
-		# posNum <- 15.30
-		# opLine <- opBrList[2]
-		savePos <- getPos()
-		# setCursorPosition(document_position(opLine, 999))
-		setCursorPosition(posNum %>% PN_DP)
-		executeCommand("expandToMatching")
-
-		# checking if after expanding
-		brRange <- getPos()
-		brRangePN <- brRange %>% lapply(DP_PN)
-		SPRangePN <- savePos %>% lapply(DP_PN)
-		sttInside <- SPRangePN$start %>% between(brRangePN$start, brRangePN$end)
-		endInside <- SPRangePN$end %>% between(brRangePN$start, brRangePN$end)
-
-		executeCommand("fold")
-
-
-		# si dedans : on remet au debut de la section qu'on a ferme
-		finalPos <- savePos
-		if(sttInside|endInside) {
-			beforePosNum <- (posNum - colFact)
-			finalPos <- beforePosNum %>% PN_DP
-			message("sttInside : ", sttInside, "\t", "endInside : ", endInside)
-			message("posNum : ", posNum)
-			message("beforePosNum : ", beforePosNum)
-		}
-		message("finalPos : ", finalPos)
-		setCursorPosition(finalPos)
-		# return(getPos()) # inutile ce truc ?
-	}
-
-
 	# foldBrLine : given a line, fold the bracket ending it ====================
 	foldBrLine <- function(opLine, waitTime = 0){
 		# opLine <- opBrList[2]
@@ -161,8 +128,6 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 			, anyBr = pmax(opBr, clBr)
 			, brTag = paste0(ifelse(opBr, opName, ""), ifelse(clBr, clName, ""))
 		) %>%
-
-		# filter(!isComment) %>%
 		identity
 	fnTmr <- timer(fnTmr, endOf = "tags")
 
@@ -176,7 +141,7 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 		# mutate(brPairNb = countSwitches(brTag, opName, clName)) %>%
 		# mutate(expected = ceiling(1:n() / 2)) %>%
 		as_tibble %>%
-		select(-matches("^(brut|inc|check)")) %>%
+		select(-matches("^(brut|inc|check|tst[0-9])|find(Stt|End)|stepstr")) %>%
 		mutate(conCat = paste("0", ret1, ret2, ret3, sep = "_")) %>%
 		mutate(conCatLim = conCat %>% str_remove_all("_0") %>% paste0("_")) %>%
 		mutate(isCur = ifelse(retainStartRow == rowid, "=cur=", "_")) %>%
@@ -187,6 +152,7 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 		mutate(opBrPlace = content %>% str_extract(paste0(".*", opBrPatt)) %>% nchar) %>%
 		# mutate(opBrPlace = ifelse(rowid == 1, 1, opBrPlace)) %>% # pourquoi ??
 		mutate(opBrPN = rowid + opBrPlace * colFact) %>%
+		select(-opBrPlace) %>%
 		# mutate(opBrPN = opBrPN * 100) %>%
 		# print %>%
 		identity
@@ -211,7 +177,7 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 	if(skipIf) message("noBr - 0")
 	if(curLine$isSecStart & !skipIf){
 
-		message("test")
+		message("on a startSec line")
 		# brPlace <- curLine$content %>%
 		# 	str_extract(paste0(".*",opBrPatt)) %>%
 		# 	nchar
