@@ -113,11 +113,13 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 	# opBrPatt <- "^[ \t]*(.*function\\(.*\\))\\ *{$" # new one
 	opBrPatt <- "^[ \t]*(.*function\\(.*\\)) *\\{$" # correction
 	opBrPatt <- "^[ \t]*(.*function\\(.*\\))? *\\{$" # REcorrection
+	opBrPatt <- "\\{$" # + simple... pour eviter d'en louper
 	# clBrPatt <- "(^|\t)+\\}" # new one
 	# clBrPatt <- "^\t*\\}" # again : only tabs before the bracket
 	# clBrPatt <- "^\t*\\} #" # 2024.10.10 - only the commented ones
 	clBrPatt <- "^\t*\\}(\\))? #" # 2024.11.03 - can also be "})"
 	comPatt <- "^( |\t)*#.*"
+	comPatt <- "(?<=^( |\t){0,99})#.*" # 2024.11.11 keep the tabs, using lookbehind
 
 	# for tests only - en fait pas tant que ca ?
 	docContent_tags <- docContent %>%
@@ -153,14 +155,17 @@ if(!is.null(browseOption)) if(browseOption == 1) browser()
 		# mutate(opBrPlace = ifelse(rowid == 1, 1, opBrPlace)) %>% # pourquoi ??
 		mutate(opBrPN = rowid + opBrPlace * colFact) %>%
 		select(-opBrPlace) %>%
+		mutate(nbTabs = content %>% str_count("\t|\\{$")) %>%
+		mutate(checkCat = nbTabs - catLvl) %>%
 		# mutate(opBrPN = opBrPN * 100) %>%
 		# print %>%
 		identity
 
 	if(debug_getTbl) {
 		interm_tbl_debug <- docContentRet %>%
-			select(rowid, content, anyBr, brTag, catLvl,
-				   conCatLim, isCur, isSecStart, opBrPN)
+			select(rowid, content, anyBr, brTag,
+				   conCatLim, isCur, isSecStart, opBrPN,
+				   catLvl, nbTabs, checkCat)
 		return(interm_tbl_debug) # only for debugging
 	}
 	fnTmr <- timer(fnTmr, endOf = "ret : other treatments")
