@@ -5,10 +5,9 @@
 #' @param time get a timer on the function steps
 #' @param debug_getTbl for debugging : return the docContent table with tags
 #' @importFrom tibble rowid_to_column
-#' @importFrom stringr str_detect str_remove_all str_extract str_remove
+#' @importFrom stringr str_detect str_remove_all str_extract str_remove str_count
 #' @import rstudioapi
 #' @export
-options(FAB_wait = 0.5)
 foldAllBr <- function(time = F, debug_getTbl = F){
 
 fnTmr <- timer(start = T, endOf = "start")
