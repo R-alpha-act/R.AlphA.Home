@@ -23,32 +23,3 @@ cols_pad <- function(data, nCols = 100, colPrefix = "x_"){
 
 	data %>% cbind(dummyAdd)
 }
-
-
-
-# root <- dirname(rstudioapi::getSourceEditorContext()$path)
-# workr_root <- sub("WorkR.*", "WorkR", root)
-# list.files(file.path(workr_root, "Tests_xlsx"))
-# setwd(root)
-# a <- importAll(
-# 	path = file.path(workr_root, "Tests_xlsx")
-# 	# , pattern = "impall.*csv"
-# 	, pattern = "impall"
-# 	, ignore.case = T
-# )
-#
-# testfun<- as.matrix(fread)
-# getwd()
-# # for (fSuffix in c(1,10,5,20,30,200)){
-# # 	# fSuffix <- 10
-# # 	write.csv(
-# # 		data.table(
-# # 			suffix = fSuffix
-# # 			, b = "slfj"
-# # 			, c = ISOdate(2020,1,1)
-# # 			, d = runif(n = 10, min = 1*fSuffix, max = 10*fSuffix)
-# # 		)
-# # 		, file = file.path(workr_root, "Tests_xlsx", paste0("testImpAll_", fSuffix, ".csv"))
-# # 		, row.names = FALSE
-# # 	)
-# # }
