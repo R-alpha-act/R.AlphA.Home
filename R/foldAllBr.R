@@ -1,7 +1,5 @@
-# rm(list = ls())
-# fold brackets --------
-#' @title _FoldAllBr
-#' @description finds open brackets in current code and fold them
+#' @title Fold all brackets
+#' @description finds open brackets in current code and fold them automatically
 #' @param time get a timer on the function steps
 #' @param debug_getTbl for debugging : return the docContent table with tags
 #' @importFrom tibble rowid_to_column
