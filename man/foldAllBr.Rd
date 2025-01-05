@@ -2,7 +2,7 @@
 % Please edit documentation in R/foldAllBr.R
 \name{foldAllBr}
 \alias{foldAllBr}
-\title{_FoldAllBr}
+\title{Fold all brackets}
 \usage{
 foldAllBr(time = F, debug_getTbl = F)
 }
@@ -12,5 +12,5 @@ foldAllBr(time = F, debug_getTbl = F)
 \item{debug_getTbl}{for debugging : return the docContent table with tags}
 }
 \description{
-finds open brackets in current code and fold them
+finds open brackets in current code and fold them automatically
 }

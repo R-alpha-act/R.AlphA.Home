@@ -8,6 +8,14 @@
 #' @export
 foldAllBr <- function(time = F, debug_getTbl = F){
 
+	manualrun <- T
+	manualrun <- F
+	if (manualrun) {
+		warning("! parameters manually defined inside function 'foldAllBr' for tests. Do not use results !")
+		R.AlphA.Base::getLibsR.AlphA()
+		time = T
+		debug_getTbl = T
+	} # manualrun - for debug purposes
 	fnTmr <- timer(start = T, endOf = "start")
 	colFact <- 1E-2
 	{
@@ -117,6 +125,7 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 		clBrPatt <- "^\t*\\}(\\))? #" # 2024.11.03 - can also be "})"
 		comPatt <- "^( |\t)*#.*"
 		comPatt <- "(?<=^( |\t){0,99})#.*" # 2024.11.11 keep the tabs, using lookbehind
+		passBrPatt <- "^\t*\\}.*\\{$"
 
 		# for tests only - en fait pas tant que ca ?
 		docContent_tags <- docContent %>%
@@ -124,8 +133,14 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 			mutate(
 				opBr = content %>% str_detect(opBrPatt)
 				, clBr = content %>% str_detect(clBrPatt)
+				, passBr = content %>% str_detect(passBrPatt)
 				, anyBr = pmax(opBr, clBr)
-				, brTag = paste0(ifelse(opBr, opName, ""), ifelse(clBr, clName, ""))
+				, brTag = paste0(
+					NULL
+					, ifelse(opBr, opName, "")
+					, ifelse(clBr, clName, "")
+					, ifelse(passBr, "__", "") # mostly to avoid '} else {' pbs
+				)
 			) %>%
 			identity
 		fnTmr <- timer(fnTmr, endOf = "tags")
@@ -153,10 +168,20 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 			mutate(opBrPN = rowid + opBrPlace * colFact) %>%
 			select(-opBrPlace) %>%
 			mutate(nbTabs = content %>% str_count("\t|\\{$")) %>%
-			mutate(checkCat = nbTabs - catLvl) %>%
+			mutate(checkCat = ifelse(content == "", 0, nbTabs - catLvl)) %>%
 			# mutate(opBrPN = opBrPN * 100) %>%
 			# print %>%
 			identity
+
+		# debug only : check for problems
+		linesBefore <- 3 ; linesAfter <- 30
+		firstPb <- docContentRet %>% filter(checkCat < 0) %>% slice_min(rowid)
+		rowsRange <- (firstPb$rowid - linesBefore):(firstPb$rowid + linesAfter)
+		docContentRet %>%
+			slice(rowsRange) %>%
+			relocate(rowid, checkCat, content) %>%
+			select(-opBrPN) %>%
+			print(n = 50)
 
 		if(debug_getTbl) {
 			interm_tbl_debug <- docContentRet %>%
