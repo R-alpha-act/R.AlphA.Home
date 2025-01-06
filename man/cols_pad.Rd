@@ -2,21 +2,20 @@
 % Please edit documentation in R/cols_pad.R
 \name{cols_pad}
 \alias{cols_pad}
-\title{add variables so that data can be easily used in a pivot}
+\title{Add Variables to Facilitate Data Usage in a Pivot Table}
 \usage{
 cols_pad(data, nCols = 100, colPrefix = "x_")
 }
 \arguments{
-\item{data}{the data to add columns to}
+\item{data}{The data frame to which dummy columns will be added.}
 
-\item{nCols}{number of columns to define}
+\item{nCols}{An integer specifying the total number of columns desired.}
 
-\item{colPrefix}{for the dummy columns}
+\item{colPrefix}{A string used as the prefix for the names of dummy columns.}
 }
 \value{
-the table with the chosen number of columns
+A data frame with the specified total number of columns.
 }
 \description{
-will simply add dummy columns up to the number defined by the
-user
+Adds dummy columns to reach the number specified by the user.
 }

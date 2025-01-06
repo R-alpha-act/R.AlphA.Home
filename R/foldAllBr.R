@@ -1,11 +1,17 @@
-#' @title Fold all brackets
-#' @description finds open brackets in current code and fold them automatically
-#' @param time get a timer on the function steps
-#' @param debug_getTbl for debugging : return the docContent table with tags
+#' @title Fold All Brackets in Code
+#' @description Automatically identifies open brackets in the current code and
+#' folds them.
+#' @param time Logical. If `TRUE`, the function will provide timing information
+#' for each step.
+#' @param debug_getTbl Logical. If `TRUE`, returns the `docContent` table with
+#' tags for debugging purposes.
 #' @importFrom tibble rowid_to_column
 #' @importFrom stringr str_detect str_remove_all str_extract str_remove str_count
 #' @import rstudioapi
+#' @return If `debug_getTbl = TRUE`, a table (`docContent`) with tags.
+#' Otherwise, no return value (performs folding).
 #' @export
+#
 foldAllBr <- function(time = F, debug_getTbl = F){
 
 	fnTmr <- timer(start = T, endOf = "start")

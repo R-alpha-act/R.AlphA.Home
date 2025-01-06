@@ -1,17 +1,20 @@
-#' @title Compare tables variables
-#' @description reads names matching a given pattern in two tables, and gives
-#' information about which columns are in both tables, only in x/y and so on
-#' @param x first table
-#' @param y second table
-#' @param pattern to compare only a subset of all the varibles
-#' @return an object containing :
-#' all : all the column names
-#' common : names found in both tables
-#' onlyX : only in the first table
-#' onlyY : obvious
-#' exclusive : columns found in only one of the two tables
+#' @title Compare Table Variables
+#' @description Compares column names in two tables based on a given pattern.
+#' Provides information about which columns are present in which tables.
+#' @param x A data frame representing the first table.
+#' @param y A data frame representing the second table.
+#' @param pattern A string pattern used to filter and compare only a subset of
+#' variables (column names).
+#' @return A list containing:
+#' \itemize{
+#'   \item \code{all}: All column names from both tables.
+#'   \item \code{common}: Column names found in both tables.
+#'   \item \code{onlyX}: Column names found only in the first table (\code{x}).
+#'   \item \code{onlyY}: Column names found only in the second table (\code{y}).
+#'   \item \code{exclusive}: Column names found in only one of the two tables.
+#' }
 #' @export
-#'
+#
 compareVars <- function(x, y, pattern = ""){
 	result <- list()
 	xVars <- grep(names(x), pattern = pattern, value = T)

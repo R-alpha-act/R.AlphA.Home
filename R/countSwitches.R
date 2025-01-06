@@ -3,11 +3,13 @@
 #' starts and stops are indicated by specific values, identifying each time a
 #' new series. It returns a vector of the same length with the series count or
 #' 0 when the element is outside a series (after a stop and before a start)
-#' @param sttEnd vector of on/off, start/end, or alike switches
+#' @param sttEnd (not in usage) vector of on/off, start/end, or alike switches
 #' @param sttMark the starting value
 #' @param endMark the ending value
 #' @param includeStt should the starting value be counted as part of the series
 #' @param includeEnd should the ending value be counted as part of the series
+#' @param data
+#' @param colNm
 #' @importFrom stats runif
 #' @export
 

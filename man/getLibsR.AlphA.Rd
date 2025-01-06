@@ -2,13 +2,13 @@
 % Please edit documentation in R/getLibsR.AlphA.R
 \name{getLibsR.AlphA}
 \alias{getLibsR.AlphA}
-\title{juste pour les manualruns, charger les libs}
+\title{Library Loader}
 \usage{
 getLibsR.AlphA()
 }
 \value{
-que dalle
+A message indicating the result of the library loading process.
 }
 \description{
-cf title
+Manually loads all specified libraries required by the user.
 }

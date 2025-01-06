@@ -1,6 +1,6 @@
-#' @title juste pour les manualruns, charger les libs
-#' @description cf title
-#' @return que dalle
+#' @title Library Loader
+#' @description Manually loads all specified libraries required by the user.
+#' @return A message indicating the result of the library loading process.
 #' @export
 
 getLibsR.AlphA <- function(){
