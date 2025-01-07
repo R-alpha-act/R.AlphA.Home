@@ -1,13 +1,18 @@
-#' listing dimensions
-#' @description list unique values of columns for a set of tables
-#' @param ... should be a lsit a tables
+#' @title List Unique Values of Columns Across Tables
+#' @description Counts the unique values of columns across one or more
+#' data.tables, optionally filtered by a pattern.
+#' @param ... One or more data.tables, or a list of data.tables, to process.
+#' @param pattern An optional regular expression pattern to filter column names.
+#' @return A data.table summarizing the number of unique values for each column
+#' in each table.
 #' @export
-
+#'
 listVarsUniques <- function(..., pattern = ""){
 	manualrun <- T
 	manualrun <- F
 	if (manualrun) {
-		warning("! parameters manually defined inside function for tests. Do not use results !")
+		warning("! Parameters manually defined inside function for tests. ",
+				"Do not use results !")
 		DT1 <- data.table(a = 1:10)
 		DT2 <- data.table(b = 2:10)
 		DT3 <- data.table(b = 2:10, c = 3:11)

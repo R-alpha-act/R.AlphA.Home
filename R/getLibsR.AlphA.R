@@ -2,7 +2,7 @@
 #' @description Manually loads all specified libraries required by the user.
 #' @return A message indicating the result of the library loading process.
 #' @export
-
+#'
 getLibsR.AlphA <- function(){
 	library(dplyr)
 	library(data.table)

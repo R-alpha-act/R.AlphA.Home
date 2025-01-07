@@ -12,7 +12,7 @@
 #' @param colNm
 #' @importFrom stats runif
 #' @export
-
+#'
 countSwitches <- function(data, colNm, sttMark, endMark,
 							  includeStt = TRUE, includeEnd = TRUE){
 	manualrun <- T

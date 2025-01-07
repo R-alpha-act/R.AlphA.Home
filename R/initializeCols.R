@@ -1,11 +1,12 @@
-#' @title initialize columns
-#' @description check if columns are present - if not create them with dft value
-#' @param data table where you need to init cols
-#' @param cols col names
-#' @param value the value you want to initialize if column doesn't exist yet
-#' @return directly change data by reference (DT way, maybe to be changed)
+#' @title Initialize Missing Columns in Data Table
+#' @description Adds missing columns to a data.table and initializes them
+#' with a default value.
+#' @param data A data.table to modify. Converts to data.table if necessary.
+#' @param cols Character vector of column names to check and initialize.
+#' @param value Default value to assign to missing columns.
+#' @return The modified data.table, updated by reference.
 #' @export
-
+#'
 initializeCols <- function(data, cols, value){
 	presentNames <- data %>% names
 	if(!is.data.table(data)) setDT(data)
