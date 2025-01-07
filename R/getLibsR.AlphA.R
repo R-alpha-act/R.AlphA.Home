@@ -1,6 +1,7 @@
 #' @title Library Loader
-#' @description Manually loads all specified libraries required by the user.
-#' @return A message indicating the result of the library loading process.
+#' @description loads all libraries in a pre defined set, only for code 
+#' wrapping purposes
+#' @return the value from the last call 'library' call in the function
 #' @export
 #'
 getLibsR.AlphA <- function(){
