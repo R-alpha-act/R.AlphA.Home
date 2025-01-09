@@ -1,28 +1,23 @@
-#' @title left_join + checks if everything went correctly
-#' @description typically, check that you did not duplicate your lines
-#' @param x left table
-#' @param y right table
+#' @title Merge function with Validation Checks
+#' @description Performs a merge and verifies that no unexpected duplicates
+#' or mismatches occur.
+#' @param x A data.table representing the left table.
+#' @param y A data.table representing the right table.
 #' @param ... additionnal arguments passed to dplyr's left_join
 #' @param req_preserved_x boolean : do you want to ensure that xTable rows are the same after join (no duplicates) ?
 #' @param req_xAllMatch boolean : do you want to ensure that all x values have found a match in y ?
 #' @param behavior character : warning, or error
 #' @param showNotFound if some x are not found in y, do you want to show them
 #' @param keyVars variables used as key for setKey then merge
+#' @param time Logical. Internal argument used only for testing purposes during
+#' manual runs.
 #' @return the joined table
 #' @importFrom tibble rowid_to_column rownames_to_column
 #' @importFrom tidyr replace_na
 #' @importFrom stringr str_remove
 #' @rawNamespace import(dplyr, except = c(first, last, between))
 #' @export
-# library(dplyr)
-# library(data.table)
-# library(tidyr)
-# library(tidyverse)
-# library(R.AlphA)
-# library(R.AlphA.Life)
-# install.packages("xml2")
-
-
+#'
 merge_checks <- function(
 		x
 		, y

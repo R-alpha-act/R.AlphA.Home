@@ -1,7 +1,7 @@
 #' @title Library Loader
-#' @description loads all libraries in a pre defined set, only for code 
-#' wrapping purposes
-#' @return the value from the last call 'library' call in the function
+#' @description Loads all libraries in a pre defined set, only for code
+#' wrapping purposes.
+#' @return The value from the last call 'library' call in the function.
 #' @export
 #'
 getLibsR.AlphA <- function(){

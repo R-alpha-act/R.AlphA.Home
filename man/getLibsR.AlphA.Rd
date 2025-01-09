@@ -7,8 +7,9 @@
 getLibsR.AlphA()
 }
 \value{
-A message indicating the result of the library loading process.
+The value from the last call 'library' call in the function.
 }
 \description{
-Manually loads all specified libraries required by the user.
+Loads all libraries in a pre defined set, only for code
+wrapping purposes.
 }

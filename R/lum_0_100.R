@@ -1,10 +1,13 @@
-#' regler la luminosité de la fenetre graphique
-#' @export
-#' @param lum luminosity from 0 to 100
+#' @title Adjust the Brightness of the Graphics Window
+#' @description Modifies the brightness level of the active graphics window by
+#' adjusting its background color.
+#' @param lum Numeric. Brightness level, ranging from 0 (completely dark)
+#' to 100 (maximum brightness).
 #' @importFrom grDevices rgb
 #' @importFrom graphics par plot
 #' @import ggplot2
-
+#' @export
+#'
 lum_0_100 <- function(lum){
 	# lum <- 40
 	# for the plot() function
