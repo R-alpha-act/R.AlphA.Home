@@ -2,7 +2,7 @@
 % Please edit documentation in R/left_join_checks.R
 \name{left_join_checks}
 \alias{left_join_checks}
-\title{left_join + checks if everything went correctly}
+\title{Left Join with Validation Checks}
 \usage{
 left_join_checks(
   x,
@@ -16,23 +16,30 @@ left_join_checks(
 )
 }
 \arguments{
-\item{x}{left table}
+\item{x}{A data.table representing the left table.}
 
-\item{y}{right table}
+\item{y}{A data.table representing the right table.}
 
-\item{...}{additionnal arguments passed to dplyr's left_join}
+\item{...}{Additional arguments passed to `dplyr::left_join`.}
 
-\item{req_xAllMatch}{boolean : do you want to ensure that all x values have found a match in y ?}
+\item{req_xAllMatch}{Logical. Ensure that all rows in `x` find a match in `y`. Default: FALSE.}
 
-\item{req_preserved_x}{boolean : do you want to ensure that xTable rows are the same after join (no duplicates) ?}
+\item{req_preserved_x}{Logical. Ensure that the number of rows in `x`
+remains unchanged after the join. Default: TRUE.}
 
-\item{behavior}{character : warning, or error}
+\item{behavior}{Character. Specifies behavior if validation fails.
+Options: `"warning"` or `"error"`. (default: `"warning"`)}
 
-\item{showNotFound}{if some x are not found in y, do you want to show them}
+\item{showNotFound}{Logical. Show rows from `x` that did not match with `y`.
+Default: FALSE.}
+
+\item{time}{Logical. Internal argument used only for testing purposes during
+manual runs.}
 }
 \value{
-the joined table
+A data.table containing the joined table.
 }
 \description{
-typically, check that you did not duplicate your lines
+Performs a left join and verifies that no unexpected duplicates
+or mismatches occur.
 }

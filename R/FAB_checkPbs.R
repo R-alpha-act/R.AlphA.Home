@@ -1,9 +1,7 @@
-# rm(list = ls())
-# fold brackets --------
-#' @title FAB_checkPbs
-#' @description gives a glimpse of lines which could cause pbs in FAB
-#' @param linesBefore nb of lines before the pb to display
-#' @param linesAfter nb of lines after the pb to display
+#' @title Check problems for FoldAllBr
+#' @description gives a glimpse of lines which could cause problems in FoldAllBr
+#' @param linesBefore number of lines before the problem to display
+#' @param linesAfter number of lines after the problem to display
 #' @export
 FAB_checkPbs <- function(linesBefore = 0, linesAfter = 10){
 	test <- foldAllBr(debug_getTbl = 1)

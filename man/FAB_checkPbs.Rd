@@ -2,15 +2,15 @@
 % Please edit documentation in R/FAB_checkPbs.R
 \name{FAB_checkPbs}
 \alias{FAB_checkPbs}
-\title{FAB_checkPbs}
+\title{Check problems for FoldAllBr}
 \usage{
 FAB_checkPbs(linesBefore = 0, linesAfter = 10)
 }
 \arguments{
-\item{linesBefore}{nb of lines before the pb to display}
+\item{linesBefore}{number of lines before the problem to display}
 
-\item{linesAfter}{nb of lines after the pb to display}
+\item{linesAfter}{number of lines after the problem to display}
 }
 \description{
-gives a glimpse of lines which could cause pbs in FAB
+gives a glimpse of lines which could cause problems in FoldAllBr
 }

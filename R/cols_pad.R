@@ -1,12 +1,11 @@
-#' @title add variables so that data can be easily used in a pivot
-#' @description will simply add dummy columns up to the number defined by the
-#' user
-#' @param data the data to add columns to
-#' @param nCols number of columns to define
-#' @param colPrefix for the dummy columns
-#' @return the table with the chosen number of columns
+#' @title Add Variables to Facilitate Data Usage in a Pivot Table
+#' @description Adds dummy columns to reach the number specified by the user.
+#' @param data The data frame to which dummy columns will be added.
+#' @param nCols An integer specifying the total number of columns desired.
+#' @param colPrefix A string used as the prefix for the names of dummy columns.
+#' @return A data frame with the specified total number of columns.
 #' @export
-
+#'
 cols_pad <- function(data, nCols = 100, colPrefix = "x_"){
 	# nCols <- 100
 	# data <- AVRecap

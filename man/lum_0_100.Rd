@@ -2,13 +2,15 @@
 % Please edit documentation in R/lum_0_100.R
 \name{lum_0_100}
 \alias{lum_0_100}
-\title{regler la luminosité de la fenetre graphique}
+\title{Adjust the Brightness of the Graphics Window}
 \usage{
 lum_0_100(lum)
 }
 \arguments{
-\item{lum}{luminosity from 0 to 100}
+\item{lum}{Numeric. Brightness level, ranging from 0 (completely dark)
+to 100 (maximum brightness).}
 }
 \description{
-regler la luminosité de la fenetre graphique
+Modifies the brightness level of the active graphics window by
+adjusting its background color.
 }

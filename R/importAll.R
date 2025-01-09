@@ -1,15 +1,19 @@
-#' @title fonction pour importer plusieurs fichiers et les concatener dans une meme table
-#' @description This function imports all files selected, concatenates them in a single table and adds an fName variable
-#' @param path argument passed to list.fles
-#' @param pattern argument passed to list.fles
-#' @param ignore.case argument passed to list.fles
-#' @param importFunction if you know which function you want to use
-#' @param fill passed to rbind
-#' @param fileList instead of a Pattern
-#' @return the concatenated table
+#' @title Function to Import and Concatenate Multiple Files
+#' @description Imports all selected files, concatenates them into a single
+#' table, and adds an `fName` variable.
+#' @param path Path to the directory, passed to `list.files`.
+#' @param pattern Pattern to match file names, passed to `list.files`.
+#' @param ignore.case Logical. If `TRUE`, ignores case when matching file names.
+#' Passed to `list.files`.
+#' @param importFunction A custom function for importing files. If not set, the
+#' function automatically selects an import method based on the file extension.
+#' @param fill Logical. Passed to `rbind` to allow filling missing columns.
+#' @param fileList A character vector of file names to import
+#' (used instead of `pattern`).
+#' @return A data frame containing the concatenated table.
 #' @importFrom openxlsx read.xlsx
 #' @export
-
+#
 importAll <- function(
 	path = "."
 	, pattern = ""
@@ -22,7 +26,8 @@ importAll <- function(
 	manualrun <- F
 	if (manualrun) {
 		getLibsR.AlphA()
-		message("! parameters manually defined inside function for tests. Do not use results !")
+		message("! parameters manually defined inside function for tests. ",
+				"Do not use results !")
 		root <- dirname(rstudioapi::getSourceEditorContext()$path)
 		workr_root <- sub("WorkR.*", "WorkR", root)
 		setwd(root)
@@ -52,9 +57,19 @@ importAll <- function(
 	if (missing(fileList)) {
 		# with a pattern
 		filePaths <- data.table(
-			NULL
-			, locPath = list.files(path = path, pattern = pattern, ignore.case = ignore.case, full.names = F)
-			, fulPath = list.files(path = path, pattern = pattern, ignore.case = ignore.case, full.names = T)
+			NULL,
+			locPath = list.files(
+				path = path,
+				pattern = pattern,
+				ignore.case = ignore.case,
+				full.names = FALSE
+			),
+			fulPath = list.files(
+				path = path,
+				pattern = pattern,
+				ignore.case = ignore.case,
+				full.names = TRUE
+			)
 		)
 	} else {
 		# with a file list
@@ -88,9 +103,11 @@ importAll <- function(
 			, by = "cst"
 		)[, cst := NULL]
 	}
-	if (length(unique(filePaths$fun))>1) message("more than 1 type of file : it is very casse gueule (might face problems with column types)")
+	if (length(unique(filePaths$fun)) > 1) {
+		message("Warning: More than one type of file detected. ",
+				"This might cause issues with column types (very risky).")
+	}
 	importsList <- mapply(
-		# FUN = function(ful_path, loc_path) importFuntion(ful_path)[, test := loc_path]
 		FUN = function(ful_path, loc_path, importFunction){
 			import <- importFunction(ful_path) %>% as.data.table
 			import[, fName := loc_path]
@@ -106,29 +123,3 @@ importAll <- function(
 	)
 }
 
-# root <- dirname(rstudioapi::getSourceEditorContext()$path)
-# workr_root <- sub("WorkR.*", "WorkR", root)
-# list.files(file.path(workr_root, "Tests_xlsx"))
-# setwd(root)
-# a <- importAll(
-# 	path = file.path(workr_root, "Tests_xlsx")
-# 	# , pattern = "impall.*csv"
-# 	, pattern = "impall"
-# 	, ignore.case = T
-# )
-#
-# testfun<- as.matrix(fread)
-# getwd()
-# # for (fSuffix in c(1,10,5,20,30,200)){
-# # 	# fSuffix <- 10
-# # 	write.csv(
-# # 		data.table(
-# # 			suffix = fSuffix
-# # 			, b = "slfj"
-# # 			, c = ISOdate(2020,1,1)
-# # 			, d = runif(n = 10, min = 1*fSuffix, max = 10*fSuffix)
-# # 		)
-# # 		, file = file.path(workr_root, "Tests_xlsx", paste0("testImpAll_", fSuffix, ".csv"))
-# # 		, row.names = FALSE
-# # 	)
-# # }

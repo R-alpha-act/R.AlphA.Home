@@ -2,13 +2,14 @@
 % Please edit documentation in R/getLibsR.AlphA.R
 \name{getLibsR.AlphA}
 \alias{getLibsR.AlphA}
-\title{juste pour les manualruns, charger les libs}
+\title{Library Loader}
 \usage{
 getLibsR.AlphA()
 }
 \value{
-que dalle
+The value from the last call 'library' call in the function.
 }
 \description{
-cf title
+Loads all libraries in a pre defined set, only for code
+wrapping purposes.
 }

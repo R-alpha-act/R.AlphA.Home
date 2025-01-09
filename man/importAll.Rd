@@ -2,7 +2,7 @@
 % Please edit documentation in R/importAll.R
 \name{importAll}
 \alias{importAll}
-\title{fonction pour importer plusieurs fichiers et les concatener dans une meme table}
+\title{Function to Import and Concatenate Multiple Files}
 \usage{
 importAll(
   path = ".",
@@ -14,21 +14,25 @@ importAll(
 )
 }
 \arguments{
-\item{path}{argument passed to list.fles}
+\item{path}{Path to the directory, passed to `list.files`.}
 
-\item{pattern}{argument passed to list.fles}
+\item{pattern}{Pattern to match file names, passed to `list.files`.}
 
-\item{ignore.case}{argument passed to list.fles}
+\item{ignore.case}{Logical. If `TRUE`, ignores case when matching file names.
+Passed to `list.files`.}
 
-\item{importFunction}{if you know which function you want to use}
+\item{importFunction}{A custom function for importing files. If not set, the
+function automatically selects an import method based on the file extension.}
 
-\item{fill}{passed to rbind}
+\item{fill}{Logical. Passed to `rbind` to allow filling missing columns.}
 
-\item{fileList}{instead of a Pattern}
+\item{fileList}{A character vector of file names to import
+(used instead of `pattern`).}
 }
 \value{
-the concatenated table
+A data frame containing the concatenated table.
 }
 \description{
-This function imports all files selected, concatenates them in a single table and adds an fName variable
+Imports all selected files, concatenates them into a single
+table, and adds an `fName` variable.
 }

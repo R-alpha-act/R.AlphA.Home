@@ -2,7 +2,7 @@
 % Please edit documentation in R/rdate.R
 \name{rdate}
 \alias{rdate}
-\title{Random dates}
+\title{Generate Random Dates}
 \usage{
 rdate(
   x,
@@ -13,22 +13,31 @@ rdate(
 )
 }
 \arguments{
-\item{x}{length of the vector}
+\item{x}{Integer. Length of the output vector
+(number of random dates to generate).}
 
-\item{min}{opt : minimum date}
+\item{min}{Date. Optional. The minimum date for the range.
+Defaults to the 1st of January of the current year.}
 
-\item{max}{opt : maximum date}
+\item{max}{Date. Optional. The maximum date for the range.
+Defaults to the 31st of December of the current year.}
 
-\item{sort}{do you want sorted dates, default FALSE}
+\item{sort}{Logical. Should the dates be sorted in ascending order?
+Default is `FALSE`.}
 
-\item{include_hours}{should returned dates include time also (default FALSE : days only)}
+\item{include_hours}{Logical. Should the generated dates include time?
+Default is `FALSE` (dates only).}
 }
 \value{
-a dates vector of length x
+A vector of random dates of length `x`.
 }
 \description{
-get a vector of x random dates between min and max
+Generates a vector of random dates within a specified range.
 }
 \examples{
-rdate(10)
+# Generate 5 random dates between two specific dates, sorted
+rdate(5, min = as.Date("2020-01-01"), max = as.Date("2020-12-31"), sort = TRUE)
+
+# Generate 7 random datetime values (with hours)
+rdate(7, include_hours = TRUE)
 }

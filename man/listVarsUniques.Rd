@@ -2,13 +2,20 @@
 % Please edit documentation in R/listVarsUniques.R
 \name{listVarsUniques}
 \alias{listVarsUniques}
-\title{listing dimensions}
+\title{List Unique Values of Columns Across Tables}
 \usage{
 listVarsUniques(..., pattern = "")
 }
 \arguments{
-\item{...}{should be a lsit a tables}
+\item{...}{One or more data.tables, or a list of data.tables, to process.}
+
+\item{pattern}{An optional regular expression pattern to filter column names.}
+}
+\value{
+A data.table summarizing the number of unique values for each column
+in each table.
 }
 \description{
-list unique values of columns for a set of tables
+Counts the unique values of columns across one or more
+data.tables, optionally filtered by a pattern.
 }
