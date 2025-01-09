@@ -2,15 +2,22 @@
 % Please edit documentation in R/foldAllBr.R
 \name{foldAllBr}
 \alias{foldAllBr}
-\title{Fold all brackets}
+\title{Fold All Brackets in Code}
 \usage{
 foldAllBr(time = F, debug_getTbl = F)
 }
 \arguments{
-\item{time}{get a timer on the function steps}
+\item{time}{Logical. If `TRUE`, the function will provide timing information
+for each step.}
 
-\item{debug_getTbl}{for debugging : return the docContent table with tags}
+\item{debug_getTbl}{Logical. If `TRUE`, returns the `docContent` table with
+tags for debugging purposes.}
+}
+\value{
+If `debug_getTbl = TRUE`, a table (`docContent`) with tags.
+Otherwise, no return value (performs folding).
 }
 \description{
-finds open brackets in current code and fold them automatically
+Automatically identifies open brackets in the current code and
+folds them.
 }

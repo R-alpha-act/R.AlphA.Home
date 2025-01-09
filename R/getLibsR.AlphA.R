@@ -1,8 +1,9 @@
-#' @title juste pour les manualruns, charger les libs
-#' @description cf title
-#' @return que dalle
+#' @title Library Loader
+#' @description Loads all libraries in a pre defined set, only for code
+#' wrapping purposes.
+#' @return The value from the last call 'library' call in the function.
 #' @export
-
+#'
 getLibsR.AlphA <- function(){
 	library(dplyr)
 	library(data.table)

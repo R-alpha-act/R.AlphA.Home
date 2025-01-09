@@ -22,7 +22,7 @@ countSwitches(
 
 \item{includeEnd}{should the ending value be counted as part of the series}
 
-\item{sttEnd}{vector of on/off, start/end, or alike switches}
+\item{sttEnd}{(not in usage) vector of on/off, start/end, or alike switches}
 }
 \description{
 this function takes as input a vector of values in which

@@ -1,10 +1,10 @@
 Package: R.AlphA.Base
 Type: Package
-Title: Personal functions discovered through programming
+Title: Shortcut Functions for Common R Calculations
 Version: 0.1.0
 Author: Raphaël FLAMBARD
 Maintainer: Raphaël FLAMBARD <r.alpha.act@outlook.fr>
-Description: This package provides functions designed as shortcuts for frequently used R calculations.
+Description: A collection of personal functions designed to simplify and streamline common R programming tasks. This package provides reusable tools and shortcuts for frequently used calculations and workflows.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

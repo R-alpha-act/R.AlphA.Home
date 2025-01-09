@@ -1,27 +1,25 @@
-#' @title left_join + checks if everything went correctly
-#' @description typically, check that you did not duplicate your lines
-#' @param x left table
-#' @param y right table
-#' @param ... additionnal arguments passed to dplyr's left_join
-#' @param req_preserved_x boolean : do you want to ensure that xTable rows are the same after join (no duplicates) ?
-#' @param req_xAllMatch boolean : do you want to ensure that all x values have found a match in y ?
-#' @param behavior character : warning, or error
-#' @param showNotFound if some x are not found in y, do you want to show them
-#' @return the joined table
+#' @title Left Join with Validation Checks
+#' @description Performs a left join and verifies that no unexpected duplicates
+#' or mismatches occur.
+#' @param x A data.table representing the left table.
+#' @param y A data.table representing the right table.
+#' @param ... Additional arguments passed to `dplyr::left_join`.
+#' @param req_preserved_x Logical. Ensure that the number of rows in `x`
+#' remains unchanged after the join. Default: TRUE.
+#' @param req_xAllMatch Logical. Ensure that all rows in `x` find a match in `y`. Default: FALSE.
+#' @param behavior Character. Specifies behavior if validation fails.
+#' Options: `"warning"` or `"error"`. (default: `"warning"`)
+#' @param showNotFound Logical. Show rows from `x` that did not match with `y`.
+#' Default: FALSE.
+#' @param time Logical. Internal argument used only for testing purposes during
+#' manual runs.
+#' @return A data.table containing the joined table.
 #' @importFrom tibble rowid_to_column rownames_to_column
 #' @importFrom tidyr replace_na
 #' @importFrom stringr str_remove
 #' @rawNamespace import(dplyr, except = c(first, last, between))
 #' @export
-# library(dplyr)
-# library(data.table)
-# library(tidyr)
-# library(tidyverse)
-# library(R.AlphA)
-# library(R.AlphA.Life)
-# install.packages("xml2")
-
-
+#'
 left_join_checks <- function(
 		x
 		, y
@@ -37,7 +35,8 @@ left_join_checks <- function(
 	if (manualrun) {
 		rm(list = ls())
 		R.AlphA.Base::getLibsR.AlphA()
-		warning("! parameters manually defined inside function 'left_join_checks' for tests. Do not use results !")
+		warning("! parameters manually defined inside function 'left_join_checks'",
+				"for tests. Do not use results !")
 		workRRoot <- root() %>% str_extract(".*WorkR")
 		tbls <- workRRoot %>%
 			file.path("pop stats", "ex_working_folder", "INPUTS", "ret") %>%

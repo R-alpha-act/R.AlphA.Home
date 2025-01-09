@@ -2,26 +2,29 @@
 % Please edit documentation in R/compareVars.R
 \name{compareVars}
 \alias{compareVars}
-\title{Compare tables variables}
+\title{Compare Table Variables}
 \usage{
 compareVars(x, y, pattern = "")
 }
 \arguments{
-\item{x}{first table}
+\item{x}{A data frame representing the first table.}
 
-\item{y}{second table}
+\item{y}{A data frame representing the second table.}
 
-\item{pattern}{to compare only a subset of all the varibles}
+\item{pattern}{A string pattern used to filter and compare only a subset of
+variables (column names).}
 }
 \value{
-an object containing :
-all : all the column names
-common : names found in both tables
-onlyX : only in the first table
-onlyY : obvious
-exclusive : columns found in only one of the two tables
+A list containing:
+\itemize{
+  \item \code{all}: All column names from both tables.
+  \item \code{common}: Column names found in both tables.
+  \item \code{onlyX}: Column names found only in the first table (\code{x}).
+  \item \code{onlyY}: Column names found only in the second table (\code{y}).
+  \item \code{exclusive}: Column names found in only one of the two tables.
+}
 }
 \description{
-reads names matching a given pattern in two tables, and gives
-information about which columns are in both tables, only in x/y and so on
+Compares column names in two tables based on a given pattern.
+Provides information about which columns are present in which tables.
 }

@@ -1,16 +1,26 @@
-#' @title Random dates
-#' @description get a vector of x random dates between min and max
-#' @param x length of the vector
-#' @param min opt : minimum date
-#' @param max opt : maximum date
-#' @param sort do you want sorted dates, default FALSE
-#' @param include_hours should returned dates include time also (default FALSE : days only)
-#' @return a dates vector of length x
+#' @title Generate Random Dates
+#' @description Generates a vector of random dates within a specified range.
+#' @param x Integer. Length of the output vector
+#' (number of random dates to generate).
+#' @param min Date. Optional. The minimum date for the range.
+#' Defaults to the 1st of January of the current year.
+#' @param max Date. Optional. The maximum date for the range.
+#' Defaults to the 31st of December of the current year.
+#' @param sort Logical. Should the dates be sorted in ascending order?
+#' Default is `FALSE`.
+#' @param include_hours Logical. Should the generated dates include time?
+#'  Default is `FALSE` (dates only).
+#' @return A vector of random dates of length `x`.
 #' @examples
-#' rdate(10)
+#' # Generate 5 random dates between two specific dates, sorted
+#' rdate(5, min = as.Date("2020-01-01"), max = as.Date("2020-12-31"), sort = TRUE)
+#'
+#' # Generate 7 random datetime values (with hours)
+#' rdate(7, include_hours = TRUE)
 #' @importFrom lubridate decimal_date date_decimal
 #' @importFrom stats runif
 #' @export
+#'
 rdate <- function(
 	x
 	, min = paste0(format(Sys.Date(), '%Y'), '-01-01')

@@ -2,20 +2,21 @@
 % Please edit documentation in R/initializeCols.R
 \name{initializeCols}
 \alias{initializeCols}
-\title{initialize columns}
+\title{Initialize Missing Columns in Data Table}
 \usage{
 initializeCols(data, cols, value)
 }
 \arguments{
-\item{data}{table where you need to init cols}
+\item{data}{A data.table to modify. Converts to data.table if necessary.}
 
-\item{cols}{col names}
+\item{cols}{Character vector of column names to check and initialize.}
 
-\item{value}{the value you want to initialize if column doesn't exist yet}
+\item{value}{Default value to assign to missing columns.}
 }
 \value{
-directly change data by reference (DT way, maybe to be changed)
+The modified data.table, updated by reference.
 }
 \description{
-check if columns are present - if not create them with dft value
+Adds missing columns to a data.table and initializes them
+with a default value.
 }
