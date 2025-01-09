@@ -11,6 +11,8 @@
 #' Options: `"warning"` or `"error"`. (default: `"warning"`)
 #' @param showNotFound Logical. Show rows from `x` that did not match with `y`.
 #' Default: FALSE.
+#' @param time Logical. Internal argument used only for testing purposes during
+#' manual runs.
 #' @return A data.table containing the joined table.
 #' @importFrom tibble rowid_to_column rownames_to_column
 #' @importFrom tidyr replace_na

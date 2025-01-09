@@ -32,6 +32,9 @@ Options: `"warning"` or `"error"`. (default: `"warning"`)}
 
 \item{showNotFound}{Logical. Show rows from `x` that did not match with `y`.
 Default: FALSE.}
+
+\item{time}{Logical. Internal argument used only for testing purposes during
+manual runs.}
 }
 \value{
 A data.table containing the joined table.
