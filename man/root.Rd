@@ -2,10 +2,15 @@
 % Please edit documentation in R/root.R
 \name{root}
 \alias{root}
-\title{root directory of current source}
+\title{Get Root Directory of Current Source File}
 \usage{
 root()
 }
+\value{
+A character string representing the absolute path of the directory
+containing the current source file.
+}
 \description{
-root : dirname of the source's location
+Returns the directory path where the current source code file
+is located.
 }

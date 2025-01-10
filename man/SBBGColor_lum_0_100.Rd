@@ -2,16 +2,17 @@
 % Please edit documentation in R/SBBGColor_lum_0_100.R
 \name{SBBGColor_lum_0_100}
 \alias{SBBGColor_lum_0_100}
-\title{set the Shiny BG color to chosen shade of grey}
+\title{Set Shiny Background Color to a Chosen Shade of Grey}
 \usage{
 SBBGColor_lum_0_100(lum)
 }
 \arguments{
-\item{lum}{luminosity between 0 and 100}
+\item{lum}{Numeric. Luminosity level, ranging from 0 (black) to 100 (white).}
 }
 \value{
-the HTML tag for sidebar color
+An HTML tag representing the background color for the sidebar.
 }
 \description{
-choose luminosity between 0 and 100
+Adjusts the background color of a Shiny app's sidebar based
+on a specified luminosity.
 }

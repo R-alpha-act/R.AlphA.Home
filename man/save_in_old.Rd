@@ -2,20 +2,21 @@
 % Please edit documentation in R/save_in_old.R
 \name{save_in_old}
 \alias{save_in_old}
-\title{fonction de sauvegarde dans un dossier old}
+\title{Save File in an "Old" Directory}
 \usage{
 save_in_old(sav_filepath = NULL, sav_fileNote = NULL, overwrite = F)
 }
 \arguments{
-\item{sav_filepath}{file path of the file to save, default to current source}
+\item{sav_filepath}{Path of the file to save.
+Defaults to the current source file.}
 
-\item{sav_fileNote}{note to be added in the save name}
+\item{sav_fileNote}{An optional custom note to append to the file name
+for the save.}
 
-\item{overwrite}{should an existing save with same name be overwritten}
-}
-\value{
-nothing, only saves
+\item{overwrite}{Logical. Should an existing save with the same name
+be overwritten? Default is `FALSE`.}
 }
 \description{
-This function saves the project with date in its name in an "old" dir
+Saves a file with the current date in its name in an "old"
+directory located in the same directory as the original file.
 }

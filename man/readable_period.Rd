@@ -35,9 +35,5 @@ tt_tests <- timer(start = TRUE)
 tt_tests <- timer(timer_table = tt_tests)
 
 # Add a new row with custom specifications
-tt_tests <- timer(timer_table = tt_tests, stepName = "Step X", description = "This is a test step")
-
-# Print the timer table after each step
-tt_tests <- timer(timer_table = tt_tests, stepName = "Final Step", message = TRUE)
-
+tt_tests <- timer(timer_table = tt_tests, stepName = "step x", anyVariableName = "any value")
 }

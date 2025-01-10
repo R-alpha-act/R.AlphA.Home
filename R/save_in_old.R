@@ -1,14 +1,17 @@
-#' @title fonction de sauvegarde dans un dossier old
-#' @description This function saves the project with date in its name in an "old" dir
-#' @return nothing, only saves
-#' @param sav_filepath file path of the file to save, default to current source
-#' @param sav_fileNote note to be added in the save name
-#' @param overwrite should an existing save with same name be overwritten
-#' @export
+#' @title Save File in an "Old" Directory
+#' @description Saves a file with the current date in its name in an "old"
+#' directory located in the same directory as the original file.
+#' @param sav_filepath Path of the file to save.
+#' Defaults to the current source file.
+#' @param sav_fileNote An optional custom note to append to the file name
+#' for the save.
+#' @param overwrite Logical. Should an existing save with the same name
+#' be overwritten? Default is `FALSE`.
 #' @import ggplot2
 #' @importFrom R.utils copyDirectory
 #' @importFrom tools file_path_sans_ext file_ext
-
+#' @export
+#'
 save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL, overwrite = F){
 	requireNamespace("rstudioapi")
 	requireNamespace("stringr")
@@ -22,7 +25,7 @@ save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL, overwrite = F)
 	sav_dirname <- dirname(sav_filepath) # nom du dossier
 	sav_olddirname <- file.path(sav_dirname, "old")
 	if(!dir.exists(sav_olddirname)) {
-		print(paste0("creating old dir : ", sav_olddirname))
+		print(paste0("creating old directory : ", sav_olddirname))
 		dir.create(sav_olddirname)
 	}
 
@@ -46,7 +49,7 @@ save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL, overwrite = F)
 	}
 
 	if(isDir){
-		message("(copying a dir)")
+		message("(copying a directory)")
 		R.utils::copyDirectory(sav_filepath, sav_savepath, overwrite = overwrite)
 	} else {
 		file.copy(from = sav_filepath, to = sav_savepath, overwrite = overwrite)
