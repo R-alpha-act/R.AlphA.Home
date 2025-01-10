@@ -1,33 +1,30 @@
-#' @title Sort a Data Frame
-#' @description This function accepts a df and col number to sort the df by that column
-#' @param df The df to be sorted
-#' @param col The column name (string) by which to sort the df
-#' @param desc self explained, default FALSE
-#' @return The sorted df
-#' @source https://towardsdatascience.com/creating-a-custom-r-package-9a2e303d3332
+#' @title Sort a Data Frame by a Specified Column
+#' @description Sorts a data frame by a specified column, in ascending or
+#' descending order.
+#' @param df Data frame. The data frame to be sorted.
+#' @param col Character. The name of the column by which to sort the data frame.
+#' @param desc Logical. Should the sorting be in descending order?
+#' Default is `FALSE` (ascending order).
+#' @return A data frame sorted by the specified column.
 #' @examples
+#' # Create a sample data frame
 #' subject <- c(1:10)
 #' height <- round(rnorm(10, mean = 66, sd = 3), 1)
 #' d <- data.frame(subject, height)
 #'
+#' # Sort by height in ascending order
 #' d2 <- sortby(d, "height")
-#' d2
+#' print(d2)
 #'
+#' # Sort by height in descending order
 #' d3 <- sortby(d, "height", desc = TRUE)
-#' d3
-#'
-#'
+#' print(d3)
 #' @export
-
+#'
 sortby <- function(df, col, desc = FALSE) {
-	#### df is the dataframe to be sorted
-	#### col is the variable by which it should be sorted
-	#### desc indicates whether the sort order should be descending
-	#### str2expression() allows us to dynamically create a df$col
-	####     variable which gets evaluated by eval()
 	df[order(
 		eval(
-			str2expression(paste0("df$", col))
+			str2expression(paste0("df$", col)) # allows us to dynamically create a df$col
 		),
 		decreasing = desc
 	),]
