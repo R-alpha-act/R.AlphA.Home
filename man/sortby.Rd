@@ -2,36 +2,36 @@
 % Please edit documentation in R/sortBy.R
 \name{sortby}
 \alias{sortby}
-\title{Sort a Data Frame}
-\source{
-https://towardsdatascience.com/creating-a-custom-r-package-9a2e303d3332
-}
+\title{Sort a Data Frame by a Specified Column}
 \usage{
 sortby(df, col, desc = FALSE)
 }
 \arguments{
-\item{df}{The df to be sorted}
+\item{df}{Data frame. The data frame to be sorted.}
 
-\item{col}{The column name (string) by which to sort the df}
+\item{col}{Character. The name of the column by which to sort the data frame.}
 
-\item{desc}{self explained, default FALSE}
+\item{desc}{Logical. Should the sorting be in descending order?
+Default is `FALSE` (ascending order).}
 }
 \value{
-The sorted df
+A data frame sorted by the specified column.
 }
 \description{
-This function accepts a df and col number to sort the df by that column
+Sorts a data frame by a specified column, in ascending or
+descending order.
 }
 \examples{
+# Create a sample data frame
 subject <- c(1:10)
 height <- round(rnorm(10, mean = 66, sd = 3), 1)
 d <- data.frame(subject, height)
 
+# Sort by height in ascending order
 d2 <- sortby(d, "height")
-d2
+print(d2)
 
+# Sort by height in descending order
 d3 <- sortby(d, "height", desc = TRUE)
-d3
-
-
+print(d3)
 }

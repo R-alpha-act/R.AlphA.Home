@@ -9,9 +9,7 @@ getLibsR.AlphA <- function(){
 	library(data.table)
 	library(lubridate)
 	library(tidyr)
-	# library(tidyverse)
 	library(R.AlphA.Base)
-	library(R.AlphA.Life)
 	library(rstudioapi)
 	library(forcats) # instead of tidyverse
 	library(readr, exclude = "read_rds")   # instead of tidyverse
