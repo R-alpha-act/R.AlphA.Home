@@ -1,25 +1,38 @@
-#' @title Times steps - new version : don't create time table as global variable cause it sucks
-#' @description keep track of time spent on different steps of code
-#' @param start to start a new time table from scratch
-#' @param timer_table table to increment with a new timer line
-#' @param message Should the function print the table for this step ?
-#' @param ... any other specification. Choose name for column and value for row
-#' @return the provided timer_table plus one line with time and the ... specifications
+#' @title Track Time Steps with Lubridate Functions
+#' @description Tracks the time spent on different steps of your code,
+#' storing only timestamps without durations.
+#' @param start Logical. If `TRUE`, initializes a new time tracking table.
+#' Default is `FALSE`.
+#' @param timer_table A data.table containing the timer log to continue from.
+#' Ignored if `start = TRUE`.
+#' @param message Logical. If `TRUE`, prints the updated timer table after
+#' adding the new entry. Default is `FALSE`.
+#' @param ... Additional specifications. Use named arguments to define columns
+#' and values for rows.
+#' @return A data.table with the existing `timer_table` plus one new
+#' entry containing the timestamp.
 #' @examples
+#' # Initialize a new timer table
 #' tt_tests <- timer(start = TRUE)
+#'
+#' # Add a new row with the current timestamp
 #' tt_tests <- timer(timer_table = tt_tests)
+#'
+#' # Add a new row with custom specifications
 #' tt_tests <- timer(timer_table = tt_tests, stepName = "step x", anyVariableName = "any value")
-
+#'
 #' @import lubridate
 #' @rawNamespace import(data.table, except =  c(month, hour, quarter, week, year, wday, second, minute, mday, yday, isoweek))
 #' @export
+#'
 timer <- function(timer_table = data.table(),start = FALSE, message = F, ...){
 	manualrun <- T
 	manualrun <- F
 	if (manualrun) {
 		message = T
 		start = T
-		warning("! parameters manually defined inside function for tests. Do not use results !")
+		warning("! parameters manually defined inside function for tests.",
+		"Do not use results !")
 		timer_table = data.table()
 	}
 	# t1, t2
@@ -75,32 +88,3 @@ timer <- function(timer_table = data.table(),start = FALSE, message = F, ...){
 		if (message) print(time_inter)
 		return(timer_table_final)
 }
-
-#
-# t1 <- Sys.time() - hours(2)
-# t2 <- Sys.time()
-# dt_interval <- t1 %--% t2
-# dt_seconds <- dt_interval / dseconds() # pour recuperer une colonne numerique
-# dt_period <- as.period(dt_interval)
-# dt_second_part <- trunc(dt_period@.Data)
-# dt_ms_part <- trunc((dt_period@.Data - dt_second_part)*1000)
-# timeFormat <- '% %02d,%03d'
-# timeFormat <- '%02d:%02d,%03d'
-# to_display <- list(dt_period@minute, dt_second_part, dt_ms_part)
-# sprintf(timeFormat, dt_period@minute, dt_second_part, dt_ms_part)
-# sprintf(timeFormat, to_display)
-
-
-# library(data.table)
-# library(lubridate)
-# tt_tests <- timer(start = TRUE)
-# tt_tests <- timer(timer_table = tt_tests)
-# tt_tests <- timer(timer_table = tt_tests, step = "new test")
-# for (log10loop in 1:8) {
-# 	for(itest in 1:10**log10loop){
-# 	}
-# 	tt_tests <- timer(timer_table = tt_tests, logloop = log10loop)
-# }
-# # c(month, hour, quarter, week, year, wday, second, minute, mday, yday, isoweek)
-#
-# tt_tests

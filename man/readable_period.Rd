@@ -2,38 +2,17 @@
 % Please edit documentation in R/readable_period.R
 \name{readable_period}
 \alias{readable_period}
-\title{Track Time Steps with Lubridate Functions}
+\title{Convert Period Object to Human-Readable Text}
 \usage{
 readable_period(periodObj)
 }
 \arguments{
-\item{start}{Logical. If `TRUE`, initializes a new time tracking table.
-Default is `FALSE`.}
-
-\item{timer_table}{A data.table containing the timer log to continue from.
-Ignored if `start = TRUE`.}
-
-\item{message}{Logical. If `TRUE`, prints the updated timer table after
-adding the new entry. Default is `FALSE`.}
-
-\item{...}{Additional specifications. Use named arguments to define columns
-and values for rows.}
+\item{periodObj}{A `period` object from the `lubridate` package to format.}
 }
 \value{
-A data.table with the existing `timer_table` plus one new
-entry containing the timestamp.
+A character string representing the period in a human-readable format.
 }
 \description{
-Tracks the time spent on different steps of your code,
-storing only timestamps without durations.
-}
-\examples{
-# Initialize a new timer table
-tt_tests <- timer(start = TRUE)
-
-# Add a new row with the current timestamp
-tt_tests <- timer(timer_table = tt_tests)
-
-# Add a new row with custom specifications
-tt_tests <- timer(timer_table = tt_tests, stepName = "step x", anyVariableName = "any value")
+Converts a `lubridate` period object into a human-readable
+string representation.
 }
