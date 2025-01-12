@@ -2,27 +2,39 @@
 % Please edit documentation in R/timer.R
 \name{timer}
 \alias{timer}
-\title{Times steps - new version : don't create time table as global variable cause it sucks}
+\title{Track Time Steps with Lubridate Functions}
 \usage{
 timer(timer_table = data.table(), start = FALSE, message = F, ...)
 }
 \arguments{
-\item{timer_table}{table to increment with a new timer line}
+\item{timer_table}{A data.table containing the timer log to continue from.
+Ignored if `start = TRUE`.}
 
-\item{start}{to start a new time table from scratch}
+\item{start}{Logical. If `TRUE`, initializes a new time tracking table.
+Default is `FALSE`.}
 
-\item{message}{Should the function print the table for this step ?}
+\item{message}{Logical. If `TRUE`, prints the updated timer table after
+adding the new entry. Default is `FALSE`.}
 
-\item{...}{any other specification. Choose name for column and value for row}
+\item{...}{Additional specifications. Use named arguments to define columns
+and values for rows.}
 }
 \value{
-the provided timer_table plus one line with time and the ... specifications
+A data.table with the existing `timer_table` plus one new
+entry containing the timestamp.
 }
 \description{
-keep track of time spent on different steps of code
+Tracks the time spent on different steps of your code,
+storing only timestamps without durations.
 }
 \examples{
+# Initialize a new timer table
 tt_tests <- timer(start = TRUE)
+
+# Add a new row with the current timestamp
 tt_tests <- timer(timer_table = tt_tests)
+
+# Add a new row with custom specifications
 tt_tests <- timer(timer_table = tt_tests, stepName = "step x", anyVariableName = "any value")
+
 }

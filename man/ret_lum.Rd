@@ -2,15 +2,22 @@
 % Please edit documentation in R/ret_lum.R
 \name{ret_lum}
 \alias{ret_lum}
-\title{change luminosity of a hex color by multiplying rgb components by a factor}
+\title{Adjust the Brightness of a Hex Color}
 \usage{
 ret_lum(hexCol, rgbFact)
 }
 \arguments{
-\item{hexCol}{color to retreat, in hexaDecimal format}
+\item{hexCol}{Character. The color to adjust, specified in
+hexadecimal format (e.g., "#FF5733").}
 
-\item{rgbFact}{factor to multiply rgb colors with. if > 1, check final value}
+\item{rgbFact}{Numeric. The factor by which to multiply the RGB components.
+Values greater than 1 increase brightness, while values between 0 and 1
+decrease it. Ensure the result remain within the valid range (0-255).}
+}
+\value{
+A modified hex color in hexadecimal format.
 }
 \description{
-change luminosity of a hex color by multiplying rgb components by a factor
+Modifies the brightness of a color by multiplying its RGB
+components by a specified factor.
 }

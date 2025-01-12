@@ -2,18 +2,19 @@
 % Please edit documentation in R/slicetr.R
 \name{slicetr}
 \alias{slicetr}
-\title{quick look at first rows}
+\title{Quick Look at the First Rows of a Table}
 \usage{
 slicetr(x, n = 3)
 }
 \arguments{
-\item{x}{table}
+\item{x}{Data frame or table. The input table to inspect.}
 
-\item{n}{number of rows to display}
+\item{n}{Integer. Number of rows to display. Default is 3.}
 }
 \value{
-nothing
+None. The function prints the formatted rows to the console.
 }
 \description{
-same doal as str but with vertically aligned values
+Displays the first rows of a table with vertically aligned
+values, offering a clearer view than `str()`.
 }
