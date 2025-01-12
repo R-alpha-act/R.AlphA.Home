@@ -1,34 +1,11 @@
-#' @title Track Time Steps with Lubridate Functions
-#' @description Tracks the time spent on different steps of your code,
-#' storing only timestamps without durations.
-#' @param start Logical. If `TRUE`, initializes a new time tracking table.
-#' Default is `FALSE`.
-#' @param timer_table A data.table containing the timer log to continue from.
-#' Ignored if `start = TRUE`.
-#' @param message Logical. If `TRUE`, prints the updated timer table after
-#' adding the new entry. Default is `FALSE`.
-#' @param ... Additional specifications. Use named arguments to define columns
-#' and values for rows.
-#' @return A data.table with the existing `timer_table` plus one new
-#' entry containing the timestamp.
-#' @examples
-#' # Initialize a new timer table
-#' tt_tests <- timer(start = TRUE)
-#'
-#' # Add a new row with the current timestamp
-#' tt_tests <- timer(timer_table = tt_tests)
-#'
-#' # Add a new row with custom specifications
-#' tt_tests <- timer(timer_table = tt_tests, stepName = "Step X", description = "This is a test step")
-#'
-#' # Print the timer table after each step
-#' tt_tests <- timer(timer_table = tt_tests, stepName = "Final Step", message = TRUE)
-#'
-#' @import lubridate
-#' @rawNamespace import(data.table, except = c(month, hour, quarter, week, year, wday, second, minute, mday, yday, isoweek))
+#' @title Convert Period Object to Human-Readable Text
+#' @description Converts a `lubridate` period object into a human-readable
+#' string representation.
+#' @param periodObj A `period` object from the `lubridate` package to format.
+#' @return A character string representing the period in a human-readable format.
+#' @importFrom lubridate second
 #' @export
 #'
-# readable period ---------------------------------------------------------
 readable_period <- function(periodObj){
 	if_else(
 		is.na(periodObj)
@@ -51,6 +28,3 @@ readable_period <- function(periodObj){
 		)
 	)
 }
-
-# testPeriod <- c(testPeriod, NA)
-# readable_period(testPeriod)
