@@ -2,7 +2,7 @@
 % Please edit documentation in R/countSwitches.R
 \name{countSwitches}
 \alias{countSwitches}
-\title{get the number, from a vector of starts/stops-----------------------------}
+\title{Count Series Based on Start/Stop Markers}
 \usage{
 countSwitches(
   data,
@@ -14,19 +14,27 @@ countSwitches(
 )
 }
 \arguments{
-\item{sttMark}{the starting value}
+\item{data}{A data frame containing the column to process.}
 
-\item{endMark}{the ending value}
+\item{colNm}{A string specifying the column name in `data` to evaluate.}
 
-\item{includeStt}{should the starting value be counted as part of the series}
+\item{sttMark}{A value indicating the start of a series.}
 
-\item{includeEnd}{should the ending value be counted as part of the series}
+\item{endMark}{A value indicating the end of a series.}
 
-\item{sttEnd}{(not in usage) vector of on/off, start/end, or alike switches}
+\item{includeStt}{Logical. Should the start marker be included as part of
+the series? Default is `TRUE`.}
+
+\item{includeEnd}{Logical. Should the end marker be included as part of the
+series? Default is `TRUE`.}
+}
+\value{
+A modified version of the input data frame with additional
+columns for series identification and counts.
 }
 \description{
-this function takes as input a vector of values in which
-starts and stops are indicated by specific values, identifying each time a
-new series. It returns a vector of the same length with the series count or
-0 when the element is outside a series (after a stop and before a start)
+This function identifies and counts series in a vector based on
+specified start and stop markers. It returns a vector of the same length,
+indicating the series count or 0 when the element is outside a series
+(e.g., after a stop marker and before the next start marker).
 }
