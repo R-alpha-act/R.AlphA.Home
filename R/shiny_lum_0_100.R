@@ -4,6 +4,7 @@
 #' @param lum Numeric. Luminosity level, ranging from 0 (black) to 100 (white).
 #' @return The HTML tags for setting the background and sidebar colors.
 #' @importFrom shinyWidgets setBackgroundColor
+#' @importFrom shiny tags HTML
 #' @rawNamespace import(dplyr, except = c(first, last, between))
 #' @export
 
