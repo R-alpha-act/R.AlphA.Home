@@ -34,7 +34,6 @@ left_join_checks <- function(
 	manualrun <- F
 	if (manualrun) {
 		rm(list = ls())
-		R.AlphA.Base::getLibsR.AlphA()
 		warning("! parameters manually defined inside function 'left_join_checks'",
 				"for tests. Do not use results !")
 		workRRoot <- root() %>% str_extract(".*WorkR")

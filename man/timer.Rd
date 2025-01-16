@@ -2,39 +2,45 @@
 % Please edit documentation in R/timer.R
 \name{timer}
 \alias{timer}
-\title{Track Time Steps with Lubridate Functions}
+\title{Track Time Steps Inside a Data.table}
 \usage{
-timer(timer_table = data.table(), start = FALSE, message = F, ...)
+timer(timer_table = data.table(), end = FALSE, ...)
 }
 \arguments{
 \item{timer_table}{A data.table containing the timer log to continue from.
-Ignored if `start = TRUE`.}
+Defaults to an empty `data.table().}
 
-\item{start}{Logical. If `TRUE`, initializes a new time tracking table.
-Default is `FALSE`.}
-
-\item{message}{Logical. If `TRUE`, prints the updated timer table after
-adding the new entry. Default is `FALSE`.}
+\item{end}{A logical. If `TRUE`, the time differences between timestamps
+are calculated and the table printed.}
 
 \item{...}{Additional specifications. Use named arguments to define columns
 and values for rows.}
 }
 \value{
-A data.table with the existing `timer_table` plus one new
-entry containing the timestamp.
+A `data.table` containing the original data, plus one new timestamp,
+and optionally computed time differences, the printed table includes:
+  \itemize{
+    \item `timestamp`: The current timestamp (`POSIXct`).
+    \item `datetime`: The numeric representation of the timestamp.
+    \item `time_diff`: The time difference in seconds between consecutive rows as a `difftime` object.
+    \item `time_diff_seconds`: The formatted time difference in seconds with milliseconds as a character string.
+    \item Additional columns for any metadata provided via `...`.
+  }
 }
 \description{
-Tracks the time spent on different steps of your code,
-storing only timestamps without durations.
+The `timer` function allows you to append timestamps to a data.table,
+and include additional metadata provided as arguments.
+Then calculate time differences between timestamps.
 }
 \examples{
-# Initialize a new timer table
-tt_tests <- timer(start = TRUE)
+library(data.table)
+# Initialize an empty data.table
+timer_table <- data.table()
 
-# Add a new row with the current timestamp
-tt_tests <- timer(timer_table = tt_tests)
+# Add the first timestamp
+timer_table <- timer(timer_table, description = "Start")
 
-# Add a new row with custom specifications
-tt_tests <- timer(timer_table = tt_tests, stepName = "step x", anyVariableName = "any value")
+# Add another timestamp and compute time differences
+timer_table <- timer(timer_table, end = TRUE, description = "Event 2")
 
 }

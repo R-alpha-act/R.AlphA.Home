@@ -6,6 +6,7 @@
 #' @param debug_getTbl Logical. If `TRUE`, returns the `docContent` table with
 #' tags for debugging purposes.
 #' @importFrom tibble rowid_to_column
+#' @importFrom magrittr add
 #' @importFrom stringr str_detect str_remove_all str_extract str_remove str_count
 #' @import rstudioapi
 #' @return If `debug_getTbl = TRUE`, a table (`docContent`) with tags.
@@ -17,8 +18,8 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 	manualrun <- T
 	manualrun <- F
 	if (manualrun) {
-		warning("! parameters manually defined inside function 'foldAllBr' for tests. Do not use results !")
-		R.AlphA.Base::getLibsR.AlphA()
+		warning("! parameters manually defined inside function 'foldAllBr' for tests. ",
+		"Do not use results !")
 		time = T
 		debug_getTbl = T
 	} # manualrun - for debug purposes
@@ -37,8 +38,6 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 			# return(getPos())
 		} # foldBrLine
 
-
-		# R.AlphA.Base::getLibsR.AlphA()
 		# getPos : get pos =========================================================
 		getPos <- function(){
 			getSourceEditorContext() %>%
