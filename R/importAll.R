@@ -11,6 +11,19 @@
 #' @param fileList A character vector of file names to import
 #' (used instead of `pattern`).
 #' @return A data frame containing the concatenated table.
+#' @examples
+#' # Directory containing test files
+#' test_path <- tempdir()
+#'
+#' # Create test files
+#' write.csv(data.frame(a = 1:3, b = 4:6), file.path(test_path, "file1.csv"))
+#' write.csv(data.frame(a = 7:9, b = 10:12), file.path(test_path, "file2.csv"))
+#'
+#' # Import and concatenate the files
+#' result <- importAll(path = test_path)
+#'
+#' # Print the resulting data frame
+#' print(result)
 #' @importFrom openxlsx read.xlsx
 #' @export
 #
