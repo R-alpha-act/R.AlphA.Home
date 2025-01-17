@@ -13,6 +13,16 @@
 #'   \item \code{onlyY}: Column names found only in the second table (\code{y}).
 #'   \item \code{exclusive}: Column names found in only one of the two tables.
 #' }
+#' @examples
+#' # Example tables
+#' table1 <- data.frame(a = 1:5, b = 6:10, c_test = 11:15)
+#' table2 <- data.frame(b = 16:20, c_test = 21:25, d = 26:30)
+#'
+#' # Compare tables
+#' comparison <- compareVars(table1, table2, pattern = "c_")
+#'
+#' # Print the comparison result
+#' print(comparison)
 #' @export
 #
 compareVars <- function(x, y, pattern = ""){

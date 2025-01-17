@@ -28,3 +28,14 @@ A list containing:
 Compares column names in two tables based on a given pattern.
 Provides information about which columns are present in which tables.
 }
+\examples{
+# Example tables
+table1 <- data.frame(a = 1:5, b = 6:10, c_test = 11:15)
+table2 <- data.frame(b = 16:20, c_test = 21:25, d = 26:30)
+
+# Compare tables
+comparison <- compareVars(table1, table2, pattern = "c_")
+
+# Print the comparison result
+print(comparison)
+}
