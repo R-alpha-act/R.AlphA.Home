@@ -4,13 +4,13 @@
 #' @param nCols An integer specifying the total number of columns desired.
 #' @param colPrefix A string used as the prefix for the names of dummy columns.
 #' @return A data frame with the specified total number of columns.
+#' @examples
+#' table <- data.frame(a = 1:5, b = letters[1:5])
+#' extraTable <- cols_pad(table, nCols = 6, colPrefix = "extra_")
+#' print(extraTable)
 #' @export
 #'
 cols_pad <- function(data, nCols = 100, colPrefix = "x_"){
-	# nCols <- 100
-	# data <- AVRecap
-	# colPrefix <- "x_"
-
 	nColsData <- ncol(data)
 	colsToAdd <- nCols - nColsData
 	if(colsToAdd < 0){

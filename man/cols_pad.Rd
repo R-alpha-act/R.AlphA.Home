@@ -19,3 +19,8 @@ A data frame with the specified total number of columns.
 \description{
 Adds dummy columns to reach the number specified by the user.
 }
+\examples{
+table <- data.frame(a = 1:5, b = letters[1:5])
+extraTable <- cols_pad(table, nCols = 6, colPrefix = "extra_")
+print(extraTable)
+}
