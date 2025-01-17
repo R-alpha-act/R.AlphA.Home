@@ -10,37 +10,39 @@ timer(timer_table = data.table(), end = FALSE, ...)
 \item{timer_table}{A data.table containing the timer log to continue from.
 Defaults to an empty `data.table().}
 
-\item{end}{A logical. If `TRUE`, the time differences between timestamps
-are calculated and the table printed.}
+\item{end}{A logical, inidicating the end of the timer, defaulted to FALSE.
+'timer()' calls must be placed at the beginning of each part :
+therefore, this step is necessary.
+the time differences between timeStamps are calculated only at the end.}
 
 \item{...}{Additional specifications. Use named arguments to define columns
 and values for rows.}
 }
 \value{
-A `data.table` containing the original data, plus one new timestamp,
+A `data.table` containing the original data, plus one new timeStamp,
 and optionally computed time differences, the printed table includes:
   \itemize{
-    \item `timestamp`: The current timestamp (`POSIXct`).
-    \item `datetime`: The numeric representation of the timestamp.
+    \item `timeStamp`: The current timeStamp (`POSIXct`).
+    \item `datetime`: The numeric representation of the timeStamp.
     \item `time_diff`: The time difference in seconds between consecutive rows as a `difftime` object.
-    \item `time_diff_seconds`: The formatted time difference in seconds with milliseconds as a character string.
+    \item `time_diff_secs`: The formatted time difference in seconds with milliseconds as a character string.
     \item Additional columns for any metadata provided via `...`.
   }
 }
 \description{
-The `timer` function allows you to append timestamps to a data.table,
+The `timer` function allows you to append timeStamps to a data.table,
 and include additional metadata provided as arguments.
-Then calculate time differences between timestamps.
+Then calculate time differences between timeStamps.
 }
 \examples{
 library(data.table)
 # Initialize an empty data.table
 timer_table <- data.table()
 
-# Add the first timestamp
+# Add the first timeStamp
 timer_table <- timer(timer_table, description = "Start")
 
-# Add another timestamp and compute time differences
+# Add another timeStamp and compute time differences
 timer_table <- timer(timer_table, end = TRUE, description = "Event 2")
 
 }
