@@ -23,10 +23,10 @@ A `data.table` containing the original data, plus one new timeStamp,
 and optionally computed time differences, the printed table includes:
   \itemize{
     \item `timeStamp`: The current timeStamp (`POSIXct`).
-    \item `datetime`: The numeric representation of the timeStamp.
-    \item `time_diff`: The time difference in seconds between consecutive rows as a `difftime` object.
-    \item `time_diff_secs`: The formatted time difference in seconds with milliseconds as a character string.
-    \item Additional columns for any metadata provided via `...`.
+    \item `timeStamp_num`: timeStamp converted to numeric, useful for intermediary calculations.
+    \item `dt_num`: The time difference in seconds between consecutive rows as a numeric value.
+    \item `dt_text`: The formatted time difference in seconds with milliseconds as a character string.
+    \item Additional columns for any information provided by the user via `...`. It allows documentation about the current step running, substeps, which version is being tested, ...
   }
 }
 \description{
