@@ -15,15 +15,20 @@
 #
 foldAllBr <- function(time = F, debug_getTbl = F){
 
-	manualrun <- T
-	manualrun <- F
-	if (manualrun) {
-		warning("! parameters manually defined inside function 'foldAllBr' for tests. ",
-		"Do not use results !")
-		time = T
-		debug_getTbl = T
-	} # manualrun - for debug purposes
-	fnTmr <- timer(start = T, endOf = "start")
+	fnTmr <- timer(step = "start")
+	fnTmr <- timer(fnTmr, step = "init, funs")
+	{
+		# R.AlphA_manualRun_start
+		manualrun <- T
+		manualrun <- F
+		if (manualrun) {
+			warning("! parameters manually defined inside function 'foldAllBr' for tests. Do not use results !")
+			time = T
+			debug_getTbl = 0
+			R.AlphA.Dev::getLibsR.AlphA()
+		} # manualrun - for debug purposes
+	} # R.AlphA_manualRun
+
 	colFact <- 1E-2
 	{
 		# foldBrLine : given a line, fold the bracket ending it ====================
@@ -100,6 +105,7 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 
 	} # local funs
 	{
+		fnTmr <- timer(fnTmr, step = "read Content")
 		retainPos <- getPos()
 		# retainPos <- PN_DR(1.1) # for tests
 		# setCursorPosition(1.1 %>% PN_DP)
@@ -109,13 +115,12 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 		docContent <- getSourceEditorContext()$contents %>%
 			data.frame(content = .) %>%
 			tibble::rowid_to_column()
-		fnTmr <- timer(fnTmr, endOf = "read Content")
 	} # read content, get current position
 
-	fnTmr <- timer(fnTmr, endOf = "init, funs")
 	browseOption <- getOption("FAB_browse")
 	if(!is.null(browseOption)) if(browseOption == 1) browser()
 	{
+		fnTmr <- timer(fnTmr, step = "tags")
 		opName <- "+"
 		clName <- "-"
 		# opBrPatt <- "(?<!\t.{0,80})\\{$"
@@ -148,13 +153,13 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 				)
 			) %>%
 			identity
-		fnTmr <- timer(fnTmr, endOf = "tags")
 
+		fnTmr <- timer(fnTmr, step = "countSwitches")
 		docContent_incs <- docContent_tags %>%
 			countSwitches("brTag", opName, clName) %>%
 			identity
-		fnTmr <- timer(fnTmr, endOf = "countSwitches")
 
+		fnTmr <- timer(fnTmr, step = "ret : other treatments")
 		docContentRet <- docContent_incs %>%
 			# filter(anyBr == 1) %>%
 			# mutate(brPairNb = countSwitches(brTag, opName, clName)) %>%
@@ -183,7 +188,11 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 		if(debug_getTbl) {
 			linesBefore <- 3 ; linesAfter <- 30
 			firstPb <- docContentRet %>% filter(checkCat < 0) %>% slice_min(rowid)
-			rowsRange <- (firstPb$rowid - linesBefore):(firstPb$rowid + linesAfter)
+			if(nrow(firstPb)==0) {
+				rowsRange <- 0
+			} else {
+				rowsRange <- (firstPb$rowid - linesBefore):(firstPb$rowid + linesAfter)
+			} #
 			docContentRet %>%
 				slice(rowsRange) %>%
 				relocate(rowid, checkCat, content) %>%
@@ -195,11 +204,11 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 					   catLvl, nbTabs, checkCat)
 			return(interm_tbl_debug) # only for debugging
 		} #
-		fnTmr <- timer(fnTmr, endOf = "ret : other treatments")
 	} # back to docContent normal
 
 	{
 
+		fnTmr <- timer(fnTmr, step = "docCont norm")
 		curLine <- docContentRet %>% filter(isCur == "=cur=")
 		curPosSec <- curLine$conCatLim # init before check
 		curPosCat <- curLine$catLvl
@@ -242,16 +251,16 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 			arrange(rowid) %>%
 			identity
 
-		fnTmr <- timer(fnTmr, endOf = "docCont norm")
 
 	} # back to docContent normal
 	{
+		fnTmr <- timer(fnTmr, step = "check if 1 big")
 		onlyOneSec <- F
 		docContentRet %>% count(ret1, ret2, ret3)
 		if(max(docContentRet$ret1) == 1) onlyOneSec <- TRUE
-		fnTmr <- timer(fnTmr, endOf = "check if 1 big")
 	} # check if only 1 big section
 	{
+		fnTmr <- timer(fnTmr, step = "sectionStart line and PN")
 		sectionStartLine <- curSection %>%
 			# filter(conCatLim == curPosSec) %>%
 			slice_min(rowid)
@@ -260,18 +269,18 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 			pull(opBrPN) %>%
 			magrittr::add(colFact)
 		if(skipIf) sectionStart_PN <- (1 + colFact) %>% round(8)
-		fnTmr <- timer(fnTmr, endOf = "sectionStart line and PN")
 
 	} # secStart line and PN
 
 	waitOption <- getOption("FAB_wait") # pour decomposer ce que fait la fct
 	if(is.null(waitOption)) waitOption = 0
 
+	fnTmr <- timer(fnTmr, step = "fold")
 	subSectionsStarts %>%
 		pull(rowid) %>%
 		lapply(foldBrLine, waitTime = waitOption) # fold lines
-	fnTmr <- timer(fnTmr, endOf = "fold")
 
+	fnTmr <- timer(fnTmr, step = "put cursor back - end")
 	sectionStart_DP <- sectionStart_PN %>% PN_DP
 	backToInit <- (onlyOneSec & curPosSec == "0_1")|curPosSec == 0
 	{
@@ -286,17 +295,17 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 	} else {
 		setCursorPosition(sectionStart_DP)
 	} #
-	fnTmr <- timer(fnTmr, endOf = "put cursor back - end")
 
+	fnTmr <- fnTmr %>% timer(end = T)
 	if(time){
 		# popSize <- nrow(old_pop)
 		# timePerM <- sum(fnTmr$dt_seconds/popSize*1E6) %>% round(2)
 		timerPlot <- fnTmr %>%
 			arrange(-heure_seconds) %>%
-			mutate(endOf = factor(endOf, levels = endOf)) %>%
+			mutate(step = factor(step, levels = step)) %>%
 			# mutate(secsPerMLines = dt_seconds / popSize * 1E6) %>%
 			# mutate(dt100 = (dt_seconds * 100) %>% floor) %>%
-			ggplot(aes(endOf, dt_seconds)) +
+			ggplot(aes(step, dt_seconds)) +
 			geom_col() +
 			theme(axis.text = element_text(size = 12)) +
 			geom_text(aes(
