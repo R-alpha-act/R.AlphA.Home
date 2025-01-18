@@ -80,7 +80,7 @@ timer <- function(timer_table = data.table(), end = FALSE, ...) {
 	} # Add a new line of timeStamp to the timer table
 	if (end == TRUE && nrow(timer_table) > 1) {
 		timer_table[ , timeStamp_num   := as.numeric(timeStamp)]
-		timer_table[ , dt_num          := c(NA, diff(timeStamp_num))]
+		timer_table[ , dt_num          := c(diff(timeStamp_num), 0)]
 		timer_table[ , dt_text         := formatTime(dt_num)]
 	} # Compute time differences if `end = TRUE`
 	return(timer_table)
