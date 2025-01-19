@@ -20,3 +20,10 @@ The modified data.table, updated by reference.
 Adds missing columns to a data.table and initializes them
 with a default value.
 }
+\examples{
+library(data.table)
+table <- data.table(a = 1:3)
+initializeCols(table, cols = c("b", "c", "d"), value = NA)
+# Columns 'b', 'c', and 'd' will be added with NA as the default value
+print(table)
+}
