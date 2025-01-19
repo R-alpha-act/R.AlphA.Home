@@ -37,6 +37,8 @@ left_join_checks <- function(
 		warning("! parameters manually defined inside function 'left_join_checks'",
 				"for tests. Do not use results !")
 		workRRoot <- root() %>% str_extract(".*WorkR")
+		R.AlphA.Dev::getLibsR.AlphA()
+		library(R.AlphA.Life)
 		tbls <- workRRoot %>%
 			file.path("pop stats", "ex_working_folder", "INPUTS", "ret") %>%
 			list.files(pattern = "IPTables.rds", full.names = T) %>%
@@ -52,45 +54,48 @@ left_join_checks <- function(
 		req_preserved_x = 1
 		req_yNotFound = 0
 		time = T
-	}
-	fnTmr <- timer(start = T, endOf = "Start --")
+		showNotFound = T
+		behavior = "error"
+	} # manualrun
+	fnTmr <- timer(step = "Start --")
 	# a voir plus tard - verif que pas de vars deja avec ljc_
 	# R.AlphA::compareVars(x, y, pattern = "ljc_")
 
 	# preparation pour merge
+	fnTmr <- timer(fnTmr, step = "indexes - inX, inY")
 	xMerge <- x %>% rowid_to_column(var = "ljc_xID") %>% mutate(ljc_inX = 1)
 	yMerge <- y %>% rowid_to_column(var = "ljc_yID") %>% mutate(ljc_inY = 1)
-	fnTmr <- timer(fnTmr, endOf = "indexes - inX, inY")
 
 	# merge
 	joinXY <- left_join(
 		xMerge
 		, yMerge
-		, ...
+		# , ...
 	) %>% replace_na(list(ljc_inX = 0, ljc_inY = 0))
-	fnTmr <- timer(fnTmr, endOf = "join itself")
+	fnTmr <- timer(fnTmr, step = "join itself")
 
-	# check
+	# checks
+	fnTmr <- timer(fnTmr, step = "only calling")
 	xMerge;yMerge;joinXY
-	fnTmr <- timer(fnTmr, endOf = "only calling")
 
+	fnTmr <- timer(fnTmr, step = "chk_preserved_x")
 	chk_preserved_x <- all.equal(joinXY$ljc_xID, xMerge$ljc_xID) %>% isTRUE
-	fnTmr <- timer(fnTmr, endOf = "chk_preserved_x")
+	fnTmr <- timer(fnTmr, step = "chk_dups_x")
 	chk_dups_x <- duplicated(joinXY$ljc_xID) %>% sum
-	fnTmr <- timer(fnTmr, endOf = "chk_dups_x")
+	fnTmr <- timer(fnTmr, step = "chk_preserved_y")
 	chk_preserved_y <- all.equal(joinXY$ljc_yID, yMerge$ljc_yID) %>% isTRUE
-	fnTmr <- timer(fnTmr, endOf = "chk_preserved_y")
+	fnTmr <- timer(fnTmr, step = "chk_dups_y")
 	chk_dups_y <- duplicated(joinXY$ljc_yID) %>% sum
-	fnTmr <- timer(fnTmr, endOf = "chk_dups_y")
+	fnTmr <- timer(fnTmr, step = "joinMatch_prep")
 	joinMatch_prep <- joinXY %>% count(ljc_inX, ljc_inY)
-	fnTmr <- timer(fnTmr, endOf = "joinMatch_prep")
 	joinMatch <- expand.grid(ljc_inX = 0:1, ljc_inY = 0:1) %>%
 		left_join(joinMatch_prep) %>%
 		suppressMessages %>%
 		replace_na(list(n=0))
 	chk_yNotFound <- joinMatch %>% filter(!ljc_inY) %>% pull(n) %>% sum
 	chk_xAllMatch <- chk_yNotFound == 0
-	fnTmr <- timer(fnTmr, endOf = "chk_*")
+	fnTmr <- timer(fnTmr, step = "chk_* done")
+	fnTmr <- timer(fnTmr, step = "more calls")
 
 	chk_preserved_x
 	chk_preserved_y
@@ -98,8 +103,8 @@ left_join_checks <- function(
 	chk_dups_y
 	chk_xAllMatch
 	chk_yNotFound
-	fnTmr <- timer(fnTmr, endOf = "more calls")
 
+	fnTmr <- timer(fnTmr, step = "counting problems")
 	valuesTable <- mget(ls(pattern = "^chk_")) %>%
 		unlist %>%
 		data.frame(value = .) %>%
@@ -126,9 +131,7 @@ left_join_checks <- function(
 		commonMsg <- paste0(nbPbs, " problem(s) during merge",
 							"\nsee report for details")
 
-		if (showNotFound & !chk_xAllMatch) {
-			print(joinXY %>% filter(!ljc_inY))
-		}
+		if (showNotFound & !chk_xAllMatch) print(joinXY %>% filter(!ljc_inY))
 
 		if (behavior == "warning") {
 			print(checksTable)
@@ -136,12 +139,11 @@ left_join_checks <- function(
 		} else if (behavior == "error") {
 			print(checksTable)
 			stop(commonMsg)
-		}
-	}
-	fnTmr <- timer(fnTmr, endOf = "counting problems")
+		} # warning or error
+	} # react to problems
 
+	fnTmr <- timer(fnTmr, step = "select")
 	joinXY_select <- joinXY %>% select(-starts_with("ljc_"))
-	fnTmr <- timer(fnTmr, endOf = "select")
 	# timer plots
 	if(time){
 		xSize <- nrow(x)
@@ -168,7 +170,7 @@ left_join_checks <- function(
 			)
 		lum_0_100(60)
 		print(timerPlot)
-	}
+	} # display timer if requested
 
 	# return joined table but the intermediary columns
 	return(joinXY_select)
