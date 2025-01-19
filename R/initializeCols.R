@@ -5,6 +5,12 @@
 #' @param cols Character vector of column names to check and initialize.
 #' @param value Default value to assign to missing columns.
 #' @return The modified data.table, updated by reference.
+#' @examples
+#' library(data.table)
+#' table <- data.table(a = 1:3)
+#' initializeCols(table, cols = c("b", "c", "d"), value = NA)
+#' # Columns 'b', 'c', and 'd' will be added with NA as the default value
+#' print(table)
 #' @export
 #'
 initializeCols <- function(data, cols, value){
