@@ -5,6 +5,7 @@
 #' @param pattern An optional regular expression pattern to filter column names.
 #' @return A data.table summarizing the number of unique values for each column
 #' in each table.
+#' @examples
 #' @export
 #'
 listVarsUniques <- function(..., pattern = ""){
