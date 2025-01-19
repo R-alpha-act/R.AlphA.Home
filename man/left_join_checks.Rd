@@ -43,3 +43,26 @@ A data.table containing the joined table.
 Performs a left join and verifies that no unexpected duplicates
 or mismatches occur.
 }
+\examples{
+library(data.table)
+library(dplyr)
+
+# Example 1: Simple left join with all matches
+table_left <- data.table(id = 1:3, value_left = c("A", "B", "C"))
+table_right <- data.table(id = 1:3, value_right = c("X", "Y", "Z"))
+result <- left_join_checks(table_left, table_right, by = "id", req_preserved_x = TRUE)
+print(result) # Ensures all rows in table_left are preserved
+
+# Example 2: Left join with missing matches
+table_left <- data.table(id = 1:5, value_left = c("A", "B", "C", "D", "E"))
+table_right <- data.table(id = c(1, 3, 5), value_right = c("X", "Y", "Z"))
+result <- left_join_checks(
+  table_left,
+  table_right,
+  by = "id",
+  req_preserved_x = TRUE,
+  showNotFound = TRUE,
+  behavior = "warning"
+)
+print(result) # Rows from table_left with no matches in table_right are shown
+}
