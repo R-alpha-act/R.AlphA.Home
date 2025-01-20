@@ -4,6 +4,12 @@
 #' @param periodObj A `period` object from the `lubridate` package to format.
 #' @return A character string representing the period in a human-readable format.
 #' @importFrom lubridate second
+#' @examples
+#' library(lubridate)
+#'
+#' periodObj <- days(2) + hours(3) + minutes(15) + seconds(30)
+#' print(periodObj)
+#' readable_period(periodObj)
 #' @export
 #'
 readable_period <- function(periodObj){

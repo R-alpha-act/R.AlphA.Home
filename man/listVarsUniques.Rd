@@ -19,3 +19,11 @@ in each table.
 Counts the unique values of columns across one or more
 data.tables, optionally filtered by a pattern.
 }
+\examples{
+library(data.table)
+
+table1 <- data.table(a = c(1, 2, 3, 4, 5))
+table2 <- data.table(b = c(2, 2, 3, 3, 3))
+tablesList <- list(table1=table1, table2=table2)
+listVarsUniques(tablesList, pattern = "^a")
+}
