@@ -5,7 +5,13 @@
 #' @param pattern An optional regular expression pattern to filter column names.
 #' @return A data.table summarizing the number of unique values for each column
 #' in each table.
-#' @examples ceci est un test
+#' @examples
+#' library(data.table)
+#'
+#' table1 <- data.table(a = c(1, 2, 3, 4, 5))
+#' table2 <- data.table(b = c(2, 2, 3, 3, 3))
+#' tablesList <- list(table1=table1, table2=table2)
+#' listVarsUniques(tablesList, pattern = "^a")
 #' @export
 #'
 listVarsUniques <- function(..., pattern = ""){
