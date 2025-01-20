@@ -21,3 +21,10 @@ A modified hex color in hexadecimal format.
 Modifies the brightness of a color by multiplying its RGB
 components by a specified factor.
 }
+\examples{
+# Example 1: Lightening a color
+ret_lum("#FF5733", 1.5)  # Returns a lighter version of the input color
+
+# Example 2: Darkening a color
+ret_lum("#FF5733", 0.7)  # Returns a darker version of the input color
+}
