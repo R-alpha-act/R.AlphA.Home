@@ -88,8 +88,9 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c(
 	,'tmrDateTime'
 	,'tmrDtPeriod'
 	,'passBr'
-	,'time_diff'
-	,'time_diff_seconds'
-	,'timestamp'
-	,'datetime'
+	,'dt_num'
+	,'dt_text'
+	,'timeStamp'
+	,'timeStamp_num'
+	,'step'
 ))

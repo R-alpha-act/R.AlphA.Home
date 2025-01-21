@@ -18,3 +18,13 @@ None. The function prints the formatted rows to the console.
 Displays the first rows of a table with vertically aligned
 values, offering a clearer view than `str()`.
 }
+\examples{
+# Create a data frame
+table <- data.frame(
+  Value = (1:10)**2,
+  Category = ifelse(1:10 \%\% 2 == 0, "Even", "Odd")
+  )
+slicetr(table)
+
+slicetr(table, n = 5)
+}
