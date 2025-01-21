@@ -40,9 +40,12 @@ library(data.table)
 timer_table <- data.table()
 
 # Add the first timeStamp
-timer_table <- timer(timer_table, description = "Start")
+timer_table <- timer(timer_table, description = "calculation")
+
+# small calculation
+for (i in 1:1000) {sqrt(2)}
 
 # Add another timeStamp and compute time differences
-timer_table <- timer(timer_table, end = TRUE, description = "Event 2")
-
+timer_table <- timer(timer_table, end = TRUE, description = "End")
+print(timer_table)
 }
