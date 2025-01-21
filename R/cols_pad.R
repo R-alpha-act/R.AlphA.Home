@@ -8,6 +8,7 @@
 #' table <- data.frame(a = 1:5, b = letters[1:5])
 #' extraTable <- cols_pad(table, nCols = 6, colPrefix = "extra_")
 #' print(extraTable)
+#' @importFrom stringr str_replace
 #' @export
 #'
 cols_pad <- function(data, nCols = 100, colPrefix = "x_"){

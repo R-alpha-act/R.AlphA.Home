@@ -22,14 +22,17 @@
 #' @examples
 #' library(data.table)
 #' # Initialize an empty data.table
-#' timer_table <- data.table()
+#' tmr <- data.table()
 #'
 #' # Add the first timeStamp
-#' timer_table <- timer(timer_table, description = "Start")
+#' tmr <- timer(tmr, description = "calculation")
+#'
+#' # small calculation
+#' for (i in 1:1000) {sqrt(2)}
 #'
 #' # Add another timeStamp and compute time differences
-#' timer_table <- timer(timer_table, end = TRUE, description = "Event 2")
-#'
+#' tmr <- timer(tmr, end = TRUE, description = "End")
+#' print(tmr)
 #' @rawNamespace import(data.table, except =  c(month, hour, quarter, week, year, wday, second, minute, mday, yday, isoweek))
 #' @export
 #'
