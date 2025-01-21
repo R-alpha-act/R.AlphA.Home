@@ -21,9 +21,9 @@ values, offering a clearer view than `str()`.
 \examples{
 # Create a data frame
 table <- data.frame(
-  Value = sapply(1:10, function(x) x^2),
-  Category = sapply(1:10, function(x) ifelse(x \%\% 2 == 0, "Even", "Odd"))
-)
+  Value = (1:10)**2,
+  Category = ifelse(1:10 \%\% 2 == 0, "Even", "Odd")
+  )
 slicetr(table)
 
 slicetr(table, n = 5)
