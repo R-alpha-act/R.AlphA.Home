@@ -29,7 +29,7 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 		} # manualrun - for debug purposes
 	} # R.AlphA_manualRun
 
-	colFact <- 1E-2
+	colFact <- 1E-3
 	{
 		# foldBrLine : given a line, fold the bracket ending it ====================
 		foldBrLine <- function(opLine, waitTime = 0){
@@ -166,7 +166,7 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 			# mutate(expected = ceiling(1:n() / 2)) %>%
 			as_tibble %>%
 			select(-matches("^(brut|inc|check|tst[0-9])|find(Stt|End)|stepstr")) %>%
-			mutate(conCat = paste("0", ret1, ret2, ret3, sep = "_")) %>%
+			mutate(conCat = paste("0", lvl_1, lvl_2, lvl_3, sep = "_")) %>%
 			mutate(conCatLim = conCat %>% str_remove_all("_0") %>% paste0("_")) %>%
 			mutate(isCur = ifelse(retainStartRow == rowid, "=cur=", "_")) %>%
 			# mutate(isCur = isCur * 100) %>%
@@ -256,8 +256,8 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 	{
 		fnTmr <- timer(fnTmr, step = "check if 1 big")
 		onlyOneSec <- F
-		docContentRet %>% count(ret1, ret2, ret3)
-		if(max(docContentRet$ret1) == 1) onlyOneSec <- TRUE
+		docContentRet %>% count(lvl_1, lvl_2, lvl_3)
+		if(max(docContentRet$lvl_1) == 1) onlyOneSec <- TRUE
 	} # check if only 1 big section
 	{
 		fnTmr <- timer(fnTmr, step = "sectionStart line and PN")
