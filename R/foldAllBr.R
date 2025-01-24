@@ -187,17 +187,6 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 		# debug only : check for problems
 		if(debug_getTbl) {
 			linesBefore <- 3 ; linesAfter <- 30
-			firstPb <- docContentRet %>% filter(checkCat < 0) %>% slice_min(rowid)
-			if(nrow(firstPb)==0) {
-				rowsRange <- 0
-			} else {
-				rowsRange <- (firstPb$rowid - linesBefore):(firstPb$rowid + linesAfter)
-			} #
-			docContentRet %>%
-				slice(rowsRange) %>%
-				relocate(rowid, checkCat, content) %>%
-				select(-opBrPN) %>%
-				print(n = 50)
 			interm_tbl_debug <- docContentRet %>%
 				select(rowid, content, anyBr, brTag,
 					   conCatLim, isCur, isSecStart, opBrPN,

@@ -1,12 +1,15 @@
-#' @title Save File in an "Old" Directory
+#' @title Save File in an "Old" Directory, prefixing it with current date
 #' @description Saves a file with the current date in its name in an "old"
 #' directory located in the same directory as the original file.
+#'
 #' @param sav_filepath Path of the file to save.
 #' Defaults to the current source file.
 #' @param sav_fileNote An optional custom note to append to the file name
 #' for the save.
 #' @param overwrite Logical. Should an existing save with the same name
 #' be overwritten? Default is `FALSE`.
+#'
+#' @return the output value of the function used to copy file
 #' @import ggplot2
 #' @importFrom R.utils copyDirectory
 #' @importFrom tools file_path_sans_ext file_ext

@@ -1,23 +1,30 @@
 #' @title Left Join with Validation Checks
-#' @description Performs a left join and verifies that no unexpected duplicates
-#' or mismatches occur.
+#' @description a custom usage of left_join, with more detailed checks.
+#' Performs a left join and verifies that no unexpected duplicates or mismatches
+#'  occur. In cas of unexpected results, gives details about what caused the
+#'  problem.
+#'
 #' @param x A data.table representing the left table.
 #' @param y A data.table representing the right table.
 #' @param ... Additional arguments passed to `dplyr::left_join`.
 #' @param req_preserved_x Logical. Ensure that the number of rows in `x`
 #' remains unchanged after the join. Default: TRUE.
-#' @param req_xAllMatch Logical. Ensure that all rows in `x` find a match in `y`. Default: FALSE.
+#' @param req_xAllMatch Logical. Ensure that all rows in `x` find a match in `y`.
+#' Default: FALSE.
 #' @param behavior Character. Specifies behavior if validation fails.
 #' Options: `"warning"` or `"error"`. (default: `"warning"`)
 #' @param showNotFound Logical. Show rows from `x` that did not match with `y`.
 #' Default: FALSE.
-#' @param time Logical. Internal argument used only for testing purposes during
-#' manual runs.
+#' @param time Logical. Internal argument used only for testing purposes, timing
+#' the function steps
+#'
 #' @return A data.table containing the joined table.
 #' @importFrom tibble rowid_to_column rownames_to_column
 #' @importFrom tidyr replace_na
 #' @importFrom stringr str_remove
 #' @rawNamespace import(dplyr, except = c(first, last, between))
+#' @export
+#'
 #' @examples
 #' library(data.table)
 #' library(dplyr)
@@ -40,7 +47,6 @@
 #'   behavior = "warning"
 #' )
 #' print(result) # Rows from table_left with no matches in table_right are shown
-#' @export
 #'
 left_join_checks <- function(
 		x
@@ -52,12 +58,16 @@ left_join_checks <- function(
 		, showNotFound = F
 		, time = F
 ){
+
+
+
+
+	# R.AlphA_manualRun_start
 	manualrun <- T
 	manualrun <- F
 	if (manualrun) {
+		warning("function 'left_join_checks' in manual mode: do not use results.")
 		rm(list = ls())
-		warning("! parameters manually defined inside function 'left_join_checks'",
-				"for tests. Do not use results !")
 		workRRoot <- root() %>% str_extract(".*WorkR")
 		R.AlphA.Dev::getLibsR.AlphA()
 		library(R.AlphA.Life)
@@ -78,7 +88,7 @@ left_join_checks <- function(
 		time = T
 		showNotFound = T
 		behavior = "error"
-	} # manualrun
+	} # R.AlphA_manualRun
 	fnTmr <- timer(step = "Start --")
 	# a voir plus tard - verif que pas de vars deja avec ljc_
 	# R.AlphA::compareVars(x, y, pattern = "ljc_")
@@ -92,7 +102,7 @@ left_join_checks <- function(
 	joinXY <- left_join(
 		xMerge
 		, yMerge
-		# , ...
+		, ...
 	) %>% replace_na(list(ljc_inX = 0, ljc_inY = 0))
 	fnTmr <- timer(fnTmr, step = "join itself")
 
