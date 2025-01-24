@@ -1,16 +1,24 @@
-#' @title Function to Import and Concatenate Multiple Files
-#' @description Imports all selected files, concatenates them into a single
+#' @title Function to Import and Concatenate Multiple data files
+#' @description Imports multiple files into a list, concatenates them into a single
 #' table, and adds an `fName` variable.
+#'
+#' The files can be selected either by giving a file list (character vector), or
+#' by specifying a pattern.
+#'
 #' @param path Path to the directory, passed to `list.files`.
 #' @param pattern Pattern to match file names, passed to `list.files`.
 #' @param ignore.case Logical. If `TRUE`, ignores case when matching file names.
-#' Passed to `list.files`.
+#' Passed to `list.files`. Default behavior is case-sensitive (`FALSE`)
 #' @param importFunction A custom function for importing files. If not set, the
-#' function automatically selects an import method based on the file extension.
+#' function selects an import method based on the file extension.
 #' @param fill Logical. Passed to `rbind` to allow filling missing columns.
 #' @param fileList A character vector of file names to import
 #' (used instead of `pattern`).
-#' @return A data frame containing the concatenated table.
+#'
+#' @return A data frame containing the concatenated table with the fName column
+#' @importFrom openxlsx read.xlsx
+#' @export
+#'
 #' @examples
 #' # Directory containing test files
 #' test_path <- tempdir()
@@ -24,8 +32,6 @@
 #'
 #' # Print the resulting data frame
 #' print(result)
-#' @importFrom openxlsx read.xlsx
-#' @export
 #
 importAll <- function(
 	path = "."
@@ -35,11 +41,12 @@ importAll <- function(
 	, fill = F
 	, fileList = NULL
 ){
-	manualrun <- T
+
+	# R.AlphA_manualRun_start
 	manualrun <- F
+	manualrun <- T
 	if (manualrun) {
-		message("! parameters manually defined inside function for tests. ",
-				"Do not use results !")
+		warning("function 'importAll' in manual mode: do not use results.")
 		root <- dirname(rstudioapi::getSourceEditorContext()$path)
 		workr_root <- sub("WorkR.*", "WorkR", root)
 		setwd(root)
@@ -64,7 +71,8 @@ importAll <- function(
 			, "/Users/Raphael/Google Drive/WorkR/Datacamp/Competitions/Abalone/Results/datas/compareModels_seed_99.rds"
 			, "/Users/Raphael/Google Drive/WorkR/Datacamp/Competitions/Abalone/Results/datas/compareModels_seed_991.rds"
 		)
-	}
+	} # R.AlphA_manualRun
+
 
 	if (missing(fileList)) {
 		# with a pattern
@@ -105,7 +113,6 @@ importAll <- function(
 	} else {
 		if(manualrun) print ("importFunction provided")
 		testnames <- names(filePaths)
-		# filePaths[, .(fun = importFunction), by = .(locPath, fulPath)]
 		filePaths[, cst := T]
 		importFunsList <- do.call(rbind,list(NULL
 			, data.table(cst = T, fun = importFunction)

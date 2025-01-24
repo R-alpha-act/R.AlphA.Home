@@ -2,14 +2,17 @@
 #' @description The `timer` function allows you to append timeStamps to a data.table,
 #' and include additional metadata provided as arguments.
 #' Then calculate time differences between timeStamps.
+#'
 #' @param timer_table A data.table containing the timer log to continue from.
 #' Defaults to an empty `data.table().
 #' @param end A logical, inidicating the end of the timer, defaulted to FALSE.
 #' 'timer()' calls must be placed at the beginning of each part :
-#' therefore, this step is necessary.
-#' the time differences between timeStamps are calculated only at the end.
-#' @param ... Additional specifications. Use named arguments to define columns
-#' and values for rows.
+#' therefore, this 'closing' step is necessary to compute time for the last part.
+#' Time differences between timeStamps are calculated only when closing the timer.
+#' @param ... Additional specifications. Use named arguments to provide documentation
+#' on the code parts you are timing : naming the current step, the version of
+#' the code you are trying, ...
+#'
 #' @return A `data.table` containing the original data, plus one new timeStamp,
 #' and optionally computed time differences, the printed table includes:
 #'   \itemize{
@@ -19,43 +22,48 @@
 #'     \item `dt_text`: The formatted time difference in seconds with milliseconds as a character string.
 #'     \item Additional columns for any information provided by the user via `...`. It allows documentation about the current step running, substeps, which version is being tested, ...
 #'   }
-#' @examples
-#' library(data.table)
-#' # Initialize an empty data.table
-#' tmr <- data.table()
-#'
-#' # Add the first timeStamp
-#' tmr <- timer(tmr, description = "calculation")
-#'
-#' # small calculation
-#' for (i in 1:1000) {sqrt(2)}
-#'
-#' # Add another timeStamp and compute time differences
-#' tmr <- timer(tmr, end = TRUE, description = "End")
-#' print(tmr)
 #' @rawNamespace import(data.table, except =  c(month, hour, quarter, week, year, wday, second, minute, mday, yday, isoweek))
 #' @export
 #'
+#' @examples
+#' # compare code speed between using x**2 or x^2
+#' library(data.table)
+#' tmr <- data.table()                                 # Initialize timer
+#' tmr <- timer(tmr, t_step = 1, method = "using **")  # timeStamp before first step
+#' for (i in 1:1E6) {i**2}                             # __calculation step : with **
+#' tmr <- timer(tmr, t_step = 2, method = "using ^")   # Add the first timeStamp
+#' for (i in 1:1E6) {i^2}                              # __calculation step : with ^
+#' tmr <- timer(tmr, end = TRUE)                       # close timer
+#'
+#' t_step1 <- tmr[t_step == 1]$dt_num
+#' t_step2 <- tmr[t_step == 2]$dt_num
+#' diff_pc <- (t_step2/t_step1 - 1) * 100
+#' diff_txt <- format(diff_pc, nsmall = 0, digits = 1)
+#'
+#' # view speed difference
+#' print(tmr)
+#' paste0("speed difference : ", diff_txt, "%")
+#'
 timer <- function(timer_table = data.table(), end = FALSE, ...) {
 
-	{
-		# R.AlphA_manualRun_start
-		manualrun <- T
-		manualrun <- F
-		if (manualrun) {
-			warning("! parameters manually defined inside function 'timer' for tests. Do not use results !")
-			timer_table <- data.table()
-			time_inter <- data.table(timeStamp = Sys.time())
-			timer_table <- rbind(timer_table, time_inter, fill = TRUE)
-			time_inter <- data.table(timeStamp = Sys.time())
-			timer_table <- rbind(timer_table, time_inter, fill = TRUE)
-			time_inter <- data.table(timeStamp = Sys.time())
-			timer_table <- rbind(timer_table, time_inter, fill = TRUE)
+
+	# R.AlphA_manualRun_start
+	manualrun <- F
+	manualrun <- T
+	if (manualrun) {
+		warning("function 'timer' in manual mode: do not use results.")
+		timer_table <- data.table()
+		time_inter <- data.table(timeStamp = Sys.time())
+		timer_table <- rbind(timer_table, time_inter, fill = TRUE)
+		time_inter <- data.table(timeStamp = Sys.time())
+		timer_table <- rbind(timer_table, time_inter, fill = TRUE)
+		time_inter <- data.table(timeStamp = Sys.time())
+		timer_table <- rbind(timer_table, time_inter, fill = TRUE)
 
 
-			end <- T
-		} # manualrun - for debug purposes
+		end <- T
 	} # R.AlphA_manualRun
+
 	formatTime <- function(time_numeric) {
 		ifelse(
 			is.na(time_numeric)
@@ -88,3 +96,9 @@ timer <- function(timer_table = data.table(), end = FALSE, ...) {
 	} # Compute time differences if `end = TRUE`
 	return(timer_table)
 }
+
+
+
+
+
+
