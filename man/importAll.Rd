@@ -44,9 +44,26 @@ test_path <- tempdir()
 write.csv(data.frame(a = 1:3, b = 4:6), file.path(test_path, "file1.csv"))
 write.csv(data.frame(a = 7:9, b = 10:12), file.path(test_path, "file2.csv"))
 
-# Import and concatenate the files
+# Example 1 : Import and concatenate the files
 result <- importAll(path = test_path)
+print(result)
 
-# Print the resulting data frame
+# Example 2: Import files using fileList
+file_list <- c("file1.csv", "file2.csv")
+result <- importAll(path = test_path, fileList = file_list)
+print(result)
+
+# Example 3: Import .rds files
+saveRDS(data.frame(a = 1:5, b = 6:10), file.path(test_path, "file1.rds"))
+saveRDS(data.frame(a = 11:15, b = 16:20), file.path(test_path, "file2.rds"))
+result <- importAll(path = test_path, pattern = "\\\\.rds$")
+print(result)
+
+# Example 4: Custom import function
+custom_import <- function(file) {
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  return(data)
+}
+result <- importAll(path = test_path, pattern = "\\\\.csv$", importFunction = custom_import)
 print(result)
 }
