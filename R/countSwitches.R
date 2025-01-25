@@ -22,19 +22,6 @@
 #'
 countSwitches <- function(data, colNm, sttMark, endMark,
 							  includeStt = TRUE, includeEnd = TRUE){
-	manualrun <- T
-	manualrun <- F
-	if (manualrun) {
-		warning("! parameters manually defined inside function 'countSwitches' ",
-		"for tests. Do not use results !")
-		sttMark <- "+"
-		endMark <- "-"
-		includeStt <- TRUE
-		includeEnd <- TRUE
-		data <- docContentRet
-		colNm <- "brTag"
-	}
-
 	fill_in <- function(prev, new, check) {
 		if_else(check == -1, 0, prev + check)
 	}

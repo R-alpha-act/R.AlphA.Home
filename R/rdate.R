@@ -27,21 +27,7 @@ rdate <- function(
 	, max = paste0(format(Sys.Date(), '%Y'), '-12-31')
 	, sort = FALSE
 	, include_hours = FALSE
-) {
-	manualrun <- T
-	manualrun <- F
-	if (manualrun) {
-		print("manualrun (rdate)")
-		x = 3
-		testdates <- data.table(dtemin = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-10"), by = "1 day"))
-		testdates[, dtemax := dtemin + 50]
-		testdates
-		min = testdates$dtemin[1]
-		max = testdates$dtemax[1]
-		sort = FALSE
-		include_hours = FALSE
-
-	}
+){
 	max <- as.Date(max)
 	min <- as.Date(min)
 	if (!include_hours) {
