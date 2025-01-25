@@ -17,18 +17,6 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 
 	fnTmr <- timer(step = "start")
 	fnTmr <- timer(fnTmr, step = "init, funs")
-	{
-		# R.AlphA_manualRun_start
-		manualrun <- T
-		manualrun <- F
-		if (manualrun) {
-			warning("! parameters manually defined inside function 'foldAllBr' for tests. Do not use results !")
-			time = T
-			debug_getTbl = 0
-			R.AlphA.Dev::getLibsR.AlphA()
-		} # manualrun - for debug purposes
-	} # R.AlphA_manualRun
-
 	colFact <- 1E-2
 	{
 		# foldBrLine : given a line, fold the bracket ending it ====================

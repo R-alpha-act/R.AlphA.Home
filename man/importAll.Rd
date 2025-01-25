@@ -45,7 +45,7 @@ write.csv(data.frame(a = 1:3, b = 4:6), file.path(test_path, "file1.csv"))
 write.csv(data.frame(a = 7:9, b = 10:12), file.path(test_path, "file2.csv"))
 
 # Example 1 : Import and concatenate the files
-result <- importAll(path = test_path)
+result <- importAll(path = test_path, pattern = "\\\\.csv$")
 print(result)
 
 # Example 2: Import files using fileList

@@ -52,33 +52,6 @@ left_join_checks <- function(
 		, showNotFound = F
 		, time = F
 ){
-	manualrun <- T
-	manualrun <- F
-	if (manualrun) {
-		rm(list = ls())
-		warning("! parameters manually defined inside function 'left_join_checks'",
-				"for tests. Do not use results !")
-		workRRoot <- root() %>% str_extract(".*WorkR")
-		R.AlphA.Dev::getLibsR.AlphA()
-		library(R.AlphA.Life)
-		tbls <- workRRoot %>%
-			file.path("pop stats", "ex_working_folder", "INPUTS", "ret") %>%
-			list.files(pattern = "IPTables.rds", full.names = T) %>%
-			print %>%
-			readRDS
-		x <- data.table(a = 1, age = c(1:4)) %>% print
-		y <- data.table(a = 1, age = c(2:4, 4), result = "ok") %>% print
-
-		x <- generate_pop(2E5, age_min = 30, age_max = 36) %>%
-			complete_pop
-		y <- tbls$STMRes$t_vie
-		req_xAllMatch = 1
-		req_preserved_x = 1
-		req_yNotFound = 0
-		time = T
-		showNotFound = T
-		behavior = "error"
-	} # manualrun
 	fnTmr <- timer(step = "Start --")
 	# a voir plus tard - verif que pas de vars deja avec ljc_
 	# R.AlphA::compareVars(x, y, pattern = "ljc_")
