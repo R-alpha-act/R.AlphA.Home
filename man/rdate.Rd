@@ -2,7 +2,7 @@
 % Please edit documentation in R/rdate.R
 \name{rdate}
 \alias{rdate}
-\title{Generate Random Dates}
+\title{Generate Random Dates, with a similar usage as the r* functions}
 \usage{
 rdate(
   x,
@@ -26,13 +26,15 @@ Defaults to the 31st of December of the current year.}
 Default is `FALSE`.}
 
 \item{include_hours}{Logical. Should the generated dates include time?
-Default is `FALSE` (dates only).}
+Default is `FALSE` (dates only). this will slow down the function}
 }
 \value{
 A vector of random dates of length `x`.
 }
 \description{
 Generates a vector of random dates within a specified range.
+This function tries to replicate the usage of the r* functions from stats
+package, such as runif(), rpois(), ...
 }
 \examples{
 # Generate 5 random dates between two specific dates, sorted
@@ -40,4 +42,5 @@ rdate(5, min = as.Date("2020-01-01"), max = as.Date("2020-12-31"), sort = TRUE)
 
 # Generate 7 random datetime values (with hours)
 rdate(7, include_hours = TRUE)
+
 }

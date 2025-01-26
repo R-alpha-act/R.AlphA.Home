@@ -2,7 +2,7 @@
 % Please edit documentation in R/lum_0_100.R
 \name{lum_0_100}
 \alias{lum_0_100}
-\title{Adjust the Brightness of the Graphics Window}
+\title{Adjust the Brightness of the Graphics Window for confortable viewing}
 \usage{
 lum_0_100(lum)
 }
@@ -10,7 +10,13 @@ lum_0_100(lum)
 \item{lum}{Numeric. Brightness level, ranging from 0 (completely dark)
 to 100 (maximum brightness).}
 }
+\value{
+no return value : only apply the theme_set() function
+}
 \description{
 Modifies the brightness level of the active graphics window by
 adjusting its background color.
+
+This is especially useful when using dark RStudio themes, where a 100% white
+graphic window creates an unconfortable contrast.
 }

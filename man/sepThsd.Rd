@@ -31,4 +31,5 @@ and scientific notation.
 sepThsd(1234567.89, big.mark = ",", digits = 3)
 # Use scientific notation
 sepThsd(1234567.89, scientific = TRUE)
+
 }

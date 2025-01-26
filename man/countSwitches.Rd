@@ -33,8 +33,15 @@ A modified version of the input data frame with additional
 columns for series identification and counts.
 }
 \description{
-This function identifies and counts series in a vector based on
-specified start and stop markers. It returns a vector of the same length,
+This function aims at identifying sections and sub-sections
+numbers, based on markers of section starts and ends.
+
+Given a data frame, and a column name, it will add columns giving infos
+about the categories
+
+.... to be completed ...
+ identifies and counts series in a vector based on
+specified start/end markers. It returns a vector of the same length,
 indicating the series count or 0 when the element is outside a series
 (e.g., after a stop marker and before the next start marker).
 }
