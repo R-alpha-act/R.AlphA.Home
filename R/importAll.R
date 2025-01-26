@@ -27,10 +27,27 @@
 #' write.csv(data.frame(a = 1:3, b = 4:6), file.path(test_path, "file1.csv"))
 #' write.csv(data.frame(a = 7:9, b = 10:12), file.path(test_path, "file2.csv"))
 #'
-#' # Import and concatenate the files
-#' result <- importAll(path = test_path)
+#' # Example 1 : Import and concatenate the files
+#' result <- importAll(path = test_path, pattern = "\\.csv$")
+#' print(result)
 #'
-#' # Print the resulting data frame
+#' # Example 2: Import files using fileList
+#' file_list <- c("file1.csv", "file2.csv")
+#' result <- importAll(path = test_path, fileList = file_list)
+#' print(result)
+#'
+#' # Example 3: Import .rds files
+#' saveRDS(data.frame(a = 1:5, b = 6:10), file.path(test_path, "file1.rds"))
+#' saveRDS(data.frame(a = 11:15, b = 16:20), file.path(test_path, "file2.rds"))
+#' result <- importAll(path = test_path, pattern = "\\.rds$")
+#' print(result)
+#'
+#' # Example 4: Custom import function
+#' custom_import <- function(file) {
+#'   data <- read.csv(file, stringsAsFactors = FALSE)
+#'   return(data)
+#' }
+#' result <- importAll(path = test_path, pattern = "\\.csv$", importFunction = custom_import)
 #' print(result)
 #
 importAll <- function(
@@ -41,38 +58,6 @@ importAll <- function(
 	, fill = F
 	, fileList = NULL
 ){
-
-	# R.AlphA_manualRun_start
-	manualrun <- F
-	manualrun <- T
-	if (manualrun) {
-		warning("function 'importAll' in manual mode: do not use results.")
-		root <- dirname(rstudioapi::getSourceEditorContext()$path)
-		workr_root <- sub("WorkR.*", "WorkR", root)
-		setwd(root)
-		path = file.path(workr_root, "Tests_xlsx")
-		pattern = "impall"
-		ignore.case = TRUE
-		importFunction = openxlsx::read.xlsx
-		# lire des rds ?
-		path <- workr_root %>%
-			file.path(
-				"Datacamp"
-				, "Competitions"
-				, "Abalone"
-				, "Results"
-				, "datas"
-			# ) %>% list.files()
-			) %>% print
-		pattern <- "seed_99(1)*\\.rds"
-		importFunction <- NULL
-		fileList <- c(
-			NULL
-			, "/Users/Raphael/Google Drive/WorkR/Datacamp/Competitions/Abalone/Results/datas/compareModels_seed_99.rds"
-			, "/Users/Raphael/Google Drive/WorkR/Datacamp/Competitions/Abalone/Results/datas/compareModels_seed_991.rds"
-		)
-	} # R.AlphA_manualRun
-
 
 	if (missing(fileList)) {
 		# with a pattern
@@ -99,7 +84,7 @@ importAll <- function(
 	}
 	# choosing import function depending on extensions
 	if (missing(importFunction)) {
-		if(manualrun) print ("importFunction missing")
+		#if(manualrun) print ("importFunction missing")
 		filePaths[, ext := gsub(".*\\.", "", locPath)]
 		importFunsList <- do.call(rbind,list(NULL
 			, data.table(ext = "xlsx"	, fun = function(x) as.data.table(openxlsx::read.xlsx(x)))
@@ -111,7 +96,7 @@ importAll <- function(
 			, by = "ext"
 		)
 	} else {
-		if(manualrun) print ("importFunction provided")
+		#if(manualrun) print ("importFunction provided")
 		testnames <- names(filePaths)
 		filePaths[, cst := T]
 		importFunsList <- do.call(rbind,list(NULL

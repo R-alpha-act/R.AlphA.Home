@@ -45,25 +45,6 @@
 #' paste0("speed difference : ", diff_txt, "%")
 #'
 timer <- function(timer_table = data.table(), end = FALSE, ...) {
-
-
-	# R.AlphA_manualRun_start
-	manualrun <- F
-	manualrun <- T
-	if (manualrun) {
-		warning("function 'timer' in manual mode: do not use results.")
-		timer_table <- data.table()
-		time_inter <- data.table(timeStamp = Sys.time())
-		timer_table <- rbind(timer_table, time_inter, fill = TRUE)
-		time_inter <- data.table(timeStamp = Sys.time())
-		timer_table <- rbind(timer_table, time_inter, fill = TRUE)
-		time_inter <- data.table(timeStamp = Sys.time())
-		timer_table <- rbind(timer_table, time_inter, fill = TRUE)
-
-
-		end <- T
-	} # R.AlphA_manualRun
-
 	formatTime <- function(time_numeric) {
 		ifelse(
 			is.na(time_numeric)
