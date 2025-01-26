@@ -33,36 +33,6 @@ countSwitches <- function(
 		, includeStt = TRUE
 		, includeEnd = TRUE
 ){
-	# R.AlphA_manualRun_start
-	manualrun <- T
-	manualrun <- F
-	if (manualrun) {
-		warning("function 'countSwitches' in manual mode: do not use results.")
-		sttMark <- "+"
-		endMark <- "-"
-		includeStt <- TRUE
-		includeEnd <- TRUE
-		# data <- docContent_tags %>% as_tibble %>% print(n = 30)
-		data <- docContent_tags %>% select(brTag) %>% as_tibble
-		data %>%
-			mutate(test = 1- (brTag == "")) %>%
-			mutate(testPart = cumsum(test)) %>%
-			group_by(testPart) %>%
-			mutate(nbLines = n()) %>%
-			distinct(brTag, nbLines)
-		docContent_tags %>% pull(brTag)
-		data <- docContent_tags %>% as_tibble # avec autres colonnes
-		data <- tibble(brTag = c(
-			NULL
-			, rep("", 2)
-			, "+", rep("", 3)
-			, "+", rep("", 1)
-			, "-", rep("", 1)
-			, "+", rep("", 1)
-			, "-", rep("", 1)
-		))
-		colNm <- "brTag"
-	} # R.AlphA_manualRun
 	{
 		grpTable <- data %>%
 			as_tibble %>%

@@ -27,27 +27,12 @@
 #' rdate(7, include_hours = TRUE)
 #'
 rdate <- function(
-	x
-	, min = paste0(format(Sys.Date(), '%Y'), '-01-01')
-	, max = paste0(format(Sys.Date(), '%Y'), '-12-31')
-	, sort = FALSE
-	, include_hours = FALSE
-) {
-	# R.AlphA_manualRun_start
-	manualrun <- F
-	manualrun <- T
-	if (manualrun) {
-		warning("function 'rdate' in manual mode: do not use results.")
-		x = 3
-		testdates <- data.table(dtemin = seq.Date(as.Date("2021-01-01"), as.Date("2021-01-10"), by = "1 day"))
-		testdates[, dtemax := dtemin + 50]
-		testdates
-		min = testdates$dtemin[1]
-		max = testdates$dtemax[1]
-		sort = FALSE
-		include_hours = FALSE
-	} # R.AlphA_manualRun
-
+		x
+		, min = paste0(format(Sys.Date(), '%Y'), '-01-01')
+		, max = paste0(format(Sys.Date(), '%Y'), '-12-31')
+		, sort = FALSE
+		, include_hours = FALSE
+){
 	max <- as.Date(max)
 	min <- as.Date(min)
 	if (!include_hours) {

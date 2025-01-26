@@ -93,4 +93,10 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c(
 	,'timeStamp'
 	,'timeStamp_num'
 	,'step'
+	,'raw1'
+	,'raw2'
+	,'raw3'
+	,'lvl_1'
+	,'lvl_2'
+	,'lvl_3'
 ))
