@@ -12,11 +12,12 @@ Defaults to an empty `data.table().}
 
 \item{end}{A logical, inidicating the end of the timer, defaulted to FALSE.
 'timer()' calls must be placed at the beginning of each part :
-therefore, this step is necessary.
-the time differences between timeStamps are calculated only at the end.}
+therefore, this 'closing' step is necessary to compute time for the last part.
+Time differences between timeStamps are calculated only when closing the timer.}
 
-\item{...}{Additional specifications. Use named arguments to define columns
-and values for rows.}
+\item{...}{Additional specifications. Use named arguments to provide documentation
+on the code parts you are timing : naming the current step, the version of
+the code you are trying, ...}
 }
 \value{
 A `data.table` containing the original data, plus one new timeStamp,
@@ -35,17 +36,22 @@ and include additional metadata provided as arguments.
 Then calculate time differences between timeStamps.
 }
 \examples{
+# compare code speed between using x**2 or x^2
 library(data.table)
-# Initialize an empty data.table
-tmr <- data.table()
+tmr <- data.table()                                 # Initialize timer
+tmr <- timer(tmr, t_step = 1, method = "using **")  # timeStamp before first step
+for (i in 1:1E6) {i**2}                             # __calculation step : with **
+tmr <- timer(tmr, t_step = 2, method = "using ^")   # Add the first timeStamp
+for (i in 1:1E6) {i^2}                              # __calculation step : with ^
+tmr <- timer(tmr, end = TRUE)                       # close timer
 
-# Add the first timeStamp
-tmr <- timer(tmr, description = "calculation")
+t_step1 <- tmr[t_step == 1]$dt_num
+t_step2 <- tmr[t_step == 2]$dt_num
+diff_pc <- (t_step2/t_step1 - 1) * 100
+diff_txt <- format(diff_pc, nsmall = 0, digits = 1)
 
-# small calculation
-for (i in 1:1000) {sqrt(2)}
-
-# Add another timeStamp and compute time differences
-tmr <- timer(tmr, end = TRUE, description = "End")
+# view speed difference
 print(tmr)
+paste0("speed difference : ", diff_txt, "\%")
+
 }

@@ -13,4 +13,9 @@ containing the current source file.
 \description{
 Returns the directory path where the current source code file
 is located.
+
+It is especially useful when the same source code is used by multiple users,
+each using his own environment, with different file paths.
+
+the aim is to avoid writing full paths in raw text inside source codes.
 }

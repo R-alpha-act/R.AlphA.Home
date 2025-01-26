@@ -2,7 +2,7 @@
 % Please edit documentation in R/FAB_checkPbs.R
 \name{FAB_checkPbs}
 \alias{FAB_checkPbs}
-\title{Check problems for FoldAllBr}
+\title{for debug purposes - check problems for FoldAllBr function}
 \usage{
 FAB_checkPbs(linesBefore = 0, linesAfter = 10)
 }
@@ -10,6 +10,9 @@ FAB_checkPbs(linesBefore = 0, linesAfter = 10)
 \item{linesBefore}{number of lines before the problem to display}
 
 \item{linesAfter}{number of lines after the problem to display}
+}
+\value{
+a table showing the problems, if any. Else : no return value
 }
 \description{
 gives a glimpse of lines which could cause problems in FoldAllBr

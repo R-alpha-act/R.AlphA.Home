@@ -30,12 +30,18 @@ Provides information about which columns are present in which tables.
 }
 \examples{
 # Example tables
-table1 <- data.frame(a = 1:5, b = 6:10, c_test = 11:15)
-table2 <- data.frame(b = 16:20, c_test = 21:25, d = 26:30)
+table1 <- data.frame(exclusive_1 = 1:5, common_1 = 6:10, common_2 = 11:15)
+table2 <- data.frame(common_1 = 16:20, common_2 = 21:25, exclusive_2 = 26:30)
 
-# Compare tables
-comparison <- compareVars(table1, table2, pattern = "c_")
+# Compare all columns (no pattern given)
+compare_all <- compareVars(table1, table2)
+compare_all$common
+compare_all$exclusive
+compare_all$onlyX
+compare_all$onlyY
 
-# Print the comparison result
-print(comparison)
+# compare only columns following a specific pattern
+compare_wPattern <- compareVars(table1, table2, pattern = "1")
+compare_wPattern$all
+compare_wPattern$common
 }
