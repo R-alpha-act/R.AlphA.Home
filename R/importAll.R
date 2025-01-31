@@ -51,66 +51,64 @@
 #' print(result)
 #
 importAll <- function(
-	path = "."
-	, pattern = ""
-	, ignore.case = FALSE
-	, importFunction = NULL
-	, fill = F
-	, fileList = NULL
+		path = "."
+		, pattern = ""
+		, ignore.case = FALSE
+		, importFunction = NULL
+		, fill = F
+		, fileList = NULL
 ){
 
 	if (missing(fileList)) {
 		# with a pattern
-		filePaths <- data.table(
-			NULL,
-			locPath = list.files(
-				path = path,
-				pattern = pattern,
-				ignore.case = ignore.case,
-				full.names = FALSE
-			),
-			fulPath = list.files(
-				path = path,
-				pattern = pattern,
-				ignore.case = ignore.case,
-				full.names = TRUE
-			)
+		fullPaths <- list.files(
+			path = path,
+			pattern = pattern,
+			ignore.case = ignore.case,
+			full.names = TRUE
 		)
+		filePaths <- data.table(fulPath = fullPaths) %>%
+			mutate(locPath = fulPath %>% basename) %>%
+			as.data.table
 	} else {
 		# with a file list
 		filePaths <- data.table(fulPath = file.path(path, fileList)) %>%
-			mutate(locPath = fulPath %>% str_remove(".*/")) %>%
+			mutate(locPath = fulPath %>% basename) %>%
 			as.data.table
-	}
+	} # list file paths : either with pattern, or with fileList
+
 	# choosing import function depending on extensions
 	if (missing(importFunction)) {
-		#if(manualrun) print ("importFunction missing")
 		filePaths[, ext := gsub(".*\\.", "", locPath)]
-		importFunsList <- do.call(rbind,list(NULL
-			, data.table(ext = "xlsx"	, fun = function(x) as.data.table(openxlsx::read.xlsx(x)))
-			, data.table(ext = "csv"	, fun = fread)
-			, data.table(ext = "rds"	, fun = readRDS)
-		))
-		filePaths <- merge(
-			filePaths, importFunsList
-			, by = "ext"
-		)
+		importFunsList <- tribble(
+			~ext     , ~fun
+			, "xlsx" , function(x) as.data.table(openxlsx::read.xlsx(x))
+			, "csv"  , fread
+			, "rds"  , readRDS
+		) %>%
+			as.data.table
+
+		filePaths <- merge(filePaths, importFunsList, by = "ext")
 	} else {
-		#if(manualrun) print ("importFunction provided")
 		testnames <- names(filePaths)
 		filePaths[, cst := T]
-		importFunsList <- do.call(rbind,list(NULL
-			, data.table(cst = T, fun = importFunction)
-		))
-		filePaths <- merge(
-			filePaths, importFunsList
-			, by = "cst"
-		)[, cst := NULL]
-	}
+		importFunsList <- tribble(
+			~cst     , ~fun
+			, T      , importFunction
+		) %>%
+			as.data.table
+
+		filePaths <- merge(filePaths, importFunsList, by = "cst")[, cst := NULL]
+	} # choose import function, from extensions, or from a function provided
+
 	if (length(unique(filePaths$fun)) > 1) {
-		message("Warning: More than one type of file detected. ",
-				"This might cause issues with column types (very risky).")
-	}
+		warning(
+			"More than one type of file detected:"
+			,"\nCurrently, this has high chances to cause issues with column types."
+			,"\nThis topic will be adressed in the upcoming versions of "
+			,"this function."
+		)
+	} # warning when multiple file types
 	importsList <- mapply(
 		FUN = function(ful_path, loc_path, importFunction){
 			import <- importFunction(ful_path) %>% as.data.table
@@ -126,4 +124,3 @@ importAll <- function(
 		, importsList
 	)
 }
-
