@@ -29,8 +29,11 @@ the series? Default is `TRUE`.}
 series? Default is `TRUE`.}
 }
 \value{
-A modified version of the input data frame with additional
-columns for series identification and counts.
+A modified version of the input data frame with additional columns including:
+\itemize{
+  \item `catLvl`: The current series level calculated as the difference between the cumulative counts of start and end markers.
+  \item `lvl_1`, `lvl_2`, `lvl_3`: Final series counts returned for each respective level.
+}
 }
 \description{
 This function aims at identifying sections and sub-sections
