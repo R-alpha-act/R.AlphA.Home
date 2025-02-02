@@ -2,14 +2,14 @@
 % Please edit documentation in R/cols_pad.R
 \name{cols_pad}
 \alias{cols_pad}
-\title{Add Variables to Facilitate Data Usage in a Pivot Table}
+\title{Add Variables to ease data usage in a Pivot Table}
 \usage{
 cols_pad(data, nCols = 100, colPrefix = "x_")
 }
 \arguments{
 \item{data}{The data frame to which dummy columns will be added.}
 
-\item{nCols}{An integer specifying the total number of columns desired.}
+\item{nCols}{the total number of columns required : default is 100}
 
 \item{colPrefix}{A string used as the prefix for the names of dummy columns.}
 }
@@ -18,9 +18,15 @@ A data frame with the specified total number of columns.
 }
 \description{
 Adds dummy columns to reach the number specified by the user.
+this is mostly useful to ensure straightforward and easy data updating when
+using pivot tables in Excel. It allows replacement of the previous data sheet
+by the new one, without having to take care about the number of columns, which
+will always be the same.
 }
 \examples{
 table <- data.frame(a = 1:5, b = letters[1:5])
 extraTable <- cols_pad(table, nCols = 6, colPrefix = "extra_")
 print(extraTable)
+
+
 }

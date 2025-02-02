@@ -22,7 +22,8 @@ left_join_checks(
 
 \item{...}{Additional arguments passed to `dplyr::left_join`.}
 
-\item{req_xAllMatch}{Logical. Ensure that all rows in `x` find a match in `y`. Default: FALSE.}
+\item{req_xAllMatch}{Logical. Ensure that all rows in `x` find a match in `y`.
+Default: FALSE.}
 
 \item{req_preserved_x}{Logical. Ensure that the number of rows in `x`
 remains unchanged after the join. Default: TRUE.}
@@ -33,15 +34,17 @@ Options: `"warning"` or `"error"`. (default: `"warning"`)}
 \item{showNotFound}{Logical. Show rows from `x` that did not match with `y`.
 Default: FALSE.}
 
-\item{time}{Logical. Internal argument used only for testing purposes during
-manual runs.}
+\item{time}{Logical. Internal argument used only for testing purposes, timing
+the function steps}
 }
 \value{
 A data.table containing the joined table.
 }
 \description{
-Performs a left join and verifies that no unexpected duplicates
-or mismatches occur.
+a custom usage of left_join, with more detailed checks.
+Performs a left join and verifies that no unexpected duplicates or mismatches
+ occur. In cas of unexpected results, gives details about what caused the
+ problem.
 }
 \examples{
 library(data.table)
@@ -65,4 +68,5 @@ result <- left_join_checks(
   behavior = "warning"
 )
 print(result) # Rows from table_left with no matches in table_right are shown
+
 }

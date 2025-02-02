@@ -1,9 +1,9 @@
-#' @title Count Series Based on Start/Stop Markers
+#' @title create an incremented Counter, based on Start/Stop Markers
+#' @description This function aims at identifying sections and sub-sections
+#' numbers, based on markers of section starts and ends.
 #'
-#' @description This function identifies and counts series in a vector based on
-#' specified start and stop markers. It returns a vector of the same length,
-#' indicating the series count or 0 when the element is outside a series
-#' (e.g., after a stop marker and before the next start marker).
+#' Given a data frame, and the name of a column giving the start/stop markers,
+#' it will add columns giving infos about the successive section levels
 #'
 #' @param data A data frame containing the column to process.
 #' @param colNm A string specifying the column name in `data` to evaluate.
@@ -16,50 +16,80 @@
 #'
 #' @return A modified version of the input data frame with additional columns including:
 #' \itemize{
-#'   \item `stepStr`: The column specified by `colNm`.
-#'   \item `findStt`: Logical flag indicating the occurrence of the start marker.
-#'   \item `findEnd`: Logical flag indicating the occurrence of the end marker.
 #'   \item `catLvl`: The current series level calculated as the difference between the cumulative counts of start and end markers.
-#'   \item `inc1`, `inc2`, `inc3`: Logical flags for detecting nested series at different levels.
-#'   \item `check1`, `check2`, `check3`: Intermediate variables used for series counting.
-#'   \item `tst1`, `tst2`, `tst3`: Cumulative series counts at different nesting levels.
-#'   \item `ret1`, `ret2`, `ret3`: Final series counts returned for each respective level.
+#'   \item `lvl_1`, `lvl_2`, `lvl_3`: Final series counts returned for each respective level.
 #' }
 #'
 #' @importFrom stats runif
 #' @export
+#' @note
+#' This function is currently mostly useful internally, to perform foldAllBr().
 #'
-countSwitches <- function(data, colNm, sttMark, endMark,
-							  includeStt = TRUE, includeEnd = TRUE){
-	fill_in <- function(prev, new, check) {
-		if_else(check == -1, 0, prev + check)
-	}
-
-	grpTable <- data %>%
-		mutate(stepStr = get(colNm)) %>%
-		as_tibble %>%
-		mutate(findStt = stepStr == sttMark) %>%
-		mutate(findEnd = stepStr == endMark) %>%
-		mutate(nbStt = cumsum(findStt %>% replace_na(0))) %>%
-		mutate(nbEnd = cumsum(findEnd %>% replace_na(0))) %>%
-		mutate(catLvl = nbStt - nbEnd) %>%
-		select(-nbStt, -nbEnd) %>%
-		# spot starts
-		mutate(inc1 = findStt & catLvl == 1) %>%
-		mutate(inc2 = findStt & catLvl == 2) %>%
-		mutate(inc3 = findStt & catLvl == 3) %>%
-		# spot when under category to reset
-		mutate(check1 = ifelse(catLvl >= (1-1), inc1, -1)) %>%
-		mutate(check2 = ifelse(catLvl >= (2-1), inc2, -1)) %>%
-		mutate(check3 = ifelse(catLvl >= (3-1), inc3, -1)) %>%
-		select(-opBr, -clBr, anyBr) %>%
-		mutate(tst1 = cumsum(inc1)) %>%
-		group_by(tst1) %>% mutate(tst2 = cumsum(inc2)) %>%
-		group_by(tst1, tst2) %>% mutate(tst3 = cumsum(inc3)) %>%
-		mutate(ret1 = ifelse(catLvl >= 1, tst1, 0)) %>%
-		mutate(ret2 = ifelse(catLvl >= 2, tst2, 0)) %>%
-		mutate(ret3 = ifelse(catLvl >= 3, tst3, 0)) %>%
-		identity()
-
-	return(grpTable)
+#' @examples
+#' # example code
+#' library(dplyr)
+#' tribble(
+#' ~step
+#' , "start"
+#' , "content of section 1"
+#' , "start"
+#' , "subsection 1.1"
+#' , "end"
+#' , "end"
+#' , "out of any section"
+#' , "start"
+#' , "section 2"
+#' , "start"
+#' , "subsection 2.1"
+#' , "end"
+#' , "start"
+#' , "subsection 2.2"
+#' , "end"
+#' , "end"
+#' ) %>%
+#' 	countSwitches(colNm = "step", "start", "end")
+#'
+countSwitches <- function(
+		data
+		, colNm
+		, sttMark
+		, endMark
+		, includeStt = TRUE
+		, includeEnd = TRUE
+){
+	{
+		grpTable <- data %>%
+			as_tibble %>%
+			# identify starts and ends
+			mutate(stepStr = get(colNm)) %>%
+			select(stepStr) %>%
+			mutate(findStt = stepStr == sttMark) %>%
+			mutate(findEnd = stepStr == endMark) %>%
+			mutate(nbStt = cumsum(findStt %>% replace_na(0))) %>%
+			mutate(nbEnd = cumsum(findEnd %>% replace_na(0))) %>%
+			mutate(catLvl = nbStt - nbEnd) %>%
+			# attribute starts to levels 1-2-3
+			mutate(inc1 = findStt & catLvl == 1) %>%
+			mutate(inc2 = findStt & catLvl == 2) %>%
+			mutate(inc3 = findStt & catLvl == 3) %>%
+			mutate(raw1 = cumsum(inc1)) %>%
+			group_by(raw1) %>% mutate(raw2 = cumsum(inc2)) %>%
+			group_by(raw1, raw2) %>% mutate(raw3 = cumsum(inc3)) %>%
+			ungroup %>%
+			mutate(lvl_1 = ifelse(catLvl >= 1, raw1, 0)) %>%
+			mutate(lvl_2 = ifelse(catLvl >= 2, raw2, 0)) %>%
+			mutate(lvl_3 = ifelse(catLvl >= 3, raw3, 0)) %>%
+			select(matches("^lvl_[0-9]$"), catLvl) %>%
+			identity
+	} # add lvl infos in a new table --> grpTable
+	{
+		dupCols <- compareVars(grpTable, data)$common
+		if(dupCols %>% length) stop(
+			NULL
+			, "the following columns have been duplicated by countSwitches :\n"
+			, paste0(dupCols, collapse = "\n")
+			, "\n--> please remove them from data before using this function"
+		)
+	} # check for column names conflicts, raising an error in this case
+	return(data %>% bind_cols(grpTable))
 }

@@ -2,19 +2,22 @@
 % Please edit documentation in R/save_in_old.R
 \name{save_in_old}
 \alias{save_in_old}
-\title{Save File in an "Old" Directory}
+\title{Save File in an "Old" Directory, prefixing it with current date}
 \usage{
-save_in_old(sav_filepath = NULL, sav_fileNote = NULL, overwrite = F)
+save_in_old(sav_fileNote = "copy before adjustments")
 }
 \arguments{
 \item{sav_filepath}{Path of the file to save.
 Defaults to the current source file.}
 
 \item{sav_fileNote}{An optional custom note to append to the file name
-for the save.}
+for the save, allowing to keep track of why this save has been done.}
 
 \item{overwrite}{Logical. Should an existing save with the same name
 be overwritten? Default is `FALSE`.}
+}
+\value{
+the output value of the function used to copy file
 }
 \description{
 Saves a file with the current date in its name in an "old"

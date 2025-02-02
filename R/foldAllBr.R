@@ -17,7 +17,7 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 
 	fnTmr <- timer(step = "start")
 	fnTmr <- timer(fnTmr, step = "init, funs")
-	colFact <- 1E-2
+	colFact <- 1E-3
 	{
 		# foldBrLine : given a line, fold the bracket ending it ====================
 		foldBrLine <- function(opLine, waitTime = 0){
@@ -154,7 +154,7 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 			# mutate(expected = ceiling(1:n() / 2)) %>%
 			as_tibble %>%
 			select(-matches("^(brut|inc|check|tst[0-9])|find(Stt|End)|stepstr")) %>%
-			mutate(conCat = paste("0", ret1, ret2, ret3, sep = "_")) %>%
+			mutate(conCat = paste("0", lvl_1, lvl_2, lvl_3, sep = "_")) %>%
 			mutate(conCatLim = conCat %>% str_remove_all("_0") %>% paste0("_")) %>%
 			mutate(isCur = ifelse(retainStartRow == rowid, "=cur=", "_")) %>%
 			# mutate(isCur = isCur * 100) %>%
@@ -175,17 +175,6 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 		# debug only : check for problems
 		if(debug_getTbl) {
 			linesBefore <- 3 ; linesAfter <- 30
-			firstPb <- docContentRet %>% filter(checkCat < 0) %>% slice_min(rowid)
-			if(nrow(firstPb)==0) {
-				rowsRange <- 0
-			} else {
-				rowsRange <- (firstPb$rowid - linesBefore):(firstPb$rowid + linesAfter)
-			} #
-			docContentRet %>%
-				slice(rowsRange) %>%
-				relocate(rowid, checkCat, content) %>%
-				select(-opBrPN) %>%
-				print(n = 50)
 			interm_tbl_debug <- docContentRet %>%
 				select(rowid, content, anyBr, brTag,
 					   conCatLim, isCur, isSecStart, opBrPN,
@@ -244,8 +233,8 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 	{
 		fnTmr <- timer(fnTmr, step = "check if 1 big")
 		onlyOneSec <- F
-		docContentRet %>% count(ret1, ret2, ret3)
-		if(max(docContentRet$ret1) == 1) onlyOneSec <- TRUE
+		docContentRet %>% count(lvl_1, lvl_2, lvl_3)
+		if(max(docContentRet$lvl_1) == 1) onlyOneSec <- TRUE
 	} # check if only 1 big section
 	{
 		fnTmr <- timer(fnTmr, step = "sectionStart line and PN")
