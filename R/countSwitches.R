@@ -14,8 +14,17 @@
 #' @param includeEnd Logical. Should the end marker be included as part of the
 #' series? Default is `TRUE`.
 #'
-#' @return A modified version of the input data frame with additional
-#' columns for series identification and counts.
+#' @return A modified version of the input data frame with additional columns including:
+#' \itemize{
+#'   \item `stepStr`: The column specified by `colNm`.
+#'   \item `findStt`: Logical flag indicating the occurrence of the start marker.
+#'   \item `findEnd`: Logical flag indicating the occurrence of the end marker.
+#'   \item `catLvl`: The current series level calculated as the difference between the cumulative counts of start and end markers.
+#'   \item `inc1`, `inc2`, `inc3`: Logical flags for detecting nested series at different levels.
+#'   \item `check1`, `check2`, `check3`: Intermediate variables used for series counting.
+#'   \item `tst1`, `tst2`, `tst3`: Cumulative series counts at different nesting levels.
+#'   \item `ret1`, `ret2`, `ret3`: Final series counts returned for each respective level.
+#' }
 #'
 #' @importFrom stats runif
 #' @export
