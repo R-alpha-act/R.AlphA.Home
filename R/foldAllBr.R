@@ -1,21 +1,24 @@
-#' @title easily fold the '{...} # ...' parts of a code to make it more compact
-#' @description this function works when using a code split in different parts
-#' identified by brackets, following this structure :
-#'	{
-#'		...
-#'		code from part 1
-#'		...
-#'	} # part 1
-#'	{
-#'		...
-#'	} # part 2
+#' @title Easily Fold Code Parts
+#' @description This function works with code split into parts identified by brackets.
+#' The format is as follows:
+#' \preformatted{
+#' \{
+#'   ...
+#'   code from part 1
+#'   ...
+#' \} # part 1
+#' \{
+#'   ...
+#' \} # part 2
+#' }
 #'
-#'	It will automatically identify the different parts and sub parts, to easily
-#'	fold and unfold the different code parts.
+#' It automatically identifies parts to fold/unfold easily.
 #'
-#'	It requires formatted code, and shortcuts attributed as following :
-#'	- "fold all brackets" : shift + alt + S (Windows) / ctrl + shift + up   (Mac)
-#'	- "expand fold"       : shift + alt + D (Windows) / ctrl + shift + down (Mac)
+#' Shortcuts required:
+#' \itemize{
+#'   \item "fold all brackets": shift + alt + S (Windows) / ctrl + shift + up (Mac)
+#'   \item "expand fold": shift + alt + D (Windows) / ctrl + shift + down (Mac)
+#' }
 #'
 #' @param time Logical. If `TRUE`, the function will provide timing information
 #' for each step.
@@ -24,8 +27,6 @@
 #'
 #' @return If `debug_getTbl = TRUE`, a table (`docContent`) with tags.
 #' Otherwise, no return value (performs folding).
-#'
-#' @usage this function should be called by using shortcuts only
 #'
 #' @importFrom tibble rowid_to_column
 #' @importFrom magrittr add
@@ -255,3 +256,4 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 	return(NULL)
 
 } #
+

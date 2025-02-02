@@ -16,8 +16,6 @@
 #' @importFrom rstudioapi getSourceEditorContext
 #' @export
 #'
-#' @usage save_in_old(sav_fileNote = "copy before adjustments")
-#'
 save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL, overwrite = F){
 	{
 		if (is.null(sav_filepath)) {
