@@ -2,7 +2,7 @@
 % Please edit documentation in R/importAll.R
 \name{importAll}
 \alias{importAll}
-\title{Function to Import and Concatenate Multiple Files}
+\title{Function to Import and Concatenate Multiple data files}
 \usage{
 importAll(
   path = ".",
@@ -19,10 +19,10 @@ importAll(
 \item{pattern}{Pattern to match file names, passed to `list.files`.}
 
 \item{ignore.case}{Logical. If `TRUE`, ignores case when matching file names.
-Passed to `list.files`.}
+Passed to `list.files`. Default behavior is case-sensitive (`FALSE`)}
 
 \item{importFunction}{A custom function for importing files. If not set, the
-function automatically selects an import method based on the file extension.}
+function selects an import method based on the file extension.}
 
 \item{fill}{Logical. Passed to `rbind` to allow filling missing columns.}
 
@@ -30,40 +30,45 @@ function automatically selects an import method based on the file extension.}
 (used instead of `pattern`).}
 }
 \value{
-A data frame containing the concatenated table.
+A data frame containing the concatenated table with the fName column
 }
 \description{
-Imports all selected files, concatenates them into a single
+Imports multiple files into a list, concatenates them into a single
 table, and adds an `fName` variable.
+
+The files can be selected either by giving a file list (character vector), or
+by specifying a pattern.
 }
 \examples{
 # Directory containing test files
 test_path <- tempdir()
 
 # Create test files
-write.csv(data.frame(a = 1:3, b = 4:6), file.path(test_path, "file1.csv"))
-write.csv(data.frame(a = 7:9, b = 10:12), file.path(test_path, "file2.csv"))
+write.csv( data.frame(a = 1:3, b = 4:6)    , file.path(test_path, "file1.csv"))
+write.csv( data.frame(a = 7:9, b = 10:12)  , file.path(test_path, "file2.csv"))
+write.csv( data.frame(a = 3:5, b = 8:10)   , file.path(test_path, "file3.csv"))
+saveRDS(   data.frame(a = 1:5, b = 6:10)   , file.path(test_path, "file1.rds"))
+saveRDS(   data.frame(a = 11:15, b = 16:20), file.path(test_path, "file2.rds"))
 
-# Example 1 : Import and concatenate the files
+# Example 1 : Import all csv files
 result <- importAll(path = test_path, pattern = "\\\\.csv$")
 print(result)
 
-# Example 2: Import files using fileList
+# Example 2: Import only selected files
 file_list <- c("file1.csv", "file2.csv")
 result <- importAll(path = test_path, fileList = file_list)
 print(result)
 
-# Example 3: Import .rds files
-saveRDS(data.frame(a = 1:5, b = 6:10), file.path(test_path, "file1.rds"))
-saveRDS(data.frame(a = 11:15, b = 16:20), file.path(test_path, "file2.rds"))
+# Example 3: Import all .rds files
 result <- importAll(path = test_path, pattern = "\\\\.rds$")
 print(result)
 
-# Example 4: Custom import function
+# Example 4: Use a custom import function
 custom_import <- function(file) {
   data <- read.csv(file, stringsAsFactors = FALSE)
   return(data)
 }
 result <- importAll(path = test_path, pattern = "\\\\.csv$", importFunction = custom_import)
 print(result)
+
 }

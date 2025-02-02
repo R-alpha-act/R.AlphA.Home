@@ -15,4 +15,7 @@ The HTML tags for setting the background and sidebar colors.
 \description{
 Adjust the background color of a Shiny app's main body and sidebar
 based on a specified luminosity level.
+
+The purpose is the same as lum_0_100() function, avoiding problems with high
+contrast between with graphic windows and dark themes.
 }
