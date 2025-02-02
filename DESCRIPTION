@@ -1,7 +1,7 @@
-Package: R.AlphA.Base
+Package: R.AlphA.Home
 Type: Package
-Title: Shortcut Functions for Common R Calculations
-Version: 0.1.0
+Title: feel at home using R, thanks to shortcuts functions making it simple
+Version: 1.0.0
 Author: Raphaël FLAMBARD
 Maintainer: Raphaël FLAMBARD <r.alpha.act@outlook.fr>
 Description: A collection of personal functions designed to simplify and streamline common R programming tasks. This package provides reusable tools and shortcuts for frequently used calculations and workflows.
