@@ -58,81 +58,67 @@ left_join_checks <- function(
 		, showNotFound = F
 		, time = F
 ){
-	fnTmr <- timer(step = "Start --")
-	# a voir plus tard - verif que pas de vars deja avec ljc_
-	# R.AlphA::compareVars(x, y, pattern = "ljc_")
 
-	# preparation pour merge
-	fnTmr <- timer(fnTmr, step = "indexes - inX, inY")
-	xMerge <- x %>% rowid_to_column(var = "ljc_xID") %>% mutate(ljc_inX = 1)
-	yMerge <- y %>% rowid_to_column(var = "ljc_yID") %>% mutate(ljc_inY = 1)
+	{
+		fnTmr <- timer(step = "Start --")
+		# preparation pour merge
+		fnTmr <- timer(fnTmr, step = "indexes - inX, inY")
+		xMerge <- x %>% rowid_to_column(var = "tmp_xID") %>% mutate(tmp_inX = 1)
+		yMerge <- y %>% rowid_to_column(var = "tmp_yID") %>% mutate(tmp_inY = 1)
+	} # preparation
+	{
+		fnTmr <- timer(fnTmr, step = "join itself")
+		joinXY <- left_join(
+			xMerge
+			, yMerge
+			, ...
+		) %>% replace_na(list(tmp_inX = 0, tmp_inY = 0))
+	} # merge
+	{
+		fnTmr <- timer(fnTmr, step = "chk_preserved_x")
+		chk_preserved_x <- all.equal(joinXY$tmp_xID, xMerge$tmp_xID) %>% isTRUE
+		fnTmr <- timer(fnTmr, step = "chk_dups_x")
+		chk_dups_x <- duplicated(joinXY$tmp_xID) %>% sum
+		fnTmr <- timer(fnTmr, step = "chk_preserved_y")
+		chk_preserved_y <- all.equal(joinXY$tmp_yID, yMerge$tmp_yID) %>% isTRUE
+		fnTmr <- timer(fnTmr, step = "chk_dups_y")
+		chk_dups_y <- duplicated(joinXY$tmp_yID) %>% sum
+		fnTmr <- timer(fnTmr, step = "joinMatch_prep")
+		joinMatch_prep <- joinXY %>% count(tmp_inX, tmp_inY)
+		joinMatch <- expand.grid(tmp_inX = 0:1, tmp_inY = 0:1) %>%
+			left_join(joinMatch_prep) %>%
+			suppressMessages %>%
+			replace_na(list(n=0))
+		chk_yNotFound <- joinMatch %>% filter(!tmp_inY) %>% pull(n) %>% sum
+		chk_xAllMatch <- chk_yNotFound == 0
+		fnTmr <- timer(fnTmr, step = "counting problems")
+		valuesTable <- mget(ls(pattern = "^chk_")) %>%
+			unlist %>%
+			data.frame(value = .) %>%
+			rownames_to_column("check") %>%
+			mutate(key = str_remove(check, "^chk_|^req_"))
 
-	# merge
-	joinXY <- left_join(
-		xMerge
-		, yMerge
-		, ...
-	) %>% replace_na(list(ljc_inX = 0, ljc_inY = 0))
-	fnTmr <- timer(fnTmr, step = "join itself")
+		reqsTable <- mget(ls(pattern = "^req_")) %>%
+			unlist %>%
+			data.frame(req = .) %>%
+			rownames_to_column("check") %>%
+			mutate(req = req %>% as.numeric) %>%
+			mutate(key = str_remove(check, "^chk_|^req_"))
 
-	# checks
-	fnTmr <- timer(fnTmr, step = "only calling")
-	xMerge;yMerge;joinXY
-
-	fnTmr <- timer(fnTmr, step = "chk_preserved_x")
-	chk_preserved_x <- all.equal(joinXY$ljc_xID, xMerge$ljc_xID) %>% isTRUE
-	fnTmr <- timer(fnTmr, step = "chk_dups_x")
-	chk_dups_x <- duplicated(joinXY$ljc_xID) %>% sum
-	fnTmr <- timer(fnTmr, step = "chk_preserved_y")
-	chk_preserved_y <- all.equal(joinXY$ljc_yID, yMerge$ljc_yID) %>% isTRUE
-	fnTmr <- timer(fnTmr, step = "chk_dups_y")
-	chk_dups_y <- duplicated(joinXY$ljc_yID) %>% sum
-	fnTmr <- timer(fnTmr, step = "joinMatch_prep")
-	joinMatch_prep <- joinXY %>% count(ljc_inX, ljc_inY)
-	joinMatch <- expand.grid(ljc_inX = 0:1, ljc_inY = 0:1) %>%
-		left_join(joinMatch_prep) %>%
-		suppressMessages %>%
-		replace_na(list(n=0))
-	chk_yNotFound <- joinMatch %>% filter(!ljc_inY) %>% pull(n) %>% sum
-	chk_xAllMatch <- chk_yNotFound == 0
-	fnTmr <- timer(fnTmr, step = "chk_* done")
-	fnTmr <- timer(fnTmr, step = "more calls")
-
-	chk_preserved_x
-	chk_preserved_y
-	chk_dups_x
-	chk_dups_y
-	chk_xAllMatch
-	chk_yNotFound
-
-	fnTmr <- timer(fnTmr, step = "counting problems")
-	valuesTable <- mget(ls(pattern = "^chk_")) %>%
-		unlist %>%
-		data.frame(value = .) %>%
-		rownames_to_column("check") %>%
-		mutate(key = str_remove(check, "^chk_|^req_"))
-
-	reqsTable <- mget(ls(pattern = "^req_")) %>%
-		unlist %>%
-		data.frame(req = .) %>%
-		rownames_to_column("check") %>%
-		mutate(req = req %>% as.numeric) %>%
-		mutate(key = str_remove(check, "^chk_|^req_"))
-
-	checksTable <- full_join(valuesTable, reqsTable, by = "key") %>%
-		mutate(is_problem = value != req) %>%
-		select(key, value, req, is_problem) %>%
-		mutate(is_problem = is_problem %>% as.numeric) %>%
-		replace_na(list(is_problem = 0)) %>%
-		arrange(is_problem %>% desc, req %>% desc)
+		checksTable <- full_join(valuesTable, reqsTable, by = "key") %>%
+			mutate(is_problem = value != req) %>%
+			select(key, value, req, is_problem) %>%
+			mutate(is_problem = is_problem %>% as.numeric) %>%
+			replace_na(list(is_problem = 0)) %>%
+			arrange(is_problem %>% desc, req %>% desc)
+	} # checks
 
 	nbPbs <- sum(checksTable$is_problem, na.rm = T)
-
 	if (nbPbs) {
 		commonMsg <- paste0(nbPbs, " problem(s) during merge",
 							"\nsee report for details")
 
-		if (showNotFound & !chk_xAllMatch) print(joinXY %>% filter(!ljc_inY))
+		if (showNotFound & !chk_xAllMatch) print(joinXY %>% filter(!tmp_inY))
 
 		if (behavior == "warning") {
 			print(checksTable)
@@ -143,17 +129,15 @@ left_join_checks <- function(
 		} # warning or error
 	} # react to problems
 
-	fnTmr <- timer(fnTmr, step = "select")
-	joinXY_select <- joinXY %>% select(-starts_with("ljc_"))
-	# timer plots
+	fnTmr <- timer(fnTmr, end = T)
 	if(time){
 		xSize <- nrow(x)
 		timePerM <- sum(fnTmr$dt_seconds/xSize*1E6) %>% round(2)
 		timerPlot <- fnTmr %>%
-			arrange(-heure_seconds) %>%
-			mutate(endOf = factor(endOf, levels = endOf)) %>%
-			mutate(secsPerMLines = dt_seconds / xSize * 1E6) %>%
-			ggplot(aes(endOf, secsPerMLines)) +
+			arrange(-timeStamp_num) %>%
+			mutate(step = factor(step, levels = step)) %>%
+			mutate(secsPerMLines = dt_num / xSize * 1E6) %>%
+			ggplot(aes(step, secsPerMLines)) +
 			geom_col() +
 			theme(axis.text = element_text(size = 12)) +
 			geom_text(aes(
@@ -173,6 +157,6 @@ left_join_checks <- function(
 		print(timerPlot)
 	} # display timer if requested
 
-	# return joined table but the intermediary columns
-	return(joinXY_select)
+	# return joined table, without temp columns
+	return(joinXY %>% select(-starts_with("tmp_")))
 }

@@ -44,29 +44,31 @@ by specifying a pattern.
 test_path <- tempdir()
 
 # Create test files
-write.csv(data.frame(a = 1:3, b = 4:6), file.path(test_path, "file1.csv"))
-write.csv(data.frame(a = 7:9, b = 10:12), file.path(test_path, "file2.csv"))
+write.csv( data.frame(a = 1:3, b = 4:6)    , file.path(test_path, "file1.csv"))
+write.csv( data.frame(a = 7:9, b = 10:12)  , file.path(test_path, "file2.csv"))
+write.csv( data.frame(a = 3:5, b = 8:10)   , file.path(test_path, "file3.csv"))
+saveRDS(   data.frame(a = 1:5, b = 6:10)   , file.path(test_path, "file1.rds"))
+saveRDS(   data.frame(a = 11:15, b = 16:20), file.path(test_path, "file2.rds"))
 
-# Example 1 : Import and concatenate the files
+# Example 1 : Import all csv files
 result <- importAll(path = test_path, pattern = "\\\\.csv$")
 print(result)
 
-# Example 2: Import files using fileList
+# Example 2: Import only selected files
 file_list <- c("file1.csv", "file2.csv")
 result <- importAll(path = test_path, fileList = file_list)
 print(result)
 
-# Example 3: Import .rds files
-saveRDS(data.frame(a = 1:5, b = 6:10), file.path(test_path, "file1.rds"))
-saveRDS(data.frame(a = 11:15, b = 16:20), file.path(test_path, "file2.rds"))
+# Example 3: Import all .rds files
 result <- importAll(path = test_path, pattern = "\\\\.rds$")
 print(result)
 
-# Example 4: Custom import function
+# Example 4: Use a custom import function
 custom_import <- function(file) {
   data <- read.csv(file, stringsAsFactors = FALSE)
   return(data)
 }
 result <- importAll(path = test_path, pattern = "\\\\.csv$", importFunction = custom_import)
 print(result)
+
 }

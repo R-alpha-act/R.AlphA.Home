@@ -1,15 +1,9 @@
-#' @title Count Series Based on Start/Stop Markers
+#' @title create an incremented Counter, based on Start/Stop Markers
 #' @description This function aims at identifying sections and sub-sections
 #' numbers, based on markers of section starts and ends.
 #'
-#' Given a data frame, and a column name, it will add columns giving infos
-#' about the categories
-#'
-#' .... to be completed ...
-#'  identifies and counts series in a vector based on
-#' specified start/end markers. It returns a vector of the same length,
-#' indicating the series count or 0 when the element is outside a series
-#' (e.g., after a stop marker and before the next start marker).
+#' Given a data frame, and the name of a column giving the start/stop markers,
+#' it will add columns giving infos about the successive section levels
 #'
 #' @param data A data frame containing the column to process.
 #' @param colNm A string specifying the column name in `data` to evaluate.
@@ -22,8 +16,33 @@
 #'
 #' @return A modified version of the input data frame with additional
 #' columns for series identification and counts.
-#' @importFrom stats runif
 #' @export
+#' @note
+#' This function is currently mostly useful internally, to perform foldAllBr().
+#'
+#' @examples
+#' # example code
+#' library(dplyr)
+#' tribble(
+#' ~step
+#' , "start"
+#' , "content of section 1"
+#' , "start"
+#' , "subsection 1.1"
+#' , "end"
+#' , "end"
+#' , "out of any section"
+#' , "start"
+#' , "section 2"
+#' , "start"
+#' , "subsection 2.1"
+#' , "end"
+#' , "start"
+#' , "subsection 2.2"
+#' , "end"
+#' , "end"
+#' ) %>%
+#' 	countSwitches(colNm = "step", "start", "end")
 #'
 countSwitches <- function(
 		data
