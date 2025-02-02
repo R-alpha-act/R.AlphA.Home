@@ -28,6 +28,7 @@
 #' @examples
 #' # compare code speed between using a loop, or the mean() function
 #' library(data.table)
+#' library(dplyr)
 #' tmr <- data.table()  # Initialize timer
 #' vec <- rnorm(1e6)    # Example vector
 #'
