@@ -14,8 +14,13 @@
 #' @param includeEnd Logical. Should the end marker be included as part of the
 #' series? Default is `TRUE`.
 #'
-#' @return A modified version of the input data frame with additional
-#' columns for series identification and counts.
+#' @return A modified version of the input data frame with additional columns including:
+#' \itemize{
+#'   \item `catLvl`: The current series level calculated as the difference between the cumulative counts of start and end markers.
+#'   \item `lvl_1`, `lvl_2`, `lvl_3`: Final series counts returned for each respective level.
+#' }
+#'
+#' @importFrom stats runif
 #' @export
 #' @note
 #' This function is currently mostly useful internally, to perform foldAllBr().
