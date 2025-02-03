@@ -99,4 +99,6 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c(
 	,'lvl_1'
 	,'lvl_2'
 	,'lvl_3'
+	,'tmp_inX'
+	,'tmp_inY'
 ))
