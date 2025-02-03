@@ -2,7 +2,7 @@
 % Please edit documentation in R/foldAllBr.R
 \name{foldAllBr}
 \alias{foldAllBr}
-\title{Fold All Brackets in Code}
+\title{Easily Fold Code Parts}
 \usage{
 foldAllBr(time = F, debug_getTbl = F)
 }
@@ -18,6 +18,24 @@ If `debug_getTbl = TRUE`, a table (`docContent`) with tags.
 Otherwise, no return value (performs folding).
 }
 \description{
-Automatically identifies open brackets in the current code and
-folds them.
+This function works with code split into parts identified by brackets.
+The format is as follows:
+\preformatted{
+\{
+  ...
+  code from part 1
+  ...
+\} # part 1
+\{
+  ...
+\} # part 2
+}
+
+It automatically identifies parts to fold/unfold easily.
+
+Shortcuts required:
+\itemize{
+  \item "fold all brackets": shift + alt + S (Windows) / ctrl + shift + up (Mac)
+  \item "expand fold": shift + alt + D (Windows) / ctrl + shift + down (Mac)
+}
 }
