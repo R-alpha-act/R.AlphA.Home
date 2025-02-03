@@ -167,10 +167,10 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 		curPosCat <- curLine$catLvl
 		noBracket <- !str_detect(curLine$content, opBrPatt)
 		skipIf <- curPosCat == 0 & noBracket
-		if(skipIf) message("noBr - 0")
+		# if(skipIf) message("noBr - 0")
 		if(curLine$isSecStart & !skipIf){
 
-			message("on a startSec line")
+			# message("on a startSec line")
 			isBfSecStart <- curLine$opBrPN >= curPosNum
 			isAtSecStart <- curLine$opBrPN == (curPosNum - colFact) %>% round(10)
 			if(isBfSecStart){
