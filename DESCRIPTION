@@ -2,10 +2,12 @@ Package: R.AlphA.Home
 Type: Package
 Title: Feel at Home using R, Thanks to Shortcuts Functions Making it Simple
 Version: 1.0.0
-Author: Raphaël FLAMBARD
-Maintainer: Raphaël FLAMBARD <r.alpha.act@outlook.fr>
+Authors@R: person(given = "Raphaël",
+                  family = "FLAMBARD",
+                  role = c("aut", "cre"),
+                  email = "r.alpha.act@outlook.fr")
 Description: A collection of personal functions designed to simplify and streamline common R programming tasks. This package provides reusable tools and shortcuts for frequently used calculations and workflows.
-License: GPL (>= 3) | file LICENSE
+License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
