@@ -4,7 +4,12 @@
 \alias{save_in_old}
 \title{Save File in an "Old" Directory, prefixing it with current date}
 \usage{
-save_in_old(sav_filepath = NULL, sav_fileNote = NULL, overwrite = FALSE)
+save_in_old(
+  sav_filepath = NULL,
+  sav_fileNote = NULL,
+  overwrite = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{sav_filepath}{Path of the file to save.

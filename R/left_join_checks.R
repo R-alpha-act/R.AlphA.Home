@@ -56,6 +56,7 @@ left_join_checks <- function(
 		, req_preserved_x = 1
 		, behavior = "error"
 		, showNotFound = FALSE
+		, showProblems = TRUE
 		, time = FALSE
 ){
 
@@ -119,12 +120,11 @@ left_join_checks <- function(
 							"\nsee report for details")
 
 		if (showNotFound & !chk_xAllMatch) print(joinXY %>% filter(!tmp_inY))
+		if(showProblems == TRUE) print(checksTable)
 
 		if (behavior == "warning") {
-			print(checksTable)
 			warning(commonMsg)
 		} else if (behavior == "error") {
-			print(checksTable)
 			stop(commonMsg)
 		} # warning or error
 	} # react to problems
