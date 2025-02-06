@@ -4,7 +4,7 @@
 \alias{foldAllBr}
 \title{Easily Fold Code Parts}
 \usage{
-foldAllBr(time = F, debug_getTbl = F)
+foldAllBr(time = FALSE, debug_getTbl = FALSE)
 }
 \arguments{
 \item{time}{Logical. If `TRUE`, the function will provide timing information

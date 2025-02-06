@@ -35,7 +35,7 @@
 #' @export
 #
 
-foldAllBr <- function(time = F, debug_getTbl = F){
+foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 
 	fnTmr <- timer(step = "start")
 	fnTmr <- timer(fnTmr, step = "init, funs")
@@ -200,7 +200,7 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 	} # identify current line, section, subsections
 	{
 		fnTmr <- timer(fnTmr, step = "check if 1 big")
-		onlyOneSec <- F
+		onlyOneSec <- FALSE
 		docContentRet %>% count(lvl_1, lvl_2, lvl_3)
 		if(max(docContentRet$lvl_1) == 1) onlyOneSec <- TRUE
 	} # check if the document is made of only 1 section
@@ -233,7 +233,7 @@ foldAllBr <- function(time = F, debug_getTbl = F){
 		setCursorPosition(sectionStart_DP)
 	} #
 
-	fnTmr <- fnTmr %>% timer(end = T)
+	fnTmr <- fnTmr %>% timer(end = TRUE)
 	if(time){
 		timerPlot <- fnTmr %>%
 			arrange(-timeStamp_num) %>%

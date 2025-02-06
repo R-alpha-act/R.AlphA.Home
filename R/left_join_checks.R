@@ -55,8 +55,8 @@ left_join_checks <- function(
 		, req_xAllMatch = 1
 		, req_preserved_x = 1
 		, behavior = "error"
-		, showNotFound = F
-		, time = F
+		, showNotFound = FALSE
+		, time = FALSE
 ){
 
 	{
@@ -113,7 +113,7 @@ left_join_checks <- function(
 			arrange(is_problem %>% desc, req %>% desc)
 	} # checks
 
-	nbPbs <- sum(checksTable$is_problem, na.rm = T)
+	nbPbs <- sum(checksTable$is_problem, na.rm = TRUE)
 	if (nbPbs) {
 		commonMsg <- paste0(nbPbs, " problem(s) during merge",
 							"\nsee report for details")
@@ -129,7 +129,7 @@ left_join_checks <- function(
 		} # warning or error
 	} # react to problems
 
-	fnTmr <- timer(fnTmr, end = T)
+	fnTmr <- timer(fnTmr, end = TRUE)
 	if(time){
 		xSize <- nrow(x)
 		timePerM <- sum(fnTmr$dt_seconds/xSize*1E6) %>% round(2)
