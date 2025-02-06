@@ -12,6 +12,7 @@ left_join_checks(
   req_preserved_x = 1,
   behavior = "error",
   showNotFound = FALSE,
+  showProblems = TRUE,
   time = FALSE
 )
 }

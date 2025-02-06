@@ -169,11 +169,10 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 		curPosSec <- curLine$conCatLim # init before check
 		curPosCat <- curLine$catLvl
 		noBracket <- !str_detect(curLine$content, opBrPatt)
-		skipIf <- curPosCat == 0 & noBracket
-		# if(skipIf) message("noBr - 0")
+		skipIf <- curPosCat == 0 & noBracket # to check if we're on top level
 		if(curLine$isSecStart & !skipIf){
 
-			# message("on a startSec line")
+			# cursor on a starting line of a section
 			isBfSecStart <- curLine$opBrPN >= curPosNum
 			isAtSecStart <- curLine$opBrPN == (curPosNum - colFact) %>% round(10)
 			if(isBfSecStart){
