@@ -20,13 +20,17 @@
 #'   \item "expand fold": shift + alt + D (Windows) / ctrl + shift + down (Mac)
 #' }
 #'
-#' @param time Logical. If `TRUE`, the function will provide timing information
-#' for each step.
+#' @param time Logical. If `TRUE`, the function will return \code{ggplot} object
+#'  visualizing execution times for each step.
 #' @param debug_getTbl Logical. If `TRUE`, returns the `docContent` table with
 #' tags for debugging purposes.
 #'
-#' @return If `debug_getTbl = TRUE`, a table (`docContent`) with tags.
-#' Otherwise, no return value (performs folding).
+#' @return A list containing:
+#' \itemize{
+#'   \item \code{debug_info}: A data frame with debugging information if \code{debug_getTbl = TRUE}.
+#'   \item \code{timer_plot}: A \code{ggplot} object visualizing execution times if \code{time = TRUE}.
+#' }
+#' If both parameters are \code{FALSE}, the function returns a list with \code{NULL} values.
 #'
 #' @importFrom tibble rowid_to_column
 #' @importFrom magrittr add
@@ -157,7 +161,6 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 			select(rowid, content, anyBr, brTag,
 				   conCatLim, isCur, isSecStart, opBrPN,
 				   catLvl, nbTabs, checkCat)
-		return(interm_tbl_debug) # only for debugging
 	} # debug only : check for problems
 
 	{
@@ -251,9 +254,11 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 				, subtitle = paste0("nrows docContent : ", nrow(docContent))
 			)
 		lum_0_100(50)
-		print(timerPlot)
 	} # timer plot
-	return(NULL)
 
+	return(list(
+		debug_info = if (debug_getTbl) interm_tbl_debug else NULL
+		, timer_plot = if (time) timerPlot else NULL
+		))
 } #
 
