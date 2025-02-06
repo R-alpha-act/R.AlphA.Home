@@ -36,8 +36,8 @@
 
 compareVars <- function(x, y, pattern = ""){
 	result <- list()
-	xVars <- grep(names(x), pattern = pattern, value = T)
-	yVars <- grep(names(y), pattern = pattern, value = T)
+	xVars <- grep(names(x), pattern = pattern, value = TRUE)
+	yVars <- grep(names(y), pattern = pattern, value = TRUE)
 	result$xVars <- xVars
 	result$yVars <- yVars
 	result$all <- union(xVars, yVars)
