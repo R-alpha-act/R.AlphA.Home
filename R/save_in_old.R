@@ -26,7 +26,7 @@ save_in_old <- function(sav_filepath = NULL, sav_fileNote = NULL, overwrite = FA
 		sav_olddirname <- file.path(sav_dirname, "old")
 	} # paths
 	if(!dir.exists(sav_olddirname)) {
-		print(paste0("creating old directory : ", sav_olddirname))
+		message(paste0("creating old directory : ", sav_olddirname))
 		dir.create(sav_olddirname)
 	} # create "old" dir if not already here
 	if (!is.null(sav_fileNote)) {
