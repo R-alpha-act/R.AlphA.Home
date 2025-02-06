@@ -56,7 +56,7 @@ importAll <- function(
 		, pattern = ""
 		, ignore.case = FALSE
 		, importFunction = NULL
-		, fill = F
+		, fill = FALSE
 		, fileList = NULL
 ){
 
@@ -92,10 +92,10 @@ importAll <- function(
 		filePaths <- merge(filePaths, importFunsList, by = "ext")
 	} else {
 		testnames <- names(filePaths)
-		filePaths[, cst := T]
+		filePaths[, cst := TRUE]
 		importFunsList <- tribble(
 			~cst     , ~fun
-			, T      , importFunction
+			, TRUE      , importFunction
 		) %>%
 			as.data.table
 
@@ -118,7 +118,7 @@ importAll <- function(
 		, ful_path = filePaths$fulPath
 		, loc_path = filePaths$locPath
 		, importFunction = filePaths$fun
-		, SIMPLIFY = F
+		, SIMPLIFY = FALSE
 	)
 	concatenation <- do.call(
 		function(...) rbind(..., fill = fill)

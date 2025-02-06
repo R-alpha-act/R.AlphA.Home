@@ -11,8 +11,8 @@ left_join_checks(
   req_xAllMatch = 1,
   req_preserved_x = 1,
   behavior = "error",
-  showNotFound = F,
-  time = F
+  showNotFound = FALSE,
+  time = FALSE
 )
 }
 \arguments{

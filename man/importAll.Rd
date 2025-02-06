@@ -9,7 +9,7 @@ importAll(
   pattern = "",
   ignore.case = FALSE,
   importFunction = NULL,
-  fill = F,
+  fill = FALSE,
   fileList = NULL
 )
 }
