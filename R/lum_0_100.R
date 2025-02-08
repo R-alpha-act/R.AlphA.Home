@@ -7,19 +7,13 @@
 #'
 #' @param lum Numeric. Brightness level, ranging from 0 (completely dark)
 #' to 100 (maximum brightness).
-#' @param reset Logical. If TRUE, resets to default settings.
 #' @return no return value : only apply the theme_set() function
 #' @importFrom grDevices rgb
 #' @importFrom graphics par plot
 #' @import ggplot2
 #' @export
 #'
-lum_0_100 <- functionfunction(lum = NULL, reset = FALSE) {
-	if (reset) {
-		par(bg = "white")
-		theme_set(theme_gray())
-		return(invisible(NULL))
-	}
+lum_0_100 <- functionfunction(lum = NULL) {
 	if (!is.numeric(lum) || lum < 0 || lum > 100) {
 		stop("lum must be a numeric value between 0 and 100.")
 	}
