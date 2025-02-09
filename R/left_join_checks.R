@@ -15,6 +15,8 @@
 #' Options: `"warning"` or `"error"`. (default: `"warning"`)
 #' @param showNotFound Logical. Show rows from `x` that did not match with `y`.
 #' Default: FALSE.
+#' @param showProblems Logical. Display the problems encountered during the
+#' joining process, if any.
 #' @param time Logical. Internal argument used only for testing purposes, timing
 #' the function steps
 #'
