@@ -1,9 +1,9 @@
-#' @title Save File in an "Old" Directory, prefixing it with current date
-#' @description Saves a file with the current date in its name in an "old"
-#' directory located in the same directory as the original file.
+#' @title Save File in a Directory storing saves, prefixing it with current date
+#' @description Saves a file with current date in its name in a sub directory
+#' located in the same directory as the original file.
 #' Optionally, a note is added after the file name.
 #'
-#' @param saveDir Choose the directory used to store saves. for instance : 'old'
+#' @param saveDir Choose the directory used to store saves. Suggested : 'old'
 #' @param filePath Optional, if you want to save another file than the current
 #' one : full path of the file you want to save.
 #' @param saveNote An optional custom note to append to the file name
@@ -19,7 +19,7 @@
 #' @importFrom rstudioapi getSourceEditorContext
 #' @export
 #'
-save_in_old <- function(
+quickSave <- function(
 		saveDir
 		, filePath = NULL
 		, saveNote = NULL
@@ -35,9 +35,9 @@ save_in_old <- function(
 		saveDirName <- file.path(fileDirName, saveDir)
 	} # paths - file to save, and save directory
 	if(!dir.exists(saveDirName)) {
-		message("creating old directory : ", saveDirName)
+		message("creating save directory : ", saveDirName)
 		dir.create(saveDirName)
-	} # create "old" dir if not already here
+	} # create saveDir if not already existing
 
 	saveName <- paste0(Sys.Date(), " ", fileName)
 	if (!is.null(saveNote)) {
