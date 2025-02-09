@@ -5,7 +5,7 @@
 \title{Adjust the Brightness of the Graphics Window for confortable viewing
 when using ggplot2}
 \usage{
-lum_0_100(lum)
+lum_0_100(lum = NULL)
 }
 \arguments{
 \item{lum}{Numeric. Brightness level, ranging from 0 (completely dark)
