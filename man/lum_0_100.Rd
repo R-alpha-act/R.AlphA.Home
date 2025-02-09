@@ -2,7 +2,8 @@
 % Please edit documentation in R/lum_0_100.R
 \name{lum_0_100}
 \alias{lum_0_100}
-\title{Adjust the Brightness of the Graphics Window for confortable viewing}
+\title{Adjust the Brightness of the Graphics Window for confortable viewing
+when using ggplot2}
 \usage{
 lum_0_100(lum)
 }

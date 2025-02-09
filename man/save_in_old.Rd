@@ -5,21 +5,26 @@
 \title{Save File in an "Old" Directory, prefixing it with current date}
 \usage{
 save_in_old(
-  sav_filepath = NULL,
-  sav_fileNote = NULL,
+  saveDir,
+  filePath = NULL,
+  saveNote = NULL,
   overwrite = FALSE,
   verbose = FALSE
 )
 }
 \arguments{
-\item{sav_filepath}{Path of the file to save.
-Defaults to the current source file.}
+\item{saveDir}{Choose the directory used to store saves. for instance : 'old'}
 
-\item{sav_fileNote}{An optional custom note to append to the file name
+\item{filePath}{Optional, if you want to save another file than the current
+one : full path of the file you want to save.}
+
+\item{saveNote}{An optional custom note to append to the file name
 for the save, allowing to keep track of why this save has been done.}
 
 \item{overwrite}{Logical. Should an existing save with the same name
 be overwritten? Default is `FALSE`.}
+
+\item{verbose}{logical. If turned to `TRUE`, the save path is displayed}
 }
 \value{
 the output value of the function used to copy file
@@ -27,4 +32,5 @@ the output value of the function used to copy file
 \description{
 Saves a file with the current date in its name in an "old"
 directory located in the same directory as the original file.
+Optionally, a note is added after the file name.
 }

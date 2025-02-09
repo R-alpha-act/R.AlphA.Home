@@ -35,6 +35,9 @@ Options: `"warning"` or `"error"`. (default: `"warning"`)}
 \item{showNotFound}{Logical. Show rows from `x` that did not match with `y`.
 Default: FALSE.}
 
+\item{showProblems}{Logical. Display the problems encountered during the
+joining process, if any.}
+
 \item{time}{Logical. Internal argument used only for testing purposes, timing
 the function steps}
 }
