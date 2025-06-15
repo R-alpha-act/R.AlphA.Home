@@ -73,7 +73,7 @@ importAll <- function(
 			as.data.table
 	} else {
 		# with a file list
-		filePaths <- data.table(fulPath = file.path(path, fileList)) %>%
+		filePaths <- data.table(fulPath = file.path(fileList)) %>%
 			mutate(locPath = fulPath %>% basename) %>%
 			as.data.table
 	} # list file paths : either with pattern, or with fileList
