@@ -38,7 +38,6 @@
 #' @importFrom tibble rowid_to_column
 #' @importFrom magrittr add
 #' @importFrom stringr str_detect str_remove_all str_extract str_remove str_count
-#' @importFrom R.AlphA.Dev printif
 #' @import rstudioapi
 #' @export
 #
