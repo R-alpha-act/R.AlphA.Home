@@ -183,8 +183,7 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 		highlight_pb <- interm_tbl_debug %>%
 			dplyr::slice(rowsRange) %>%
 			relocate(rowid, checkCat, content) %>%
-			select(-opBrPN) %>%
-			printif(0)
+			select(-opBrPN)
 		if (debug_getTbl) return(interm_tbl_debug) # only for debugging
 		if (anyPb) {
 			message("problems found : ")
