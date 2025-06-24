@@ -60,68 +60,128 @@ importAll <- function(
 		, fileList = NULL
 ){
 
-	if (missing(fileList)) {
-		# with a pattern
-		fullPaths <- list.files(
-			path = path,
-			pattern = pattern,
-			ignore.case = ignore.case,
-			full.names = TRUE
-		)
-		filePaths <- data.table(fulPath = fullPaths) %>%
-			mutate(locPath = fulPath %>% basename) %>%
-			as.data.table
-	} else {
-		# with a file list
-		filePaths <- data.table(fulPath = file.path(fileList)) %>%
-			mutate(locPath = fulPath %>% basename) %>%
-			as.data.table
-	} # list file paths : either with pattern, or with fileList
-
-	# choosing import function depending on extensions
-	if (missing(importFunction)) {
-		filePaths[, ext := gsub(".*\\.", "", locPath)]
-		importFunsList <- tribble(
-			~ext     , ~fun
-			, "xlsx" , function(x) as.data.table(openxlsx::read.xlsx(x))
-			, "csv"  , fread
-			, "rds"  , readRDS
-		) %>%
-			as.data.table
-
-		filePaths <- merge(filePaths, importFunsList, by = "ext")
-	} else {
-		testnames <- names(filePaths)
-		filePaths[, cst := TRUE]
-		importFunsList <- tribble(
-			~cst     , ~fun
-			, TRUE      , importFunction
-		) %>%
-			as.data.table
-
-		filePaths <- merge(filePaths, importFunsList, by = "cst")[, cst := NULL]
-	} # choose import function, from extensions, or from a function provided
-
-	if (length(unique(filePaths$fun)) > 1) {
-		warning(
-			"More than one type of file detected:"
-			,"\nCurrently, this has high chances to cause issues with column types."
-			,"\nThis topic will be adressed in the upcoming versions of "
-			,"this function."
-		)
-	} # warning when multiple file types
-	importsList <- mapply(
-		FUN = function(ful_path, loc_path, importFunction){
-			import <- importFunction(ful_path) %>% as.data.table
-			import[, fName := loc_path]
+	is_absolute_path <- function(path) {
+		if (length(path) == 0) return(FALSE)
+		# R.utils function
+		if (requireNamespace("R.utils", quietly = TRUE)) {
+			return(R.utils::isAbsolutePath(path))
 		}
-		, ful_path = filePaths$fulPath
-		, loc_path = filePaths$locPath
-		, importFunction = filePaths$fun
-		, SIMPLIFY = FALSE
-	)
-	concatenation <- do.call(
-		function(...) rbind(..., fill = fill)
-		, importsList
-	)
-}
+		# If R.utils not available : starting with / or ~ (Unix/Mac),
+		# "letter:" (Windows), or \\ (UNC)
+		grepl("^(/|~|[A-Za-z]:|\\\\)", path)
+	} # check if a path is absolute
+	{
+		if (missing(fileList)) {
+			# with a pattern
+			fullPaths_vec <- list.files(
+				path = path,
+				pattern = pattern,
+				ignore.case = ignore.case,
+				full.names = TRUE
+			)
+			filePaths <- data.table(fulPath = fullPaths_vec) %>%
+				mutate(locPath = fulPath %>% basename) %>%
+				as.data.table
+		} else {
+			filePaths <- data.table(locPath = fileList) %>%
+				mutate(
+					fulPath = ifelse(
+						sapply(locPath, is_absolute_path),
+						locPath,  # Chemin absolu - on le garde tel quel
+						file.path(path, locPath)  # Chemin relatif - on le combine avec path
+					)
+				) %>%
+				as.data.table
+		} # list file paths : either with pattern, or with fileList
+		files_exist <- file.exists(filePaths$fulPath)
+		if (!all(files_exist)) {
+			missing_files <- filePaths$fulPath[!files_exist]
+			warning(paste("Les fichiers suivants n'existent pas et seront ignorés:",
+						  paste(missing_files, collapse = ", ")))
+			filePaths <- filePaths[files_exist, ]
+		} # check files existence
+		if (nrow(filePaths) == 0) {
+			stop("Aucun fichier trouvé ou tous les fichiers spécifiés sont manquants")
+		}
+	} # get paths either with pattern, or with fileList --> filePaths
+	{
+		# choosing import function depending on extensions
+		if (missing(importFunction)) {
+			filePaths[, ext := gsub(".*\\.", "", locPath)]
+			importFunsList <- tribble(
+				~ext     , ~fun
+				, "xlsx" , function(x) as.data.table(openxlsx::read.xlsx(x))
+				, "csv"  , fread
+				, "rds"  , readRDS
+			) %>%
+				as.data.table
+
+			filePaths <- merge(filePaths, importFunsList, by = "ext", all.x = TRUE)
+
+			# unsupported extensions
+			if (any(is.na(filePaths$fun))) {
+				unsupported_ext <- unique(filePaths[is.na(fun), ext])
+				stop(paste(
+					"following extension(s) are not supported by importAll:"
+					, paste(unsupported_ext, collapse = ", ")
+					,"\nExtensions supportées: xlsx, csv, rds"
+				))
+			}
+		} else {
+			filePaths[, cst := TRUE]
+			importFunsList <- tribble(
+				~cst     , ~fun
+				, TRUE   , importFunction
+			) %>%
+				as.data.table
+
+			filePaths <- merge(filePaths, importFunsList, by = "cst")[, cst := NULL]
+		}
+	} # add the import function --> filePaths$fun
+	{
+		multipleFileTypes <- length(unique(filePaths$fun)) > 1
+		warningMessage <- paste(
+			sep = "\n"
+			, "Different file types detected"
+			, "columns will be automatically harmonized"
+
+		)
+		if (multipleFileTypes) {
+			warning(warningMessage)
+			harmonize_types <- TRUE
+		} else {
+			harmonize_types <- FALSE
+		}
+	} # warning when multiple file types
+	{
+		importsList <- mapply(
+			FUN = function(ful_path, loc_path, importFunction){
+				import <- importFunction(ful_path) %>% as.data.table
+				import[, fName := loc_path]
+
+				# Harmonisation des types si nécessaire
+				if (harmonize_types) {
+					import <- import[, lapply(.SD, function(x) {
+						if (is.factor(x)) as.character(x)
+						else if (is.logical(x) && all(is.na(x))) as.character(x)
+						else x
+					})]
+					import[, fName := loc_path]  # Rétablir fName après lapply
+				}
+
+				return(import)
+			}
+			, ful_path = filePaths$fulPath
+			, loc_path = filePaths$locPath
+			, importFunction = filePaths$fun
+			, SIMPLIFY = FALSE
+		)
+	} # import all files --> importsList
+	{
+		concatenation <- do.call(
+			function(...) rbind(..., fill = fill)
+			, importsList
+		)
+		return(concatenation)
+	} # concatenate all imports --> concatenation
+} # import and concatenate multiple files
