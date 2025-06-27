@@ -101,4 +101,5 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c(
 	,'lvl_3'
 	,'tmp_inX'
 	,'tmp_inY'
+	,'fun'
 ))

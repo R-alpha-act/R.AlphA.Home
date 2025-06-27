@@ -87,8 +87,8 @@ importAll <- function(
 				mutate(
 					fulPath = ifelse(
 						sapply(locPath, is_absolute_path),
-						locPath,  # Chemin absolu - on le garde tel quel
-						file.path(path, locPath)  # Chemin relatif - on le combine avec path
+						locPath,  # Absolute path - we keep it as is
+						file.path(path, locPath)  # Relative path - we combine it with 'path'
 					)
 				) %>%
 				as.data.table
@@ -96,12 +96,12 @@ importAll <- function(
 		files_exist <- file.exists(filePaths$fulPath)
 		if (!all(files_exist)) {
 			missing_files <- filePaths$fulPath[!files_exist]
-			warning(paste("Les fichiers suivants n'existent pas et seront ignorés:",
+			warning(paste("The following files do not exist and will be ignored:",
 						  paste(missing_files, collapse = ", ")))
 			filePaths <- filePaths[files_exist, ]
 		} # check files existence
 		if (nrow(filePaths) == 0) {
-			stop("Aucun fichier trouvé ou tous les fichiers spécifiés sont manquants")
+			stop("No files found or all specified files are missing")
 		}
 	} # get paths either with pattern, or with fileList --> filePaths
 	{
@@ -124,7 +124,7 @@ importAll <- function(
 				stop(paste(
 					"following extension(s) are not supported by importAll:"
 					, paste(unsupported_ext, collapse = ", ")
-					,"\nExtensions supportées: xlsx, csv, rds"
+					,"\nSupported extensions: xlsx, csv, rds"
 				))
 			}
 		} else {
@@ -159,14 +159,14 @@ importAll <- function(
 				import <- importFunction(ful_path) %>% as.data.table
 				import[, fName := loc_path]
 
-				# Harmonisation des types si nécessaire
+				# Harmonization of types if necessary
 				if (harmonize_types) {
 					import <- import[, lapply(.SD, function(x) {
 						if (is.factor(x)) as.character(x)
 						else if (is.logical(x) && all(is.na(x))) as.character(x)
 						else x
 					})]
-					import[, fName := loc_path]  # Rétablir fName après lapply
+					import[, fName := loc_path]  # Restore fName apfter lapply
 				}
 
 				return(import)
