@@ -5,6 +5,7 @@
 #'
 #' @param x Any object.
 #' @param show A logical value indicating whether to print `x` (default: `FALSE`).
+#' @param ... Additional arguments for the function print.
 #'
 #' @return The object `x`, possibly printed if `show` is `TRUE`.
 #' @export

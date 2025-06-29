@@ -1,7 +1,7 @@
 Package: R.AlphA.Home
 Type: Package
 Title: Feel at Home using R, Thanks to Shortcuts Functions Making it Simple
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: c(
 	person("Raphaël", "Flambard",     role=c("aut","cre"), email="r.alpha.act@outlook.fr"),
 	person("Adrien" , "Cocuaud",      role="ctb"))
