@@ -10,6 +10,8 @@ printif(x, show = FALSE, ...)
 \item{x}{Any object.}
 
 \item{show}{A logical value indicating whether to print `x` (default: `FALSE`).}
+
+\item{...}{Additional arguments for the function print.}
 }
 \value{
 The object `x`, possibly printed if `show` is `TRUE`.
