@@ -3,8 +3,8 @@ Type: Package
 Title: Feel at Home using R, Thanks to Shortcuts Functions Making it Simple
 Version: 1.1.0
 Authors@R: c(
-	person("Raphaël", "Flambard",     role=c("aut","cre"), email="r.alpha.act@outlook.fr"),
-	person("Adrien" , "Cocuaud",      role="ctb"))
+	person("Raphaël", "Flambard",     role=c("aut","cre"), email="raphael@ralpha.fr"),
+	person("Adrien" , "Cocuaud",      role="ctb", email="adrien@ralpha.fr"))
 Description: A collection of personal functions designed to simplify and streamline common R programming tasks. This package provides reusable tools and shortcuts for frequently used calculations and workflows.
 License: GPL-3
 Encoding: UTF-8
@@ -14,3 +14,5 @@ Imports: data.table, lubridate, rstudioapi, stringr, grDevices, openxlsx, ggplot
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+URL: https://github.com/R-alpha-act/R.AlphA.Base
+BugReports: https://github.com/R-alpha-act/R.AlphA.Base/issues
