@@ -122,7 +122,7 @@ left_join_checks <- function(
 							"\nsee report for details")
 
 		if (showNotFound & !chk_xAllMatch) print(joinXY %>% filter(!tmp_inY))
-		if(showProblems == TRUE) print(checksTable)
+		checksTable %>% printif(showProblems)
 
 		if (behavior == "warning") {
 			warning(commonMsg)

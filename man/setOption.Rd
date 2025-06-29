@@ -2,29 +2,40 @@
 % Please edit documentation in R/setOption.R
 \name{setOption}
 \alias{setOption}
-\title{Sets a global option from a named list element}
+\title{Set Global Option from Named List Element}
 \usage{
-setOption(optionList)
+setOption(listElement)
 }
 \arguments{
-\item{optionList}{An element from a named list, specified as `myList$element`.}
+\item{listElement}{An element from a named list, specified as `myList$element`.}
 }
 \value{
 The function does not return anything but sets an option that can be retrieved
 using `getOption(list_name)`.
 }
 \description{
-This function takes an element from a named list as an argument
-and sets a global option where the option name is the list's name and the
-value is the corresponding string of the selected element.
+This function takes an element from a named list as an argument,
+and sets a global option based on the list's name.
+
+Where :	optionName$element == "value",
+calling	setOption(optionName$element)
+triggers options(optionName = "value")
 }
 \details{
-- The function automatically extracts the list name from the argument.
-- The option is then dynamically set using `options(list_name = element)`.
+The function automatically extracts the list name from the argument.
+The option is then dynamically set using `options(list_name = element)`.
 }
 \examples{
-myList <- list(model1 = "model_1", model2 = "model_2", model3 = "model_3")
-setOption(myList$model1)
-getOption("myList")  # Returns "model_1"
+# Create a temporary list for demonstration
+modelOption <- list(model1 = "model_1", model2 = "model_2", model3 = "model_3")
+
+# Set the option
+setOption(modelOption$model1)
+
+# Retrieve the option
+getOption("modelOption")  # Returns "model_1"
+
+# Clean up
+options(modelOption = NULL)
 
 }

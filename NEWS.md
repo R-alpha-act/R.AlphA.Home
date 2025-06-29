@@ -1,9 +1,16 @@
 # R.AlphA.Home 1.1.0
 
+## New Shortcuts 
+ralpha_fold   - ctrl+up   (both on Mac/Windows)
+ralpha_unfold - ctrl+down (both on Mac/Windows)
+
 ## New Features
 * `setOption()` - Sets a global option from a named list element
 * `printif()` - Conditionally Print an Object
-* `tmr()` - New version of the `timer()` function with a more efficient and intuitive behavior
+* `tmr()` - New version of the `timer()` function : it uses simple lists during 
+	timestamps collection, stores them in a static variable, and computes only 
+	at the end.  
+	This allows both fast calculation, and very simple function calls.
 * `ralpha_fold()` - Easily fold all code brackets
 * `ralpha_unfold()` - Efficient way to unfold code brackets
 
@@ -13,10 +20,12 @@
 * `foldAllBr()` - It is recommended to use `ralpha_fold()` and `ralpha_unfold()`
 
 ## Minor Improvements
-* `importAll()` - Enhanced argument handling for all possible configuration cases (absolute/relative/unspecified paths combined with fileList as absolute/relative paths or patterns). Improved column type harmonization across imported files.
+* `importAll()` - Improved column type harmonization across imported files.
 
 ## Bug Fixes
-* `importAll()` - Fixed edge cases in path resolution and file pattern matching
+* `importAll()` - Fixed handling of all different possibilities between path
+and fileList (relative/absolute/omitted path, combined with fileList as 
+absolute/relative paths, or a pattern)
 
 ---
 
@@ -25,7 +34,10 @@
 ## Initial CRAN Release
 
 ### Package Overview
-R.AlphA.Home provides a collection of personal functions designed to simplify and streamline common R programming tasks. This package offers reusable tools and shortcuts for frequently used calculations and workflows, making R programming more accessible and efficient.
+R.AlphA.Home provides a collection of personal functions designed to simplify
+and streamline common R programming tasks. This package offers reusable tools
+and shortcuts for frequently used calculations and workflows, making R 
+programming more accessible and efficient.
 
 ### Core Functions
 
