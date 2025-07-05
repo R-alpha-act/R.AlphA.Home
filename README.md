@@ -1,10 +1,8 @@
-# R.AlphA.Home <img src="man/figures/logo.png" align="right" height="139" alt="" />
+# R.AlphA.Home <img src="man/figures/logo.png" align="right" style="height: 138px;" alt="Logo" />
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/R.AlphA.Home)](https://CRAN.R-project.org/package=R.AlphA.Home)
-[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
-[![R-CMD-check](https://github.com/R-alpha-act/R.AlphA.Home/workflows/R-CMD-check/badge.svg)](https://github.com/R-alpha-act/R.AlphA.Home/actions)
-<!-- badges: end -->
+[![R-CMD-check](https://github.com/R-alpha-act/R.AlphA.Home/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/R-alpha-act/R.AlphA.Home/actions/workflows/R-CMD-check.yaml)<!-- badges: end -->
 
 > **Feel at Home using R, Thanks to Shortcuts Functions Making it Simple**
 
@@ -31,19 +29,19 @@ devtools::install_github("R-alpha-act/R.AlphA.Home")
 
 ### 📊 Data Manipulation and Processing
 - **`cols_pad()`** - Add variables to ease data usage in pivot tables
-- **`compareVars()`** - Compare table variables with detailed analysis
+- **`compareVars()`** - Compare table variables
 - **`countSwitches()`** - Create incremented counters based on start/stop markers
 - **`importAll()`** - Import and concatenate multiple data files efficiently *(enhanced v1.1.0)*
 - **`left_join_checks()`** - Left join operations with built-in validation checks
 
 ### 📅 Date and Time Utilities
 - **`rdate()`** - Generate random dates with similar usage as r* functions
-- **`tmr()`** - Enhanced timer function with improved performance *(new in v1.1.0)*
+- **`tmr()`** - Allow organized tracking of R code execution time *(new in v1.1.0)*
 
 ### 💾 Data Output and Formatting
 - **`quickSave()`** - Save files with automatic date prefixing in designated directory
 - **`sepThsd()`** - Quick number formatting with customizable defaults
-- **`printif()`** - Conditionally print objects based on conditions *(new in v1.1.0)*
+- **`printif()`** - Conditionally print objects based *(new in v1.1.0)*
 
 ### 🎨 Graphics and Visual Utilities
 - **`lum_0_100()`** - Adjust graphics window brightness for comfortable ggplot2 viewing

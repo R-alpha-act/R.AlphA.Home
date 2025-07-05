@@ -2,7 +2,7 @@
 
 ## New Features
 * `setOption()` - Sets a global option from a named list element
-* `printif()` - Conditionally Print an Object
+* `printif()` - Conditionally print an object
 * `tmr()` - New version of the `timer()` function : it uses simple lists during 
 	timestamps collection, stores them in a static variable, and computes only 
 	at the end.  
@@ -51,7 +51,7 @@ programming more accessible and efficient.
 
 **Data Output and Formatting:**
 * `quickSave()` - Save File in a Directory storing saves, prefixing it with current date
-* `sepThsd()` - Quick Number Formatting with Custom Defaults
+* `sepThsd()` - Quick number formatting with customizable defaults
 * `printif()` - Conditionally Print an Object
 
 **Graphics and Visual Utilities:**
