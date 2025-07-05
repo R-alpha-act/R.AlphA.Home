@@ -1,9 +1,5 @@
 # R.AlphA.Home 1.1.0
 
-## New Shortcuts 
-ralpha_fold   - ctrl+up   (both on Mac/Windows)
-ralpha_unfold - ctrl+down (both on Mac/Windows)
-
 ## New Features
 * `setOption()` - Sets a global option from a named list element
 * `printif()` - Conditionally Print an Object
@@ -13,6 +9,7 @@ ralpha_unfold - ctrl+down (both on Mac/Windows)
 	This allows both fast calculation, and very simple function calls.
 * `ralpha_fold()` - Easily fold all code brackets
 * `ralpha_unfold()` - Efficient way to unfold code brackets
+* Added RStudio addins for folding functions (recommended shortcuts: Ctrl+Up/Down)
 
 ## Major Changes
 **Newly deprecated**
