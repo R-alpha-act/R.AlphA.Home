@@ -17,6 +17,8 @@
 #'
 #' @return A data frame containing the concatenated table with the fName column
 #' @importFrom openxlsx read.xlsx
+#' @importFrom data.table fread
+#' @importFrom arrow read_parquet read_feather
 #' @export
 #'
 #' @examples
@@ -109,10 +111,12 @@ importAll <- function(
 		if (missing(importFunction)) {
 			filePaths[, ext := gsub(".*\\.", "", locPath)]
 			importFunsList <- tribble(
-				~ext     , ~fun
-				, "xlsx" , function(x) as.data.table(openxlsx::read.xlsx(x))
-				, "csv"  , fread
-				, "rds"  , readRDS
+				~ext       , ~fun
+				, "xlsx"   , function(x) as.data.table(openxlsx::read.xlsx(x))
+				, "csv"    , fread
+				, "rds"    , readRDS
+				, "parquet", read_parquet
+				, "feather", read_feather
 			) %>%
 				as.data.table
 
