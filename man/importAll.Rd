@@ -10,7 +10,8 @@ importAll(
   ignore.case = FALSE,
   importFunction = NULL,
   fill = FALSE,
-  fileList = NULL
+  fileList = NULL,
+  renameTable = data.frame(oldName = character(), newName = character())
 )
 }
 \arguments{
@@ -28,6 +29,9 @@ function selects an import method based on the file extension.}
 
 \item{fileList}{A character vector of file names to import
 (used instead of `pattern`).}
+
+\item{renameTable}{a data.frame with 2 columns, oldName/newName. importAll
+will rename the columns of each file following this table}
 }
 \value{
 A data frame containing the concatenated table with the fName column

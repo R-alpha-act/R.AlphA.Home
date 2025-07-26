@@ -14,6 +14,8 @@
 #' @param fill Logical. Passed to `rbind` to allow filling missing columns.
 #' @param fileList A character vector of file names to import
 #' (used instead of `pattern`).
+#' @param renameTable a data.frame with 2 columns, oldName/newName. importAll
+#' will rename the columns of each file following this table
 #'
 #' @return A data frame containing the concatenated table with the fName column
 #' @importFrom openxlsx read.xlsx
@@ -60,6 +62,7 @@ importAll <- function(
 		, importFunction = NULL
 		, fill = FALSE
 		, fileList = NULL
+		, renameTable = data.frame(oldName = character(), newName = character())
 ){
 
 	is_absolute_path <- function(path) {
@@ -108,7 +111,7 @@ importAll <- function(
 	} # get paths either with pattern, or with fileList --> filePaths
 	{
 		# choosing import function depending on extensions
-		if (missing(importFunction)) {
+		if (is.null(importFunction)) {
 			filePaths[, ext := gsub(".*\\.", "", locPath)]
 			importFunsList <- tribble(
 				~ext       , ~fun
@@ -162,6 +165,13 @@ importAll <- function(
 			FUN = function(ful_path, loc_path, importFunction){
 				import <- importFunction(ful_path) %>% as.data.table
 				import[, fName := loc_path]
+
+				setnames(
+					import
+					, renameTable$oldName
+					, renameTable$newName
+					, skip_absent = TRUE
+				)
 
 				# Harmonization of types if necessary
 				if (harmonize_types) {
