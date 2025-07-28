@@ -36,6 +36,7 @@ No explicit return value. The function writes an Excel file to the specified loc
 Exports a data frame to an Excel file with optional column padding to ensure a consistent number of columns. This function combines data export functionality with column padding, making it particularly useful for creating Excel files that maintain the same structure across different datasets, especially when used with pivot tables.
 }
 \examples{
+\dontrun{
 # Basic usage with default parameters
 df <- data.frame(name = c("Alice", "Bob"), age = c(25, 30))
 quickExport(df, sheetName = "employees", saveName = "employee_data.xlsx")
@@ -44,4 +45,5 @@ quickExport(df, sheetName = "employees", saveName = "employee_data.xlsx")
 sales_data <- data.frame(product = c("A", "B"), sales = c(100, 200))
 quickExport(sales_data, nCols = 50, colPrefix = "col_",
            saveName = "sales_report.xlsx", overwrite = FALSE)
+}
 }
