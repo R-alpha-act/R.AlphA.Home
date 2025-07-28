@@ -10,7 +10,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
-Imports: data.table, lubridate, rstudioapi, stringr, grDevices, openxlsx, ggplot2, dplyr, tibble, tidyr, R.utils, shinyWidgets, shiny, magrittr, stringi
+Imports: data.table, lubridate, rstudioapi, stringr, grDevices, openxlsx, ggplot2, dplyr, tibble, tidyr, R.utils, shinyWidgets, shiny, magrittr, stringi, arrow
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
