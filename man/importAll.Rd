@@ -11,7 +11,8 @@ importAll(
   importFunction = NULL,
   fill = FALSE,
   fileList = NULL,
-  renameTable = data.frame(oldName = character(), newName = character())
+  renameTable = data.frame(oldName = character(), newName = character()),
+  excludePattern = NULL
 )
 }
 \arguments{
@@ -32,16 +33,21 @@ function selects an import method based on the file extension.}
 
 \item{renameTable}{a data.frame with 2 columns, oldName/newName. importAll
 will rename the columns of each file following this table}
+
+\item{excludePattern}{Character. Pattern to exclude files from import, applied after initial file selection.}
 }
 \value{
-A data frame containing the concatenated table with the fName column
+A data.table containing the concatenated table with the fName column indicating the source file for each row
 }
 \description{
 Imports multiple files into a list, concatenates them into a single
-table, and adds an `fName` variable.
+table, and adds an `fName` variable. The function automatically handles type
+harmonization when different file types are mixed and supports various formats
+including CSV, Excel, RDS, Parquet, and Feather files.
 
 The files can be selected either by giving a file list (character vector), or
-by specifying a pattern.
+by specifying a pattern. The function also supports column renaming and file
+exclusion patterns.
 }
 \examples{
 # Directory containing test files

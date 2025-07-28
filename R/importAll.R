@@ -23,7 +23,7 @@
 #'
 #' @return A data.table containing the concatenated table with the fName column indicating the source file for each row
 #' @importFrom openxlsx read.xlsx
-#' @importFrom data.table fread rbind setnames as.data.table
+#' @importFrom data.table fread setnames as.data.table
 #' @importFrom arrow read_parquet read_feather
 #' @importFrom dplyr mutate filter
 #' @importFrom stringr str_detect str_extract
