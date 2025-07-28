@@ -1,9 +1,12 @@
 #' @title Function to Import and Concatenate Multiple data files
 #' @description Imports multiple files into a list, concatenates them into a single
-#' table, and adds an `fName` variable.
+#' table, and adds an `fName` variable. The function automatically handles type
+#' harmonization when different file types are mixed and supports various formats
+#' including CSV, Excel, RDS, Parquet, and Feather files.
 #'
 #' The files can be selected either by giving a file list (character vector), or
-#' by specifying a pattern.
+#' by specifying a pattern. The function also supports column renaming and file
+#' exclusion patterns.
 #'
 #' @param path Path to the directory, passed to `list.files`.
 #' @param pattern Pattern to match file names, passed to `list.files`.
@@ -16,11 +19,15 @@
 #' (used instead of `pattern`).
 #' @param renameTable a data.frame with 2 columns, oldName/newName. importAll
 #' will rename the columns of each file following this table
+#' @param excludePattern Character. Pattern to exclude files from import, applied after initial file selection.
 #'
-#' @return A data frame containing the concatenated table with the fName column
+#' @return A data.table containing the concatenated table with the fName column indicating the source file for each row
 #' @importFrom openxlsx read.xlsx
-#' @importFrom data.table fread
+#' @importFrom data.table fread rbind setnames as.data.table
 #' @importFrom arrow read_parquet read_feather
+#' @importFrom dplyr mutate filter
+#' @importFrom stringr str_detect str_extract
+#' @importFrom tibble tribble
 #' @export
 #'
 #' @examples
@@ -63,6 +70,7 @@ importAll <- function(
 		, fill = FALSE
 		, fileList = NULL
 		, renameTable = data.frame(oldName = character(), newName = character())
+		, excludePattern = NULL
 ){
 
 	is_absolute_path <- function(path) {
@@ -76,7 +84,7 @@ importAll <- function(
 		grepl("^(/|~|[A-Za-z]:|\\\\)", path)
 	} # check if a path is absolute
 	{
-		if (missing(fileList)) {
+		if (is.null(fileList)) {
 			# with a pattern
 			fullPaths_vec <- list.files(
 				path = path,
@@ -97,7 +105,12 @@ importAll <- function(
 					)
 				) %>%
 				as.data.table
-		} # list file paths : either with pattern, or with fileList
+		} # list file paths : either with pattern, or with fileList => filePaths
+		if(!is.null(excludePattern)){
+			filePaths <- filePaths %>%
+				mutate(toExclude = str_detect(locPath, excludePattern)) %>%
+				filter(!toExclude)
+		} # exclude files matching a pattern
 		files_exist <- file.exists(filePaths$fulPath)
 		if (!all(files_exist)) {
 			missing_files <- filePaths$fulPath[!files_exist]
