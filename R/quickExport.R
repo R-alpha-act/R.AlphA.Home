@@ -9,6 +9,7 @@
 #' @param overwrite A logical value indicating whether to overwrite existing files. Default is TRUE.
 #' @return No explicit return value. The function writes an Excel file to the specified location and prints a message with the file path.
 #' @examples
+#' \dontrun{
 #' # Basic usage with default parameters
 #' df <- data.frame(name = c("Alice", "Bob"), age = c(25, 30))
 #' quickExport(df, sheetName = "employees", saveName = "employee_data.xlsx")
@@ -17,6 +18,7 @@
 #' sales_data <- data.frame(product = c("A", "B"), sales = c(100, 200))
 #' quickExport(sales_data, nCols = 50, colPrefix = "col_",
 #'            saveName = "sales_report.xlsx", overwrite = FALSE)
+#' }
 #' @importFrom openxlsx write.xlsx
 #' @export
 quickExport <- function(
