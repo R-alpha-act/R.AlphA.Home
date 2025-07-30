@@ -129,6 +129,7 @@ importAll <- function(
 	{
 		# choosing import function depending on extensions
 		if (is.null(importFunction)) {
+			setDT(filePaths)
 			filePaths[, ext := gsub(".*\\.", "", locPath)]
 			importFunsList <- tribble(
 				~ext       , ~fun
