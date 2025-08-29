@@ -3,6 +3,7 @@
 ## New Features
 * `setOption()` - Sets a global option from a named list element
 * `printif()` - Conditionally print an object
+* `loadCheck()` - Load and install package if necessary
 * `tmr()` - New version of the `timer()` function : it uses simple lists during 
 	timestamps collection, stores them in a static variable, and computes only 
 	at the end.  
@@ -18,6 +19,8 @@
 
 ## Minor Improvements
 * `importAll()` - Improved column type harmonization across imported files.
+* `importAll()` - Added `renameTable` parameter for systematic column renaming across imported files.
+* `importAll()` - Added `excludePattern` parameter to exclude files from import based on pattern matching.
 
 ## Bug Fixes
 * `importAll()` - Fixed handling of all different possibilities between path
