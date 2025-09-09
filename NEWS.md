@@ -4,6 +4,7 @@
 * `setOption()` - Sets a global option from a named list element
 * `printif()` - Conditionally print an object
 * `loadCheck()` - Load and install package if necessary
+* `show_diff()` - Compare two texts or files with diffr
 * `tmr()` - New version of the `timer()` function : it uses simple lists during 
 	timestamps collection, stores them in a static variable, and computes only 
 	at the end.  
