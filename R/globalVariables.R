@@ -86,6 +86,8 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c(
 	,'start'
 	,'absPos'
 	,'BrAbsPN'
+	,'tail'
+	,'head'
 	# timer
 	,'timeStamp_num'
 	,'timeStamp'
