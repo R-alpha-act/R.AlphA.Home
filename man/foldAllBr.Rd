@@ -7,15 +7,19 @@
 foldAllBr(time = FALSE, debug_getTbl = FALSE)
 }
 \arguments{
-\item{time}{Logical. If `TRUE`, the function will provide timing information
-for each step.}
+\item{time}{Logical. If `TRUE`, the function will return \code{ggplot} object
+visualizing execution times for each step.}
 
 \item{debug_getTbl}{Logical. If `TRUE`, returns the `docContent` table with
 tags for debugging purposes.}
 }
 \value{
-If `debug_getTbl = TRUE`, a table (`docContent`) with tags.
-Otherwise, no return value (performs folding).
+A list containing:
+\itemize{
+  \item \code{debug_info}: A data frame with debugging information if \code{debug_getTbl = TRUE}.
+  \item \code{timer_plot}: A \code{ggplot} object visualizing execution times if \code{time = TRUE}.
+}
+If both parameters are \code{FALSE}, the function returns a list with \code{NULL} values.
 }
 \description{
 This function works with code split into parts identified by brackets.
@@ -34,8 +38,11 @@ The format is as follows:
 It automatically identifies parts to fold/unfold easily.
 
 Shortcuts required:
+Suggestion is to have one shortcut for this function, foldAllBr, and another
+one for "expand fold" command. Here are the suggested shortcuts depending
+on Windows or Mac :
 \itemize{
-  \item "fold all brackets": shift + alt + S (Windows) / ctrl + shift + up (Mac)
-  \item "expand fold": shift + alt + D (Windows) / ctrl + shift + down (Mac)
+  \item on Mac : use ctrl+shift -> + up (fold) and down (expand)
+  \item on Win : use shift+alt  -> + S  (fold) and D    (expand)
 }
 }
