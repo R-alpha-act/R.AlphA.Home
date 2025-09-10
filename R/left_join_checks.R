@@ -15,6 +15,8 @@
 #' Options: `"warning"` or `"error"`. (default: `"warning"`)
 #' @param showNotFound Logical. Show rows from `x` that did not match with `y`.
 #' Default: FALSE.
+#' @param showProblems Logical. Display the problems encountered during the
+#' joining process, if any.
 #' @param time Logical. Internal argument used only for testing purposes, timing
 #' the function steps
 #'
@@ -56,6 +58,7 @@ left_join_checks <- function(
 		, req_preserved_x = 1
 		, behavior = "error"
 		, showNotFound = FALSE
+		, showProblems = TRUE
 		, time = FALSE
 ){
 
@@ -119,12 +122,11 @@ left_join_checks <- function(
 							"\nsee report for details")
 
 		if (showNotFound & !chk_xAllMatch) print(joinXY %>% filter(!tmp_inY))
+		checksTable %>% printif(showProblems)
 
 		if (behavior == "warning") {
-			print(checksTable)
 			warning(commonMsg)
 		} else if (behavior == "error") {
-			print(checksTable)
 			stop(commonMsg)
 		} # warning or error
 	} # react to problems
