@@ -26,18 +26,20 @@
 #' @export
 show_diff <- function(input1, input2) {
 	get_content <- function(input) {
-		if (file.exists(input)) {
+		if (is.null(input) || length(input) == 0 || is.na(input) || nchar(input) == 0) {
+			return(character(0))
+		} else if (file.exists(input)) {
 			return(readLines(input, warn = FALSE))
 		} else {
-			return(strsplit(input, "\n")[[1]])
+			return(strsplit(input, "\n", fixed = TRUE)[[1]])
 		}
-	}
+	} # extrait le contenu d'une chaine ou d'un fichier
 	{
 		content1 <- get_content(input1)
 		content2 <- get_content(input2)
 		content1_clean <- trimws(content1)
 		content2_clean <- trimws(content2)
-	} #  Supprimer les espaces en début/fin de ligne
+	} # Supprimer les espaces en début/fin de ligne
 	{
 		temp1 <- tempfile(fileext = ".txt")
 		temp2 <- tempfile(fileext = ".txt")
@@ -51,6 +53,8 @@ show_diff <- function(input1, input2) {
 			contextSize = 2,
 			minJumpSize = 5,
 			wordWrap = TRUE,
+			before = "Original",
+			after = "Modified"
 		)
 	} # Utiliser diffr sur les fichiers nettoyés
 	unlink(c(temp1, temp2))
