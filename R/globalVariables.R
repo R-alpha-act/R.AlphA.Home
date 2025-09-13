@@ -72,9 +72,9 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c(
 	,"endBrEndLine"
 	,"contains_cursor"
 	,"indentLevel"
-	,"elapsed_time_num"
-	,"current_time_num"
-	,"step"
+	,"ct_proc"
+	,"ct_num"
+	,"tot_num"
 	# ralpha_unfold
 	,'lineFull'
 	,'hasBracket'
@@ -93,10 +93,4 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c(
 	,'timeStamp'
 	,'dt_num'
 	,'dt_text'
-	# tmr
-	,'current_time_num'
-	,'current_time'
-	,'elapsed_time_num'
-	,'elapsed_time'
-	,'total_time'
 ))

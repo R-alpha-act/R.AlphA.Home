@@ -32,7 +32,8 @@ Imports:
     stringr,
     tibble,
     tidyr,
-    diffr
+    diffr,
+    R6
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
