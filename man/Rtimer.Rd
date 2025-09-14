@@ -39,7 +39,6 @@ print(result)
 \item \href{#method-Timer-new}{\code{Rtimer$new()}}
 \item \href{#method-Timer-add}{\code{Rtimer$add()}}
 \item \href{#method-Timer-get}{\code{Rtimer$get()}}
-\item \href{#method-Timer-clone}{\code{Rtimer$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -93,23 +92,6 @@ Return the collected timings as a \code{data.table}
 }
 \subsection{Returns}{
 A \code{data.table} containing timestamps and time differences
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Timer-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Timer-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Rtimer$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
 }
 }
 }

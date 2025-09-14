@@ -26,6 +26,7 @@
 #' @export
 Rtimer <- R6Class(
 	"Timer",
+	cloneable = FALSE,
 	private = list(
 		timer_list = list()
 	),
