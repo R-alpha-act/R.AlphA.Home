@@ -132,7 +132,7 @@ left_join_checks <- function(
 	} # react to problems
 
 	fnTmr$add("end")
-	fnTmr$get() |> printif(time)
+	fnTmr$get() %>% printif(time)
 	if(time){
 		xSize <- nrow(x)
 		timePerM <- sum(fnTmr$dt_seconds/xSize*1E6) %>% round(2)
