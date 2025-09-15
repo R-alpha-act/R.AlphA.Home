@@ -234,9 +234,9 @@ ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 	} # Reposition cursor
 	{
 		foTmr$add("end")
-		foTmr$get() |>
-			as_tibble() |>
-			select(-ct_proc, -ct_num, -dt_num, -tot_num) |>
+		foTmr$get() %>%
+			as_tibble() %>%
+			select(-ct_proc, -ct_num, -dt_num, -tot_num) %>%
 			printif(get_time)
 	} # Display timing if requested
 	invisible(NULL)
