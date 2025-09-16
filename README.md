@@ -36,7 +36,7 @@ devtools::install_github("R-alpha-act/R.AlphA.Home")
 
 ### 📅 Date and Time Utilities
 - **`rdate()`** - Generate random dates with similar usage as r* functions
-- **`tmr()`** - Allow organized tracking of R code execution time *(new in v1.1.0)*
+- **`Rtimer`** - Class R6, allow organized tracking of R code execution time *(new in v1.1.0)*
 
 ### 💾 Data Output and Formatting
 - **`quickSave()`** - Save files with automatic date prefixing in designated directory
@@ -47,15 +47,17 @@ devtools::install_github("R-alpha-act/R.AlphA.Home")
 - **`lum_0_100()`** - Adjust graphics window brightness for comfortable ggplot2 viewing
 - **`ret_lum()`** - Adjust brightness of hex colors
 - **`shiny_lum_0_100()`** - Set Shiny background and sidebar colors to chosen grey shades
+- **`show_diff()`** - Compare two texts or files with diffr
 
 ### 🔧 System and Environment
 - **`root()`** - Get root directory of current source file
 - **`setOption()`** - Set global options from named list elements *(new in v1.1.0)*
+- **`loadCheck()`** - Load and install package if necessary *(new in v1.1.0)*
 - **`ralpha_fold()`** / **`ralpha_unfold()`** - Enhanced code folding functionality *(new in v1.1.0)*
 - **RStudio Addins** - Convenient shortcuts for folding functions *(new in v1.1.0)*
 
 ### ⚠️ Deprecated Functions
-- `timer()` → Use `tmr()` instead
+- `timer()` → Use the class `Rtimer` instead
 - `foldAllBr()` → Use `ralpha_fold()` and `ralpha_unfold()` instead
 
 ## Dependencies
@@ -67,7 +69,7 @@ The package imports several essential R packages:
 - **Graphics**: `ggplot2`, `grDevices`
 - **File operations**: `openxlsx`, `R.utils`
 - **Shiny**: `shiny`, `shinyWidgets`
-- **Utilities**: `rstudioapi`, `magrittr`
+- **Utilities**: `rstudioapi`, `magrittr`, `R6`
 
 ## Contributing
 
