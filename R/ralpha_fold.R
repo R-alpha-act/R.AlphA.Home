@@ -19,7 +19,8 @@
 ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 
 	fab_browse <- getOption("fab_browse", default = FALSE)
-	tmr("0_start folding process", start = TRUE)
+	foTmr <- Rtimer$new()
+	foTmr$add("0_start folding process")
 	colFact <- 1E-3
 	srcContext <- rstudioapi::getSourceEditorContext()
 	{
@@ -183,8 +184,8 @@ ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 	# Main execution
 	retainPos <- getPos()
 	retainPN <- DR_PN(retainPos)
-	tmr("1_analyse code") ; allIndents <- getIndents()
-	tmr("2_retreat code") ; {
+	foTmr$add("1_analyse code") ; allIndents <- getIndents()
+	foTmr$add("2_retreat code") ; {
 		allIndents_ret <- allIndents %>%
 			mutate(brPN = (rowNum + chrNum * colFact) %>% round(8)) %>%
 			group_by(partName) %>%
@@ -197,7 +198,7 @@ ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 			mutate(contains_cursor = between(cursor_PN, opnBrPN, endBrEndLine)) %>%
 			printif(FALSE)
 	} # Process indent information
-	tmr("3_properly fold")
+	foTmr$add("3_properly fold")
 	if (fab_browse) browser()
 	{
 		cursor_situation <- allIndents_ret %>%
@@ -232,13 +233,10 @@ ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 		setCursorPosition(newPlace_DP)
 	} # Reposition cursor
 	{
-		fnTmr <- tmr(end = TRUE)
-		fnTmr %>%
+		foTmr$add("end")
+		foTmr$get() %>%
 			as_tibble() %>%
-			mutate(totalTime_secs = cumsum(elapsed_time_num) %>% round(2)) %>%
-			filter(!is.na(step) & step != "end") %>%
-			select(-current_time_num, -elapsed_time_num) %>%
-			mutate(elapsed_time = elapsed_time %>% as.numeric() %>% round(2)) %>%
+			select(-ct_proc, -ct_num, -dt_num, -tot_num) %>%
 			printif(get_time)
 	} # Display timing if requested
 	invisible(NULL)

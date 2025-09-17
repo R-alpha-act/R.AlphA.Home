@@ -3,21 +3,23 @@
 ## New Features
 * `setOption()` - Sets a global option from a named list element
 * `printif()` - Conditionally print an object
-* `tmr()` - New version of the `timer()` function : it uses simple lists during 
-	timestamps collection, stores them in a static variable, and computes only 
-	at the end.  
-	This allows both fast calculation, and very simple function calls.
+* `loadCheck()` - Load and install package if necessary
+* `show_diff()` - Compare two texts or files with diffr
+* `Rtimer` - New R6 class replacing the `timer()` function : provides functionality
+to add timing checkpoints, calculate time differences, and generate summary data table.
 * `ralpha_fold()` - Easily fold all code brackets
 * `ralpha_unfold()` - Efficient way to unfold code brackets
 * Added RStudio addins for folding functions (recommended shortcuts: Ctrl+Up/Down)
 
 ## Major Changes
 **Newly deprecated**
-* `timer()` - It is recommended to use the new version `tmr()`
+* `timer()` - It is recommended to use the new class `RTimer`
 * `foldAllBr()` - It is recommended to use `ralpha_fold()` and `ralpha_unfold()`
 
 ## Minor Improvements
 * `importAll()` - Improved column type harmonization across imported files.
+* `importAll()` - Added `renameTable` parameter for systematic column renaming across imported files.
+* `importAll()` - Added `excludePattern` parameter to exclude files from import based on pattern matching.
 
 ## Bug Fixes
 * `importAll()` - Fixed handling of all different possibilities between path

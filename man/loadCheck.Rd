@@ -4,11 +4,11 @@
 \alias{loadCheck}
 \title{Load and Install Package if Necessary}
 \usage{
-loadCheck(package_name)
+loadCheck(package_names)
 }
 \arguments{
-\item{package_name}{A character string specifying the name of the package to
-install (if necessary), and load.}
+\item{package_names}{A character vector specifying the name(s) of the
+package(s) to install (if necessary), and load.}
 }
 \value{
 No return value.
