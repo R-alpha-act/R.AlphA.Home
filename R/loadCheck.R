@@ -3,8 +3,8 @@
 #' current R environment. If the package is not installed, it automatically
 #' installs it with dependencies and then loads it. #' The function suppresses
 #' startup messages to provide a clean loading experience.
-#' @param package_name A character string specifying the name of the package to
-#' install (if necessary), and load.
+#' @param package_names A character vector specifying the name(s) of the
+#' package(s) to install (if necessary), and load.
 #' @return No return value.
 #' @examples
 #' # Load a commonly used package
@@ -12,13 +12,21 @@
 #'
 #' # Load a package that might not be installed
 #' loadCheck("ggplot2")
-#' @import utils
+#' @importFrom utils install.packages
 #' @export
 #'
-loadCheck <- function(package_name) {
-	if (!requireNamespace(package_name, quietly = TRUE)) {
-		message("Install required for package: ", package_name)
-		install.packages(package_name, dependencies = TRUE, quiet = TRUE)
-	}
-	suppressPackageStartupMessages(library(package_name, character.only = TRUE, quietly = TRUE))
+loadCheck <- function(package_names) {
+	invisible(vapply(package_names,function(pkg) {
+			if (!requireNamespace(pkg, quietly = TRUE)) {
+				message("Install required for package: ", pkg)
+				install.packages(pkg, dependencies = TRUE, quiet = TRUE)
+			}
+			suppressPackageStartupMessages(
+				library(pkg, character.only = TRUE, quietly = TRUE)
+			)
+			TRUE
+		},
+		logical(1L) # type attendu pour vapply
+	))
 }
+
