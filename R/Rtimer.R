@@ -23,6 +23,7 @@
 #'
 #' @import R6
 #' @importFrom data.table data.table rbindlist
+#' @importFrom purrr map
 #' @export
 Rtimer <- R6Class(
 	"Timer",
@@ -55,7 +56,10 @@ Rtimer <- R6Class(
 		#' @return A \code{data.table} containing timestamps and time differences
 		get = function(fill = TRUE) {
 			if (length(private$timer_list) == 0) return(data.table())
-			timer_table <- rbindlist(private$timer_list, fill = fill)
+			timer_table <- private$timer_list %>%
+				# handle 0-length variables, to avoid a warning message
+				map(~ map(.x, ~ if(length(.x) == 0) NA else .x)) %>%
+				rbindlist(fill = fill)
 			timer_table[, ct_num := as.numeric(currentTime)]
 			timer_table[, dt_num := c(diff(ct_num), 0)]
 			timer_table[, dt_proc := c(diff(ct_proc), 0)]
