@@ -28,7 +28,7 @@
 #' ralpha_fold() will fold the different code parts and go back to beginning
 #' of current part
 #'
-#' ralplha_unfold() will unfold a code part and jump to the next braces when
+#' ralpha_unfold() will unfold a code part and jump to the next braces when
 #' relevant.
 #'
 #' both combined will provide a convenient way to manage what is displayed on
@@ -85,6 +85,66 @@ ralpha_unfold <- function(){
 			)
 		} # PN_DR : pos num to document range
 		endLine    <- function(posNum) ceiling(posNum) - colFact # endLine : endLine of a posNum
+
+		handle_case_99  <- function() {
+			executeCommand("unfold")
+		}  # 99 : no more brackets
+		handle_case_1   <- function() {
+			nextBrInfo <- textTable %>%
+				filter(!is.na(BrAbsPN)) %>%
+				slice_min(rowid) %>%
+				printif(0)
+			setCursorPosition(nextBrInfo$BrAbsPN %>% PN_DP)
+			executeCommand("unfold")
+		}  # 1: noBr (default)
+		handle_case_2   <- function() {
+			nextBrInfo <- textTable %>%
+				filter(!is.na(BrAbsPN)) %>%
+				slice_min(rowid) %>%
+				printif(0)
+			executeCommand("unfold")
+			setCursorPosition(nextBrInfo$BrAbsPN %>% PN_DP)
+			executeCommand("unfold")
+		}  # 2: afterBr
+		handle_case_3   <- function() {
+			executeCommand("unfold")
+			setCursorPosition(document_position(cursorLine, cursorCol + 1))
+		}  # 3: beforeBR
+		handle_case_4   <- function() {
+			setCursorPosition(document_position(cursorLine, 999))
+			executeCommand("unfold")
+			setCursorPosition(document_position(cursorLine+1, 0))
+		}  # 4: blockEnd
+		handle_case_5.1 <- function() {
+			nextBrInfo <- textTable %>%
+				filter(!is.na(BrAbsPN)) %>%
+				slice_min(rowid) %>%
+				printif(0)
+			executeCommand("unfold")
+			setCursorPosition(nextBrInfo$BrAbsPN %>% PN_DP)
+		}  # 5.1: cursor position | } {
+		handle_case_5.2 <- function() {
+			setCursorPosition(document_position(cursorLine, findLastClosing-1))
+			executeCommand("unfold")
+			setCursorPosition(document_position(cursorLine, findNextOpen-1))
+		}  # 5.2: cursor position } | {
+		handle_case_5.3 <- function() {
+			setCursorPosition(document_position(cursorLine, findLastClosing-1))
+			executeCommand("unfold")
+			setCursorPosition(document_position(cursorLine, findLastOpen))
+		}  # 5.3: cursor position } { |
+		handle_case_6   <- function() {
+			if(OpBrBefore){
+				setCursorPosition(document_position(cursorLine, findLastOpen))
+			} else {
+				setCursorPosition(document_position(cursorLine, findNextOpen))
+			}
+			executeCommand("unfold")
+		}  # 6: startEnd
+		handle_default  <- function() {
+			printif("case not found", caseMsg)
+			executeCommand("unfold")
+		}  # dft
 	} # local funs
 	srcContext <- rstudioapi::getSourceEditorContext()
 	retainPos <- getPos();
@@ -140,94 +200,36 @@ ralpha_unfold <- function(){
 	} # analyze text
 
 	# cases handling ===========================================================
-	case_99 <- noOprBrNextLines & !OpBrAfter
-	case_2 <- curLineInfo$lineStart  %>% grepl(pattern = "\\{$"     ) # 2_afterBr → 2 (inutile car inclus dans 1 ? si c'est utile)
-	case_3 <- curLineInfo$lineEnd    %>% grepl(pattern = "^\\{"     ) # 3_beforeBR → 2
-	case_5 <- curLineInfo$lineFull   %>% grepl(pattern = "\\}.*\\{" ) # 5_endStart → 3
-	case_6 <- curLineInfo$lineFull   %>% grepl(pattern = "\\{.*\\}" ) # 6_startEnd
-	case_4 <- curLineInfo$lineFull   %>% grepl(pattern = "\\}"      ) # 4_blockEnd → 1/3 - pas complet car inclus cas 3 mais comme on l'a vérifié avant on peut s'en contenter pour l'instant
-	case_1 <- TRUE # all other cases                                  # 1_noBr → 2
-	if(case_99){
-		test <- printif("99 - no more br", caseMsg)
-		executeCommand("unfold")
-		return(invisible(NULL))
-	}
-	if(case_2){
-		printif("case_2", caseMsg)
-		nextBrInfo <- textTable %>%
-			filter(!is.na(BrAbsPN)) %>%
-			slice_min(rowid) %>%
-			printif(0)
-		executeCommand("unfold")
-		setCursorPosition(nextBrInfo$BrAbsPN %>% PN_DP)
-		executeCommand("unfold")
-		return(invisible(NULL))
-	}
-	if(case_3){
-		printif("case_3", caseMsg)
-		executeCommand("unfold")
-		setCursorPosition(document_position(cursorLine, cursorCol + 1))
-		return(invisible(NULL))
-	}
-	if(case_5){
-		printif("case_5", caseMsg)
-		case_5.1 <- !ClBrBefore & OpBrAfter
-		case_5.2 <- ClBrBefore  & OpBrAfter
-		case_5.3 <- ClBrBefore  & !OpBrAfter
-		if(case_5.1){
-			printif("case_5.1", caseMsg)
-			nextBrInfo <- textTable %>%
-				filter(!is.na(BrAbsPN)) %>%
-				slice_min(rowid) %>%
-				printif(0)
-			executeCommand("unfold")
-			setCursorPosition(nextBrInfo$BrAbsPN %>% PN_DP)
-			return(invisible(NULL))
-		} # 5.1 | } {
-		if(case_5.2){
-			printif("case_5.2", caseMsg)
-			setCursorPosition(document_position(cursorLine, findLastClosing-1))
-			executeCommand("unfold")
-			setCursorPosition(document_position(cursorLine, findNextOpen-1))
-			return(invisible(NULL))
-		} # 5.2 } | {
-		if(case_5.3){
-			printif("case_5.3", caseMsg)
-			setCursorPosition(document_position(cursorLine, findLastClosing-1))
-			executeCommand("unfold")
-			setCursorPosition(document_position(cursorLine, findLastOpen))
-			return(invisible(NULL))
-		} # 5.3 } { |
-	}
-	if(case_6){
-		printif("case_6", caseMsg)
-		if(OpBrBefore){
-			setCursorPosition(document_position(cursorLine, findLastOpen))
-			executeCommand("unfold")
-		} else {
-			setCursorPosition(document_position(cursorLine, findNextOpen))
-			executeCommand("unfold")
-		}
-		return(invisible(NULL))
-	}
-	if(case_4){
-		printif("case_4", caseMsg)
-		setCursorPosition(document_position(cursorLine, 999))
-		executeCommand("unfold")
-		setCursorPosition(document_position(cursorLine+1, 0))
-		return(invisible(NULL))
-	}
-	if(case_1){
-		printif("case_1", caseMsg)
-		nextBrInfo <- textTable %>%
-			filter(!is.na(BrAbsPN)) %>%
-			slice_min(rowid) %>%
-			printif(0)
-		setCursorPosition(nextBrInfo$BrAbsPN %>% PN_DP)
-		executeCommand("unfold")
-		return(invisible(NULL))
-	}
+	# Identify which case we're in (order matters - check specific patterns first)
+	active_case <- dplyr::case_when(
+		noOprBrNextLines & !OpBrAfter ~ "case_99",  # 99: no more brackets
+		curLineInfo$lineStart %>% grepl(pattern = "\\{$") ~ "case_2",  # 2: afterBr
+		curLineInfo$lineEnd %>% grepl(pattern = "^\\{") ~ "case_3",  # 3: beforeBR
+		# case 5: endStart → line with } and { (cursor position varies)
+		(curLineInfo$lineFull %>% grepl(pattern = "\\}.*\\{")) & !ClBrBefore & OpBrAfter ~ "case_5.1",  # 5.1: cursor | } {
+		(curLineInfo$lineFull %>% grepl(pattern = "\\}.*\\{")) & ClBrBefore & OpBrAfter ~ "case_5.2",  # 5.2: cursor } | {
+		(curLineInfo$lineFull %>% grepl(pattern = "\\}.*\\{")) & ClBrBefore & !OpBrAfter ~ "case_5.3",  # 5.3: cursor } { |
+		curLineInfo$lineFull %>% grepl(pattern = "\\{.*\\}") ~ "case_6",  # 6: startEnd
+		curLineInfo$lineFull %>% grepl(pattern = "\\}") ~ "case_4",  # 4: blockEnd
+		TRUE ~ "case_1"  # 1: noBr (default)
+	)
 
-	printif("case not found", caseMsg)
-	executeCommand("unfold")
+	printif(active_case, caseMsg)
+
+	# Execute action based on case
+	switch(active_case,
+		"case_99"  = handle_case_99(),
+		"case_1"   = handle_case_1(),
+		"case_2"   = handle_case_2(),
+		"case_3"   = handle_case_3(),
+		"case_4"   = handle_case_4(),
+		"case_5.1" = handle_case_5.1(),
+		"case_5.2" = handle_case_5.2(),
+		"case_5.3" = handle_case_5.3(),
+		"case_6"   = handle_case_6(),
+		handle_default()  # default case
+	)
+
+	if(active_case != "case_99") executeCommand("expandToMatching")
+	invisible(NULL)
 }
