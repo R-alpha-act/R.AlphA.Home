@@ -40,7 +40,7 @@ or close the different sections.
 ralpha_fold() will fold the different code parts and go back to beginning
 of current part
 
-ralplha_unfold() will unfold a code part and jump to the next braces when
+ralpha_unfold() will unfold a code part and jump to the next braces when
 relevant.
 
 both combined will provide a convenient way to manage what is displayed on
