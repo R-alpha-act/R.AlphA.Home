@@ -154,8 +154,7 @@ show_diff <- function(input1, input2) {
 			code_deleted_bg, code_deleted_text,
 			code_added_bg, code_added_text,
 			insert_bg, insert_text,
-			cell_border,
-			diff_margin
+			cell_border
 		)
 
 		# css est prêt — utilisation typique :

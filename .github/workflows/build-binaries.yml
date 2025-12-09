@@ -34,19 +34,16 @@ jobs:
         with:
           r-version: ${{ env.R_VERSION }}
 
-      - name: Setup R dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rcmdcheck
-          needs: check
+      - name: Install dependencies
+        run: |
+          install.packages('remotes')
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
 
       - name: Build binary package
         id: build
         run: |
-          # Build the binary
           R CMD INSTALL --build .
-
-          # Find the generated zip file
           $zip = Get-ChildItem -Filter "*.zip" | Select-Object -First 1
           echo "binary_name=$($zip.Name)" >> $env:GITHUB_OUTPUT
           echo "Built: $($zip.Name)"
@@ -63,7 +60,7 @@ jobs:
   # Build macOS Binary (Intel)
   # ============================================================================
   build-macos-intel:
-    runs-on: macos-13  # Intel runner
+    runs-on: macos-12  # Intel runner (macos-13 retired)
     outputs:
       binary_name: ${{ steps.build.outputs.binary_name }}
 
@@ -76,11 +73,11 @@ jobs:
         with:
           r-version: ${{ env.R_VERSION }}
 
-      - name: Setup R dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rcmdcheck
-          needs: check
+      - name: Install dependencies
+        run: |
+          install.packages('remotes')
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
 
       - name: Build binary package
         id: build
@@ -114,11 +111,11 @@ jobs:
         with:
           r-version: ${{ env.R_VERSION }}
 
-      - name: Setup R dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rcmdcheck
-          needs: check
+      - name: Install dependencies
+        run: |
+          install.packages('remotes')
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
 
       - name: Build binary package
         id: build
