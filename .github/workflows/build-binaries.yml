@@ -44,10 +44,8 @@ jobs:
         id: build
         run: |
           R CMD INSTALL --build .
-          $zip = Get-ChildItem -Filter "*.zip" | Select-Object -First 1
-          echo "binary_name=$($zip.Name)" >> $env:GITHUB_OUTPUT
-          echo "Built: $($zip.Name)"
-        shell: pwsh
+          for %%f in (*.zip) do echo binary_name=%%f >> %GITHUB_OUTPUT%
+        shell: cmd
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
