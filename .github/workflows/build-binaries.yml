@@ -1,0 +1,230 @@
+name: Build R Package Binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      upload_to_s3:
+        description: 'Upload binaries to S3'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  R_VERSION: '4.4'
+  AWS_REGION: eu-west-3
+  S3_BUCKET: ralpha-packages
+
+jobs:
+  # ============================================================================
+  # Build Windows Binary
+  # ============================================================================
+  build-windows:
+    runs-on: windows-latest
+    outputs:
+      binary_name: ${{ steps.build.outputs.binary_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+
+      - name: Setup R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - name: Build binary package
+        id: build
+        run: |
+          # Build the binary
+          R CMD INSTALL --build .
+
+          # Find the generated zip file
+          $zip = Get-ChildItem -Filter "*.zip" | Select-Object -First 1
+          echo "binary_name=$($zip.Name)" >> $env:GITHUB_OUTPUT
+          echo "Built: $($zip.Name)"
+        shell: pwsh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binary
+          path: "*.zip"
+          retention-days: 30
+
+  # ============================================================================
+  # Build macOS Binary (Intel)
+  # ============================================================================
+  build-macos-intel:
+    runs-on: macos-13  # Intel runner
+    outputs:
+      binary_name: ${{ steps.build.outputs.binary_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+
+      - name: Setup R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - name: Build binary package
+        id: build
+        run: |
+          R CMD INSTALL --build .
+          BINARY=$(ls *.tgz 2>/dev/null | head -1)
+          echo "binary_name=$BINARY" >> $GITHUB_OUTPUT
+          echo "Built: $BINARY"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-intel-binary
+          path: "*.tgz"
+          retention-days: 30
+
+  # ============================================================================
+  # Build macOS Binary (ARM64 / Apple Silicon)
+  # ============================================================================
+  build-macos-arm:
+    runs-on: macos-latest  # ARM64 runner
+    outputs:
+      binary_name: ${{ steps.build.outputs.binary_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+
+      - name: Setup R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - name: Build binary package
+        id: build
+        run: |
+          R CMD INSTALL --build .
+          BINARY=$(ls *.tgz 2>/dev/null | head -1)
+          echo "binary_name=$BINARY" >> $GITHUB_OUTPUT
+          echo "Built: $BINARY"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm-binary
+          path: "*.tgz"
+          retention-days: 30
+
+  # ============================================================================
+  # Upload to S3 and Update Index
+  # ============================================================================
+  upload-to-s3:
+    needs: [build-windows, build-macos-intel, build-macos-arm]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event.inputs.upload_to_s3 == 'true'
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: binaries/
+
+      - name: Setup AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get R version components
+        id: r_version
+        run: |
+          # Extract major.minor from R_VERSION (e.g., 4.4 -> 4.4)
+          echo "r_major_minor=${{ env.R_VERSION }}" >> $GITHUB_OUTPUT
+
+      - name: Upload Windows binary to S3
+        run: |
+          BINARY=$(ls binaries/windows-binary/*.zip 2>/dev/null | head -1)
+          if [ -n "$BINARY" ]; then
+            aws s3 cp "$BINARY" "s3://${{ env.S3_BUCKET }}/bin/windows/contrib/${{ steps.r_version.outputs.r_major_minor }}/"
+            echo "Uploaded Windows binary: $BINARY"
+          fi
+
+      - name: Upload macOS Intel binary to S3
+        run: |
+          BINARY=$(ls binaries/macos-intel-binary/*.tgz 2>/dev/null | head -1)
+          if [ -n "$BINARY" ]; then
+            aws s3 cp "$BINARY" "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-x86_64/contrib/${{ steps.r_version.outputs.r_major_minor }}/"
+            echo "Uploaded macOS Intel binary: $BINARY"
+          fi
+
+      - name: Upload macOS ARM binary to S3
+        run: |
+          BINARY=$(ls binaries/macos-arm-binary/*.tgz 2>/dev/null | head -1)
+          if [ -n "$BINARY" ]; then
+            aws s3 cp "$BINARY" "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-arm64/contrib/${{ steps.r_version.outputs.r_major_minor }}/"
+            echo "Uploaded macOS ARM binary: $BINARY"
+          fi
+
+      - name: Setup R for index generation
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+
+      - name: Generate PACKAGES index files
+        run: |
+          # Create temp directories and sync from S3
+          mkdir -p temp/windows temp/macos-intel temp/macos-arm
+
+          aws s3 sync "s3://${{ env.S3_BUCKET }}/bin/windows/contrib/${{ steps.r_version.outputs.r_major_minor }}/" temp/windows/ --exclude "PACKAGES*"
+          aws s3 sync "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-x86_64/contrib/${{ steps.r_version.outputs.r_major_minor }}/" temp/macos-intel/ --exclude "PACKAGES*"
+          aws s3 sync "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-arm64/contrib/${{ steps.r_version.outputs.r_major_minor }}/" temp/macos-arm/ --exclude "PACKAGES*"
+
+          # Generate PACKAGES files
+          Rscript -e "tools::write_PACKAGES('temp/windows', type='win.binary')"
+          Rscript -e "tools::write_PACKAGES('temp/macos-intel', type='mac.binary')"
+          Rscript -e "tools::write_PACKAGES('temp/macos-arm', type='mac.binary')"
+
+          # Upload PACKAGES files back to S3
+          aws s3 cp temp/windows/PACKAGES "s3://${{ env.S3_BUCKET }}/bin/windows/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES"
+          aws s3 cp temp/windows/PACKAGES.gz "s3://${{ env.S3_BUCKET }}/bin/windows/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES.gz" 2>/dev/null || true
+
+          aws s3 cp temp/macos-intel/PACKAGES "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-x86_64/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES"
+          aws s3 cp temp/macos-intel/PACKAGES.gz "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-x86_64/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES.gz" 2>/dev/null || true
+
+          aws s3 cp temp/macos-arm/PACKAGES "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-arm64/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES"
+          aws s3 cp temp/macos-arm/PACKAGES.gz "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-arm64/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES.gz" 2>/dev/null || true
+
+          echo "PACKAGES index files updated"
+
+      - name: Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Binary |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows | ${{ needs.build-windows.outputs.binary_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS Intel | ${{ needs.build-macos-intel.outputs.binary_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS ARM | ${{ needs.build-macos-arm.outputs.binary_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Binaries uploaded to S3 bucket: \`${{ env.S3_BUCKET }}\`" >> $GITHUB_STEP_SUMMARY
