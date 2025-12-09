@@ -4,18 +4,44 @@
 \alias{root}
 \title{Get Root Directory of Current Source File}
 \usage{
-root()
+root(includeFName = FALSE)
+}
+\arguments{
+\item{includeFName}{Logical. If \code{FALSE} (default), returns only the directory path.
+If \code{TRUE}, returns the full file path including the filename.}
 }
 \value{
-A character string representing the absolute path of the directory
-containing the current source file.
+A character string representing either:
+\itemize{
+  \item The absolute path of the directory containing the current source file (if \code{includeFName = FALSE})
+  \item The full absolute path including the filename (if \code{includeFName = TRUE})
+}
 }
 \description{
 Returns the directory path where the current source code file
-is located.
+is located, or optionally the full file path including filename.
 
-It is especially useful when the same source code is used by multiple users,
-each using his own environment, with different file paths.
+This function is especially useful when the same source code is used by multiple users,
+each using their own environment with different file paths. It helps avoid writing
+full paths in raw text inside source codes by dynamically retrieving the location
+of the currently active source file in RStudio.
+}
+\note{
+This function requires RStudio and will only work within the RStudio IDE.
+It relies on \code{rstudioapi::getSourceEditorContext()} to retrieve the active
+source file location.
+}
+\examples{
+\dontrun{
+# Get only the directory path of the current source file
+my_dir <- root()
+print(my_dir)
+# Example output: "/home/user/my_project/R"
 
-the aim is to avoid writing full paths in raw text inside source codes.
+# Get the full path including filename
+my_file <- root(includeFName = TRUE)
+print(my_file)
+# Example output: "/home/user/my_project/R/my_script.R"
+}
+
 }
