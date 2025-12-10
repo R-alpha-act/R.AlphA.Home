@@ -111,7 +111,9 @@ jobs:
       - name: Setup R for index generation
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: ['4.3', '4.4', '4.5']
+          # ⚠️ Must be a single version (string), NOT a list!
+          # This step just generates PACKAGES index files, any R version works
+          r-version: '4.4'
 
       - name: Organize files into CRAN structure
         run: |
