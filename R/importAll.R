@@ -58,7 +58,7 @@
 #' result <- importAll(path = test_path, pattern = "\\.csv$", importFunction = custom_import)
 #' print(result)
 #'
-#' @importFrom openxlsx read.xlsx
+#' @importFrom readxl read_excel
 #' @importFrom data.table fread setnames as.data.table
 #' @importFrom dplyr mutate filter
 #' @importFrom tibble tribble
@@ -148,7 +148,7 @@ importAll <- function(
 			filePaths[, ext := gsub(".*\\.", "", locPath)]
 			importFunsList <- tribble(
 				~ext       , ~fun
-				, "xlsx"   , function(x) as.data.table(openxlsx::read.xlsx(x))
+				, "xlsx"   , function(x) as.data.table(readxl::read_excel(x))
 				, "csv"    , fread
 				, "rds"    , readRDS
 				, "parquet", read_parquet_check
