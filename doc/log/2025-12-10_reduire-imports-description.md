@@ -20,10 +20,34 @@ Réduire le nombre de packages dans `Imports` pour limiter la vulnérabilité au
 ## État actuel après audit
 
 ```
-Imports directs     : 20
-Packages récursifs  : 74
-Ratio               : 1 import = 3.7 packages en moyenne
+Imports directs     : 17 (après Session 2)
+Packages installés  : 46 (réalité mesurée via install_github)
 ```
+
+⚠️ **Note** : `tools::package_dependencies()` sous-estime les dépendances réelles. Utiliser `pak::pkg_deps_tree()` pour un arbre précis.
+
+---
+
+## ⚠️ PROBLÈMES CONNUS
+
+### stringi / stringr
+
+Ces packages posent des problèmes récurrents :
+
+**1. Installation locale corrompue**
+```
+stringi/libs/stringi.so: truncated gzip input: Unknown error: -1
+Error: file '..._packages/stringi_1.8.7.tgz' is not a macOS binary package
+```
+→ Solution : `install.packages("stringi")` puis réessayer
+
+**2. GitHub Actions (CI/CD)**
+```
+ERROR: dependencies 'stringi', 'stringr' are not available for package 'R.AlphA.Home'
+```
+→ Ces packages ont des dépendances système (ICU library) qui ne sont pas toujours présentes sur les runners GitHub.
+
+**Candidat Session 3+ ?** Évaluer si stringi/stringr peuvent être remplacés par base R (`gsub`, `grep`, `regmatches`) pour les usages simples.
 
 ## Progression
 
@@ -240,9 +264,8 @@ shiny_lum_0_100 <- function(lum) {
 ### Impact estimé
 
 ```
-Avant Session 3 : 17 imports
-Après Session 3 : 13 imports (-4)
-Dépendances récursives supprimées : ~57
+Avant Session 3 : 17 imports → 46 packages installés
+Après Session 3 : 13 imports → ? packages (à mesurer)
 ```
 
 ### TODO Session 3
@@ -252,6 +275,12 @@ Dépendances récursives supprimées : ~57
 - [ ] Migrer diffr vers Suggests + requireNamespace dans show_diff.R
 - [ ] Supprimer jsonlite (tiré par diffr)
 - [ ] Régénérer NAMESPACE
+
+### TODO Session 4+ (stringi/stringr)
+
+- [ ] Auditer usages de stringi/stringr dans le package
+- [ ] Remplacer par base R où possible (`gsub`, `grep`, `regmatches`, `substr`)
+- [ ] Réf : R.AlphA.AI/doc/log/2025-12-09_reduire-imports-description.md (même travail fait)
 
 ---
 
@@ -280,5 +309,13 @@ NAMESPACE (à régénérer)
 
 ## Références
 
-- R.AlphA.AI : `doc/log/2025-12-09_reduire-imports-description.md` (même travail, plus approfondi)
+**Même travail ailleurs** :
+- R.AlphA.AI : `../R.AlphA.AI/doc/log/2025-12-09_reduire-imports-description.md` (31→14 imports, plus approfondi)
+
+**Docs connexes** :
+- Arbre dépendances pak : `./2025-12-10_arbre-dependances-pak.md`
+- Script audit : `../../dev/audit_dependencies.R`
+- Point d'entrée : `../../__START_HERE.md`
+
+**Liens externes** :
 - CRAN Policy : https://cran.r-project.org/doc/manuals/R-exts.html#Package-Dependencies

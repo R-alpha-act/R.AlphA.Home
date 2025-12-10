@@ -88,8 +88,16 @@
 	message("  - Supprimer si non utilisé")
 } # 6. Résumé et recommandations
 
-if (0) {
-	# Arbre visuel avec pak (nécessite pak installé)
-	# install.packages("pak")
-	pak::pkg_deps_tree(".")
-} # 7. (optionnel) Arbre visuel pak
+{
+	if (!requireNamespace("pak", quietly = TRUE)) {
+		message("⚠️ pak non installé - install.packages('pak') pour arbre précis")
+	} else {
+		message("\n=== ARBRE DE DÉPENDANCES (pak) ===")
+		message("📊 Résolveur identique à l'installation réelle\n")
+		deps <- pak::pkg_deps(".")
+		n_deps <- nrow(deps) - 1  # -1 pour exclure le package lui-même
+		message("📦 Packages qui seront installés : ", n_deps)
+		message("\nArbre visuel :")
+		pak::pkg_deps_tree(".")
+	}
+} # 7. Arbre précis avec pak (recommandé)

@@ -25,9 +25,20 @@ tests/          # Tests unitaires
 doc/log/        # Logs de développement (convention R.AlphA.Doc)
 ```
 
-## Dépendances principales
+## Dépendances
 
-data.table, dplyr, ggplot2, lubridate, stringr, R6, rstudioapi
+**Imports directs** : 17 packages → 69 packages installés (mesure pak)
+
+Voir `doc/log/2025-12-10_reduire-imports-description.md` pour le détail du travail de réduction des dépendances.
+
+## Documentation développement
+
+- `doc/log/` : Logs de travail (convention R.AlphA.Doc v4)
+- `dev/audit_dependencies.R` : Script audit dépendances récursives
+
+**Travaux récents** :
+- [2025-12-10] Réduction imports 25→17 (voir `doc/log/2025-12-10_reduire-imports-description.md`)
+- [2025-12-10] Arbre dépendances pak (voir `doc/log/2025-12-10_arbre-dependances-pak.md`)
 
 ## Liens
 
