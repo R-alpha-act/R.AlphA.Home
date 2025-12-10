@@ -1,6 +1,9 @@
 name: Build R Package Binaries
 
 on:
+  push:
+    branches:
+      - main
   release:
     types: [published]
   workflow_dispatch:
@@ -97,7 +100,7 @@ jobs:
   upload-to-ftp:
     needs: [build-windows, build-macos-arm]
     runs-on: ubuntu-latest
-    if: (!cancelled()) && (github.event_name == 'release' || github.event.inputs.upload == 'true')
+    if: (!cancelled()) && (github.event_name == 'release' || github.event_name == 'push' || github.event.inputs.upload == 'true')
 
     steps:
       - name: Download all artifacts
