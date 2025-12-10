@@ -15,7 +15,6 @@
 #' @return the output value of the function used to copy file
 #' @import ggplot2
 #' @importFrom R.utils copyDirectory
-#' @importFrom tools file_path_sans_ext file_ext
 #' @importFrom rstudioapi getSourceEditorContext
 #' @export
 #'

@@ -16,7 +16,6 @@
 #'
 #' @return A vector of random dates of length `x`.
 #' @importFrom lubridate decimal_date date_decimal
-#' @importFrom stats runif
 #' @export
 #'
 #' @examples
@@ -37,7 +36,7 @@ rdate <- function(
 	min <- as.Date(min)
 	if (!include_hours) {
 		daysDiff <- max-min
-		dates <- min + runif(x, 0, daysDiff + 1) %>% floor
+		dates <- min + stats::runif(x, 0, daysDiff + 1) %>% floor
 	}
 	if (include_hours) {
 		dec_min <- lubridate::decimal_date(as.Date(min))
