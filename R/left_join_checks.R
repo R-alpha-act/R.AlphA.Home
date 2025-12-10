@@ -23,7 +23,6 @@
 #' @return A data.table containing the joined table.
 #' @importFrom tibble rowid_to_column rownames_to_column
 #' @importFrom tidyr replace_na
-#' @importFrom stringr str_remove
 #' @rawNamespace import(dplyr, except = c(first, last, between))
 #' @export
 #'
@@ -99,14 +98,14 @@ left_join_checks <- function(
 			unlist %>%
 			data.frame(value = .) %>%
 			rownames_to_column("check") %>%
-			mutate(key = str_remove(check, "^chk_|^req_"))
+			mutate(key = sub("^chk_|^req_", "", check))
 
 		reqsTable <- mget(ls(pattern = "^req_")) %>%
 			unlist %>%
 			data.frame(req = .) %>%
 			rownames_to_column("check") %>%
 			mutate(req = req %>% as.numeric) %>%
-			mutate(key = str_remove(check, "^chk_|^req_"))
+			mutate(key = sub("^chk_|^req_", "", check))
 
 		checksTable <- full_join(valuesTable, reqsTable, by = "key") %>%
 			mutate(is_problem = value != req) %>%

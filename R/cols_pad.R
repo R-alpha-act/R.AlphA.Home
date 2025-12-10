@@ -10,7 +10,6 @@
 #' @param colPrefix A string used as the prefix for the names of dummy columns.
 #'
 #' @return A data frame with the specified total number of columns.
-#' @importFrom stringr str_replace
 #' @export
 #'
 #' @examples
@@ -27,7 +26,7 @@ cols_pad <- function(data, nCols = 100, colPrefix = "x_"){
 	}
 	dummyAdd <- matrix(ncol = colsToAdd, nrow = nrow(data)) %>%
 		as.data.frame %>%
-		rename_with(~str_replace(.,"V", colPrefix))
+		rename_with(~sub("V", colPrefix, .))
 
 	data %>% cbind(dummyAdd)
 }
