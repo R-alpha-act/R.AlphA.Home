@@ -22,7 +22,8 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        r-version: ['4.3', '4.4', '4.5']
+        # r-version: ['4.3', '4.4', '4.5']
+        r-version: ['4.4'] # tmp - tests
       fail-fast: false
 
     steps:
@@ -61,7 +62,8 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        r-version: ['4.3', '4.4', '4.5']
+        # r-version: ['4.3', '4.4', '4.5']
+        r-version: ['4.4'] # tmp - tests
       fail-fast: false
 
     steps:
@@ -163,8 +165,14 @@ jobs:
           # Install lftp (more reliable than basic FTP)
           sudo apt-get update && sudo apt-get install -y lftp
 
-          # Create lftp script for mirror upload
-          cat > upload.lftp << 'LFTP_SCRIPT'
+          # Export credentials first
+          export FTP_HOST="${{ secrets.FTP_HOST }}"
+          export FTP_USER="${{ secrets.FTP_USER }}"
+          export FTP_PASSWORD="${{ secrets.FTP_PASSWORD }}"
+          export FTP_PATH="/"
+
+          # Create lftp script (heredoc without quotes allows variable expansion)
+          cat > upload.lftp << LFTP_SCRIPT
           set ftp:ssl-allow no
           set net:timeout 30
           set net:max-retries 3
@@ -175,11 +183,6 @@ jobs:
           LFTP_SCRIPT
 
           # Execute upload
-          export FTP_HOST="${{ secrets.FTP_HOST }}"
-          export FTP_USER="${{ secrets.FTP_USER }}"
-          export FTP_PASSWORD="${{ secrets.FTP_PASSWORD }}"
-          export FTP_PATH="/"
-
           lftp -f upload.lftp
           echo "Upload complete!"
 
