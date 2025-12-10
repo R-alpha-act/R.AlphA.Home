@@ -97,7 +97,7 @@ jobs:
   upload-to-ftp:
     needs: [build-windows, build-macos-arm]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' || github.event.inputs.upload == 'true'
+    if: (!cancelled()) && (github.event_name == 'release' || github.event.inputs.upload == 'true')
 
     steps:
       - name: Download all artifacts
