@@ -97,7 +97,8 @@ ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 							if (i_char > 1) {
 								lineStart <- substr(lineContent, 1, i_char)
 								escapePatt <- sprintf(ESCAPE_PATTERN, chr)
-								escaping <- stringi::stri_extract(lineStart, regex = escapePatt)
+								m <- regexpr(escapePatt, lineStart, perl = TRUE)
+								escaping <- ifelse(m == -1, NA_character_, regmatches(lineStart, m))
 								isEscaped <- !is.na(escaping)
 							} else {
 								isEscaped <- FALSE
@@ -149,8 +150,9 @@ ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 						if (i_char > 1) {
 							lineStart <- substr(lineContent, 1, i_char)
 							escapePatt <- sprintf(ESCAPE_PATTERN, chr)
-							escaping <- stringi::stri_extract(lineStart, regex = escapePatt)
-							nbEsc <- if (is.na(escaping)) 0 else stringi::stri_count(escaping, regex = "\\\\")
+							m <- regexpr(escapePatt, lineStart, perl = TRUE)
+							escaping <- ifelse(m == -1, NA_character_, regmatches(lineStart, m))
+							nbEsc <- if (is.na(escaping)) 0 else lengths(gregexpr("\\\\", escaping, perl = TRUE))[[1]]
 							isEscaped <- nbEsc %% 2 == 1
 						} else {
 							isEscaped <- FALSE
@@ -208,10 +210,10 @@ ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 			printif(fab_browse)
 
 		parentName <- cursor_situation$partName %>%
-			stringi::stri_replace(regex = "\\.[0-9]+$", "")
+			{sub("\\.[0-9]+$", "", .)}
 
 		parentSection_full <- allIndents_ret %>%
-			filter(partName %>% str_detect(paste0("^", parentName, "(\\.|$)"))) %>%
+			filter(grepl(paste0("^", parentName, "(\\.|$)"), partName)) %>%
 			printif(fab_browse)
 
 		parentSection_full_fold <- parentSection_full %>%

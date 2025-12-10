@@ -2,7 +2,7 @@
 % Please edit documentation in R/show_diff.R
 \name{show_diff}
 \alias{show_diff}
-\title{Compare two texts or files with diffr}
+\title{Compare two texts or files with diffobj}
 \usage{
 show_diff(input1, input2)
 }
@@ -12,11 +12,11 @@ show_diff(input1, input2)
 \item{input2}{A character string. Either a file path or text content to compare.}
 }
 \value{
-A diffr object containing the visual comparison of the two inputs.
+A diffobj object containing the visual comparison of the two inputs.
 }
 \description{
 This function compares two inputs (files or text strings) and displays
-the differences using the diffr package with syntax highlighting.
+the differences using the diffobj package with syntax highlighting.
 }
 \examples{
 # Compare two text strings

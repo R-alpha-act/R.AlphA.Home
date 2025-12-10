@@ -48,8 +48,6 @@
 #' @importFrom data.table data.table
 #' @importFrom tibble tibble rowid_to_column
 #' @importFrom dplyr filter mutate group_by slice ungroup slice_min pull
-#' @importFrom stringr str_locate_all str_locate str_detect
-#' @importFrom stringi stri_extract stri_count
 #' @export
 
 ralpha_unfold <- function(){
@@ -157,14 +155,14 @@ ralpha_unfold <- function(){
 		textTable <- tibble(lineFull = srcAllText) %>%
 			rowid_to_column %>%
 			filter(rowid >= cursorLine) %>%
-			mutate(hasBracket = str_detect(lineFull, "\\{")) %>%
+			mutate(hasBracket = grepl("\\{", lineFull)) %>%
 			mutate(isCurLine = rowid == cursorLine) %>%
 			filter(hasBracket|isCurLine) %>%
 			group_by(isCurLine) %>% slice(1) %>% ungroup %>%
 			mutate(scanStart = ifelse(isCurLine, cursorCol, 1)) %>%
 			mutate(lineStart = substr(lineFull, 0, scanStart-1)) %>%
 			mutate(lineEnd = substr(lineFull, scanStart, nchar(lineFull))) %>%
-			mutate(BrRelPos = str_locate(lineEnd, "\\{")[,1]) %>%
+			mutate(BrRelPos = {m <- regexpr("\\{", lineEnd); ifelse(m == -1, NA_integer_, m)}) %>%
 			mutate(BrAbsPos = BrRelPos + scanStart-1) %>%
 			mutate(BrAbsPN = (rowid + (BrAbsPos+1) * colFact) %>% round(8)) %>%
 			printif(0)
@@ -174,29 +172,22 @@ ralpha_unfold <- function(){
 			printif(0)
 
 		noOprBrNextLines <- nrow(textTable %>% filter(!isCurLine)) == 0
-		OpBrBefore <- curLineInfo$lineStart %>% str_detect("\\{")
-		ClBrBefore <- curLineInfo$lineStart %>% str_detect("\\}")
-		OpBrAfter <- curLineInfo$lineEnd %>% str_detect("\\{")
-		ClBrAfter <- curLineInfo$lineEnd %>% str_detect("\\}")
-		findLastClosing <- curLineInfo$lineStart %>%
-			str_locate_all("\\}") %>%
-			as.data.frame %>%
-			tail(1) %>%
-			pull(start) %>%
-			printif(0)
-		findLastOpen <- curLineInfo$lineStart %>%
-			str_locate_all("\\{") %>%
-			as.data.frame %>%
-			tail(1) %>%
-			pull(start) %>%
-			printif(0)
-		findNextOpen <- curLineInfo$lineEnd %>%
-			str_locate_all("\\{") %>%
-			as.data.frame %>%
-			head(1) %>%
-			mutate(absPos = start + cursorCol) %>%
-			pull(absPos) %>%
-			printif(0)
+		OpBrBefore <- grepl("\\{", curLineInfo$lineStart)
+		ClBrBefore <- grepl("\\}", curLineInfo$lineStart)
+		OpBrAfter <- grepl("\\{", curLineInfo$lineEnd)
+		ClBrAfter <- grepl("\\}", curLineInfo$lineEnd)
+		findLastClosing <- {
+			m <- gregexpr("\\}", curLineInfo$lineStart)[[1]]
+			if (m[1] == -1) NA_integer_ else tail(m, 1)
+		} %>% printif(0)
+		findLastOpen <- {
+			m <- gregexpr("\\{", curLineInfo$lineStart)[[1]]
+			if (m[1] == -1) NA_integer_ else tail(m, 1)
+		} %>% printif(0)
+		findNextOpen <- {
+			m <- gregexpr("\\{", curLineInfo$lineEnd)[[1]]
+			if (m[1] == -1) NA_integer_ else head(m, 1) + cursorCol
+		} %>% printif(0)
 	} # analyze text
 
 	# cases handling ===========================================================

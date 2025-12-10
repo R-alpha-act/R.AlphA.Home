@@ -61,7 +61,6 @@
 #' @importFrom openxlsx read.xlsx
 #' @importFrom data.table fread setnames as.data.table
 #' @importFrom dplyr mutate filter
-#' @importFrom stringr str_detect str_extract
 #' @importFrom tibble tribble
 #' @export
 importAll <- function(
@@ -128,7 +127,7 @@ importAll <- function(
 		} # list file paths : either with pattern, or with fileList => filePaths
 		if(!is.null(excludePattern)){
 			filePaths <- filePaths %>%
-				mutate(toExclude = str_detect(locPath, excludePattern)) %>%
+				mutate(toExclude = grepl(excludePattern, locPath)) %>%
 				filter(!toExclude)
 		} # exclude files matching a pattern
 		files_exist <- file.exists(filePaths$fulPath)

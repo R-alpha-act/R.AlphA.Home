@@ -26,8 +26,6 @@ Imports:
     R.utils,
     R6,
     rstudioapi,
-    stringi,
-    stringr,
     tibble,
     tidyr
 Suggests:

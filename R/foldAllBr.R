@@ -37,7 +37,6 @@
 #'
 #' @importFrom tibble rowid_to_column
 #' @importFrom magrittr add
-#' @importFrom stringr str_detect str_remove_all str_extract str_remove str_count
 #' @import rstudioapi
 #' @export
 #
@@ -121,11 +120,11 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 		passBrPatt <- "^\t*\\}.*\\{$" # to handle "if() {...} else {...} cases
 
 		docContent_tags <- docContent %>%
-			mutate(content = content %>% str_remove(comPatt)) %>%
+			mutate(content = sub(comPatt, "", content, perl = TRUE)) %>%
 			mutate(
-				opBr = content %>% str_detect(opBrPatt)
-				, clBr = content %>% str_detect(clBrPatt)
-				, passBr = content %>% str_detect(passBrPatt)
+				opBr = grepl(opBrPatt, content)
+				, clBr = grepl(clBrPatt, content)
+				, passBr = grepl(passBrPatt, content)
 				, anyBr = pmax(opBr, clBr)
 				, brTag = paste0(
 					NULL
@@ -145,15 +144,16 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 		docContentRet <- docContent_incs %>%
 			as_tibble %>%
 			mutate(conCat = paste("0", lvl_1, lvl_2, lvl_3, sep = "_")) %>%
-			mutate(conCatLim = conCat %>% str_remove_all("_0") %>% paste0("_")) %>%
+			mutate(conCatLim = gsub("_0", "", conCat) %>% paste0("_")) %>%
 			mutate(isCur = ifelse(retainStartRow == rowid, "=cur=", "_")) %>%
 			group_by(conCatLim) %>%
 			mutate(isSecStart = rowid == min(rowid)) %>%
 			ungroup %>%
-			mutate(opBrPlace = content %>% str_extract(paste0(".*", opBrPatt)) %>% nchar) %>%
+			mutate(opBrPlace = nchar(ifelse(grepl(paste0(".*", opBrPatt), content),
+			regmatches(content, regexpr(paste0(".*", opBrPatt), content, perl = TRUE)), ""))) %>%
 			mutate(opBrPN = rowid + opBrPlace * colFact) %>%
 			select(-opBrPlace) %>%
-			mutate(nbTabs = content %>% str_count("\t|\\{$")) %>%
+			mutate(nbTabs = ifelse(grepl("\t|\\{$", content), lengths(gregexpr("\t|\\{$", content, perl = TRUE)), 0)) %>%
 			mutate(checkCat = ifelse(content == "", 0, nbTabs - catLvl)) %>%
 			identity
 	} # retreat doc content --> docContentRet
@@ -197,7 +197,7 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 		curLine <- docContentRet %>% filter(isCur == "=cur=")
 		curPosSec <- curLine$conCatLim # init before check
 		curPosCat <- curLine$catLvl
-		noBracket <- !str_detect(curLine$content, opBrPatt)
+		noBracket <- !grepl(opBrPatt, curLine$content)
 		skipIf <- curPosCat == 0 & noBracket # to check if we're on top level
 		if(curLine$isSecStart & !skipIf){
 
@@ -205,7 +205,7 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 			isBfSecStart <- curLine$opBrPN >= curPosNum
 			isAtSecStart <- curLine$opBrPN == (curPosNum - colFact) %>% round(10)
 			if(isBfSecStart){
-				curPosSec <- curLine$conCatLim %>% str_remove("_[0-9]*_$")
+				curPosSec <- sub("_[0-9]*_$", "", curLine$conCatLim)
 				curPosCat <- curLine$catLvl - 1
 			} #
 			if(isAtSecStart){
@@ -217,7 +217,7 @@ foldAllBr <- function(time = FALSE, debug_getTbl = FALSE){
 		} # if we're on a section start, and not "at lvl 0 without bracket"
 
 		curSection <- docContentRet %>%
-			filter(conCatLim  %>% str_detect(paste0("^",curPosSec))) %>%
+			filter(grepl(paste0("^",curPosSec), conCatLim)) %>%
 			identity
 		subSections <- curSection %>%
 			filter(catLvl == curPosCat + 1) %>%
