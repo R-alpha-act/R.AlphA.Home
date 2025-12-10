@@ -12,14 +12,13 @@
 #'
 #' # Load a package that might not be installed
 #' loadCheck("ggplot2")
-#' @importFrom utils install.packages
 #' @export
 #'
 loadCheck <- function(package_names) {
 	invisible(vapply(package_names,function(pkg) {
 			if (!requireNamespace(pkg, quietly = TRUE)) {
 				message("Install required for package: ", pkg)
-				install.packages(pkg, dependencies = TRUE, quiet = TRUE)
+				utils::install.packages(pkg, dependencies = TRUE, quiet = TRUE)
 			}
 			suppressPackageStartupMessages(
 				library(pkg, character.only = TRUE, quietly = TRUE)

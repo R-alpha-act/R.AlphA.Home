@@ -8,17 +8,21 @@
 #' @param lum Numeric. Luminosity level, ranging from 0 (black) to 100 (white).
 #'
 #' @return The HTML tags for setting the background and sidebar colors.
-#' @importFrom shinyWidgets setBackgroundColor
-#' @importFrom shiny tags HTML
-#' @rawNamespace import(dplyr, except = c(first, last, between))
 #' @export
 #'
-
 shiny_lum_0_100 <- function(lum) {
+	# Check for required packages (in Suggests)
+	if (!requireNamespace("shiny", quietly = TRUE)) {
+		stop("Le package 'shiny' est requis. Installez-le avec install.packages('shiny')")
+	}
+	if (!requireNamespace("shinyWidgets", quietly = TRUE)) {
+		stop("Le package 'shinyWidgets' est requis. Installez-le avec install.packages('shinyWidgets')")
+	}
+
 	# Helper function: Generate CSS for the sidebar
 	SBBGColor_lum_0_100 <- function(lum) {
 		lum_pc <- lum / 100
-		hex_lum <- rgb(lum_pc, lum_pc, lum_pc)
+		hex_lum <- grDevices::rgb(lum_pc, lum_pc, lum_pc)
 		HTMLText <- paste0(
 			'#sidebar {background-color: ', hex_lum, ';}'
 		)
@@ -31,7 +35,7 @@ shiny_lum_0_100 <- function(lum) {
 	# Create a combined list of tags for sidebar and body background
 	return(list(
 		SBBGColor_lum_0_100(min(lum * 1.2, 100)),  # Adjust sidebar luminosity and ensure max of 100
-		shinyWidgets::setBackgroundColor(rgb(lum_pc, lum_pc, lum_pc))
+		shinyWidgets::setBackgroundColor(grDevices::rgb(lum_pc, lum_pc, lum_pc))
 	))
 }
 

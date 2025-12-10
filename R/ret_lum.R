@@ -12,8 +12,6 @@
 #' The final Brightness value will be maintained between 0 and 1.
 #'
 #' @return A modified hex color in hexadecimal format.
-#' @importFrom grDevices rgb
-#' @importFrom grDevices col2rgb
 #' @export
 #'
 #' @examples

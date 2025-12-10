@@ -20,7 +20,6 @@
 #'   \item `lvl_1`, `lvl_2`, `lvl_3`: Final series counts returned for each respective level.
 #' }
 #'
-#' @importFrom stats runif
 #' @export
 #' @note
 #' This function is currently mostly useful internally, to perform foldAllBr().

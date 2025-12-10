@@ -21,8 +21,6 @@ Imports:
     diffr,
     dplyr,
     ggplot2,
-    grDevices,
-    htmlwidgets,
     jsonlite,
     lubridate,
     magrittr,
@@ -31,19 +29,13 @@ Imports:
     R.utils,
     R6,
     rstudioapi,
-    shiny,
-    shinyWidgets,
-    stats,
     stringi,
     stringr,
     tibble,
-    tidyr,
-    diffr,
-    purrr,
-    R6,
-    tools,
-    utils
+    tidyr
 Suggests:
+    shiny,
+    shinyWidgets,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8

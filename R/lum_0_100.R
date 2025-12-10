@@ -10,7 +10,6 @@
 #' to 100 (maximum brightness).
 #'
 #' @return no return value : only apply the theme_set() function
-#' @importFrom grDevices rgb
 #' @import ggplot2
 #' @export
 #'
@@ -21,7 +20,7 @@ lum_0_100 <- function(lum = NULL) {
 	}
 
 	lum_pc_leg <- lum/100
-	hex_leg <- rgb(lum_pc_leg,lum_pc_leg,lum_pc_leg)
+	hex_leg <- grDevices::rgb(lum_pc_leg,lum_pc_leg,lum_pc_leg)
 
 	dark_adjustments <- theme(
 		plot.background = element_rect(fill = ret_lum(hex_leg,0.7))
