@@ -22,7 +22,6 @@
 #'
 #' @return A data.table containing the joined table.
 #' @importFrom tibble rowid_to_column rownames_to_column
-#' @importFrom tidyr replace_na
 #' @rawNamespace import(dplyr, except = c(first, last, between))
 #' @export
 #'
@@ -74,7 +73,10 @@ left_join_checks <- function(
 			xMerge
 			, yMerge
 			, ...
-		) %>% replace_na(list(tmp_inX = 0, tmp_inY = 0))
+		) %>% mutate(
+		tmp_inX = coalesce(tmp_inX, 0),
+		tmp_inY = coalesce(tmp_inY, 0)
+	)
 	} # merge
 	{
 		fnTmr$add("chk_preserved_x")
@@ -90,7 +92,7 @@ left_join_checks <- function(
 		joinMatch <- expand.grid(tmp_inX = 0:1, tmp_inY = 0:1) %>%
 			left_join(joinMatch_prep) %>%
 			suppressMessages %>%
-			replace_na(list(n=0))
+			mutate(n = coalesce(n, 0))
 		chk_yNotFound <- joinMatch %>% filter(!tmp_inY) %>% pull(n) %>% sum
 		chk_xAllMatch <- chk_yNotFound == 0
 		fnTmr$add("counting problems")
@@ -111,7 +113,7 @@ left_join_checks <- function(
 			mutate(is_problem = value != req) %>%
 			select(key, value, req, is_problem) %>%
 			mutate(is_problem = is_problem %>% as.numeric) %>%
-			replace_na(list(is_problem = 0)) %>%
+			mutate(is_problem = coalesce(is_problem, 0)) %>%
 			arrange(is_problem %>% desc, req %>% desc)
 	} # checks
 
