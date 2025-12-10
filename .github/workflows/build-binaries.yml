@@ -22,7 +22,8 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        r-version: ['4.3', '4.4', '4.5']
+        # r-version: ['4.3', '4.4', '4.5']
+        r-version: ['4.4'] # tmp - tests
       fail-fast: false
 
     steps:
@@ -61,7 +62,8 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        r-version: ['4.3', '4.4', '4.5']
+        # r-version: ['4.3', '4.4', '4.5']
+        r-version: ['4.4'] # tmp - tests
       fail-fast: false
 
     steps:

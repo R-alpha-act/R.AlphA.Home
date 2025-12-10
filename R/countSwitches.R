@@ -64,8 +64,8 @@ countSwitches <- function(
 			select(stepStr) %>%
 			mutate(findStt = stepStr == sttMark) %>%
 			mutate(findEnd = stepStr == endMark) %>%
-			mutate(nbStt = cumsum(findStt %>% replace_na(0))) %>%
-			mutate(nbEnd = cumsum(findEnd %>% replace_na(0))) %>%
+			mutate(nbStt = cumsum(coalesce(findStt, 0))) %>%
+			mutate(nbEnd = cumsum(coalesce(findEnd, 0))) %>%
 			mutate(catLvl = nbStt - nbEnd) %>%
 			# attribute starts to levels 1-2-3
 			mutate(inc1 = findStt & catLvl == 1) %>%

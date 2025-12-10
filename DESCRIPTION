@@ -22,12 +22,12 @@ Imports:
     ggplot2,
     lubridate,
     magrittr,
-    openxlsx,
+    readxl,
+    writexl,
     R.utils,
     R6,
     rstudioapi,
-    tibble,
-    tidyr
+    tibble
 Suggests:
     arrow,
     qs,

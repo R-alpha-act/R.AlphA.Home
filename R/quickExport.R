@@ -19,7 +19,7 @@
 #' quickExport(sales_data, nCols = 50, colPrefix = "col_",
 #'            saveName = "sales_report.xlsx", overwrite = FALSE)
 #' }
-#' @importFrom openxlsx write.xlsx
+#' @importFrom writexl write_xlsx
 #' @export
 quickExport <- function(
 		data, sheetName = "data_", saveDir = root(), saveName = "tmp_export.xlsx"
@@ -27,11 +27,9 @@ quickExport <- function(
 ){
 	data_complete <- data %>% cols_pad(nCols, colPrefix)
 	savePath <- saveDir %>% file.path(saveName)
-	openxlsx::write.xlsx(
-		data_complete
-		, savePath
-		, sheetName = sheetName
-		, overwrite = overwrite
+	writexl::write_xlsx(
+		x = setNames(list(data_complete), sheetName)
+		, path = savePath
 	)
 	message("file written to : \n", savePath)
 }

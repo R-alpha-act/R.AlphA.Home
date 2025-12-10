@@ -211,6 +211,18 @@ stringi : 14.79 MB (reste, mais plus un import direct)
 
 ---
 
+## Transition vers Session 5
+
+**Analyse préparatoire :**
+- openxlsx : 2 fonctions utilisées (read.xlsx, write.xlsx) → remplaçables par readxl + writexl
+- tidyr : 1 fonction utilisée (replace_na, 5 occurrences) → remplaçable par dplyr::coalesce
+
+**Décision :** Session 5 planifiée pour éliminer complètement stringi de l'arbre de dépendances.
+
+→ Voir `doc/log/2025-12-10_session5-eliminer-stringi-openxlsx-tidyr.md` pour l'implémentation complète.
+
+---
+
 ## Notes pour la prochaine session
 
 **Stratégie de test :**
