@@ -20,8 +20,8 @@ Réduire le nombre de packages dans `Imports` pour limiter la vulnérabilité au
 ## État actuel après audit
 
 ```
-Imports directs     : 17 (après Session 2)
-Packages installés  : 46 (réalité mesurée via install_github)
+Imports directs     : 14 (après Session 3)
+Packages installés  : ? (à mesurer après Session 3)
 ```
 
 ⚠️ **Note** : `tools::package_dependencies()` sous-estime les dépendances réelles. Utiliser `pak::pkg_deps_tree()` pour un arbre précis.
@@ -60,7 +60,11 @@ ERROR: dependencies 'stringi', 'stringr' are not available for package 'R.AlphA.
 | **Session 1** | **25** | **20** | **-5 imports (-20%)** |
 | Doublons transitifs | 20 | 17 | -3 (shiny, shinyWidgets, htmlwidgets) |
 | **Session 2** | **20** | **17** | **-3 imports** |
-| **Total** | **25** | **17** | **-8 imports (-32%)** |
+| diffr→diffobj | 17 | 17 | 0 (remplacement) |
+| arrow, qs→Suggests | 17 | 15 | -2 (déplacement) |
+| jsonlite supprimé | 15 | 14 | -1 (transitif de diffr) |
+| **Session 3** | **17** | **14** | **-3 imports** |
+| **Total** | **25** | **14** | **-11 imports (-44%)** |
 
 ---
 
@@ -240,47 +244,85 @@ shiny_lum_0_100 <- function(lum) {
 - [x] Régénérer NAMESPACE
 - [x] Supprimer doublons transitifs (shiny, shinyWidgets, htmlwidgets)
 - [x] Décider sort de shiny/shinyWidgets → Option A (Suggests)
-- [ ] Évaluer autres candidats Suggests (arrow, qs, diffr) → voir Session 3
+- [x] Session 3 : diffr→diffobj, arrow/qs→Suggests, jsonlite supprimé
 
 ---
 
-## 🔍 ANALYSE SESSION 3 (à faire)
+## ✅ SESSION 3 (terminée)
 
-### Candidats identifiés
+### Décision stratégique : diffr → diffobj
 
-| Package | Deps | Utilisé dans | Usage | Action proposée |
-|---------|------|--------------|-------|-----------------|
-| `arrow` | 19 | importAll.R | read_parquet, read_feather | → Suggests |
-| `qs` | 6 | importAll.R | qread | → Suggests |
-| `diffr` | 32 | show_diff.R | Comparaison visuelle | → Suggests |
-| `jsonlite` | 1 | show_diff.R | toJSON (tiré par diffr) | Supprimer |
+**Analyse comparative :**
 
-### Justification
+| Critère | diffr | diffobj |
+|---------|-------|---------|
+| Packages récursifs | ~21 | 2 (diffobj + crayon) |
+| Taille totale | ~15-20 MB | ~1.2 MB |
+| Chaîne problématique | htmlwidgets → rmarkdown → bslib (5.68 MB) | Aucune |
+| Déjà utilisé dans R.AlphA | AI (optionnel), Home | **Dev** ✅ |
 
-- **arrow/qs** : Formats de fichiers optionnels dans `importAll()`. L'utilisateur qui lit du parquet/feather/qs a déjà ces packages installés.
-- **diffr** : Fonction `show_diff()` est un utilitaire optionnel, pas une fonction core.
-- **jsonlite** : Seul usage est dans `show_diff.R`, tiré transitoirement par diffr.
+**Décision :** Remplacer diffr par diffobj au lieu de le mettre en Suggests.
+- **Gain immédiat** : élimination de ~19 packages (21 diffr - 2 diffobj)
+- **Harmonisation** : même outil que R.AlphA.Dev
+- **Thème dark conservé** : CSS custom gardé dans show_diff.R
 
-### Impact estimé
+### Actions réalisées
 
-```
-Avant Session 3 : 17 imports → 46 packages installés
-Après Session 3 : 13 imports → ? packages (à mesurer)
-```
+| Package | Action | Justification |
+|---------|--------|---------------|
+| `diffr` | → `diffobj` | Remplacé par alternative plus légère (2 deps vs 21) |
+| `jsonlite` | Supprimé | Tiré par diffr, plus nécessaire avec diffobj |
+| `arrow` | → Suggests | Formats parquet/feather optionnels |
+| `qs` | → Suggests | Format qs optionnel |
+
+### Modifications techniques
+
+**DESCRIPTION :**
+- Imports : 17 → 14 (-3)
+- `diffr` → `diffobj`
+- `jsonlite` supprimé
+- `arrow`, `qs` déplacés vers Suggests
+
+**R/show_diff.R :**
+- `diffr::diffr()` → `diffobj::diffChr()`
+- Suppression dépendances htmlwidgets/jsonlite (lignes 163-174 supprimées)
+- CSS dark conservé et adapté aux classes diffobj
+- 177 lignes → 167 lignes
+
+**R/importAll.R :**
+- Ajout fonctions wrapper avec `requireNamespace()` :
+  - `read_parquet_check()` pour arrow::read_parquet
+  - `read_feather_check()` pour arrow::read_feather
+  - `qread_check()` pour qs::qread
+- tribble mise à jour (lignes 155-157)
+- Messages d'erreur explicites si package manquant
 
 ### TODO Session 3
 
-- [ ] Migrer arrow vers Suggests + requireNamespace dans importAll.R
-- [ ] Migrer qs vers Suggests + requireNamespace dans importAll.R
-- [ ] Migrer diffr vers Suggests + requireNamespace dans show_diff.R
-- [ ] Supprimer jsonlite (tiré par diffr)
+- [x] Remplacer diffr par diffobj dans show_diff.R
+- [x] Adapter CSS dark pour diffobj
+- [x] Migrer arrow vers Suggests + requireNamespace dans importAll.R
+- [x] Migrer qs vers Suggests + requireNamespace dans importAll.R
+- [x] Supprimer jsonlite de DESCRIPTION
+- [x] Mettre à jour DESCRIPTION (diffr→diffobj, arrow/qs→Suggests)
 - [ ] Régénérer NAMESPACE
 
-### TODO Session 4+ (stringi/stringr)
+### TODO Session 4 (stringi/stringr)
 
-- [ ] Auditer usages de stringi/stringr dans le package
-- [ ] Remplacer par base R où possible (`gsub`, `grep`, `regmatches`, `substr`)
-- [ ] Réf : R.AlphA.AI/doc/log/2025-12-09_reduire-imports-description.md (même travail fait)
+**📋 Voir log dédié** : `./2025-12-10_session4-stringi-stringr.md`
+
+Préparation terminée :
+- [x] Auditer usages de stringi/stringr dans le package (32 occurrences, 6 fichiers)
+- [x] Identifier équivalents base R
+- [x] Créer table de conversion stringr/stringi → base R
+- [x] Prioriser fichiers par complexité
+
+À faire en Session 4 :
+- [ ] Remplacer stringi/stringr par base R (6 fichiers)
+- [ ] Supprimer stringi/stringr de DESCRIPTION
+- [ ] Tester et valider
+
+**Réf** : R.AlphA.AI/doc/log/2025-12-09_reduire-imports-description.md (même travail, exemples)
 
 ---
 

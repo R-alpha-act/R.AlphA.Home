@@ -60,11 +60,9 @@
 #'
 #' @importFrom openxlsx read.xlsx
 #' @importFrom data.table fread setnames as.data.table
-#' @importFrom arrow read_parquet read_feather
 #' @importFrom dplyr mutate filter
 #' @importFrom stringr str_detect str_extract
 #' @importFrom tibble tribble
-#' @importFrom qs qread
 #' @export
 importAll <- function(
 		path = "."
@@ -76,6 +74,24 @@ importAll <- function(
 		, renameTable = data.frame(oldName = character(), newName = character())
 		, excludePattern = NULL
 ){
+	read_parquet_check <- function(file) {
+		if (!requireNamespace("arrow", quietly = TRUE)) {
+			stop("Le package 'arrow' est requis pour lire les fichiers parquet. Installez-le avec install.packages('arrow')")
+		}
+		arrow::read_parquet(file)
+	}
+	read_feather_check <- function(file) {
+		if (!requireNamespace("arrow", quietly = TRUE)) {
+			stop("Le package 'arrow' est requis pour lire les fichiers feather. Installez-le avec install.packages('arrow')")
+		}
+		arrow::read_feather(file)
+	}
+	qread_check <- function(file) {
+		if (!requireNamespace("qs", quietly = TRUE)) {
+			stop("Le package 'qs' est requis pour lire les fichiers qs. Installez-le avec install.packages('qs')")
+		}
+		qs::qread(file)
+	}
 
 	is_absolute_path <- function(path) {
 		if (length(path) == 0) return(FALSE)
@@ -136,9 +152,9 @@ importAll <- function(
 				, "xlsx"   , function(x) as.data.table(openxlsx::read.xlsx(x))
 				, "csv"    , fread
 				, "rds"    , readRDS
-				, "parquet", read_parquet
-				, "feather", read_feather
-				, "qs", qs::qread
+				, "parquet", read_parquet_check
+				, "feather", read_feather_check
+				, "qs", qread_check
 			) %>%
 				as.data.table
 

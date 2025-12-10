@@ -1,12 +1,12 @@
-#' Compare two texts or files with diffr
+#' Compare two texts or files with diffobj
 #'
 #' This function compares two inputs (files or text strings) and displays
-#' the differences using the diffr package with syntax highlighting.
+#' the differences using the diffobj package with syntax highlighting.
 #'
 #' @param input1 A character string. Either a file path or text content to compare.
 #' @param input2 A character string. Either a file path or text content to compare.
 #'
-#' @return A diffr object containing the visual comparison of the two inputs.
+#' @return A diffobj object containing the visual comparison of the two inputs.
 #'
 #' @examples
 #' # Compare two text strings
@@ -22,7 +22,7 @@
 #' show_diff("file.txt", "New content\nWith changes")
 #' }
 #'
-#' @import diffr
+#' @import diffobj
 #' @export
 show_diff <- function(input1, input2) {
 	get_content <- function(input) {
@@ -40,24 +40,6 @@ show_diff <- function(input1, input2) {
 		content1_clean <- trimws(content1)
 		content2_clean <- trimws(content2)
 	} # Supprimer les espaces en début/fin de ligne
-	{
-		temp1 <- tempfile(fileext = ".txt")
-		temp2 <- tempfile(fileext = ".txt")
-		writeLines(content1_clean, temp1)
-		writeLines(content2_clean, temp2)
-	} # Créer des fichiers temporaires nettoyés
-	{
-		widget <- diffr::diffr(
-			temp1,
-			temp2,
-			contextSize = 2,
-			minJumpSize = 5,
-			wordWrap = TRUE,
-			before = "Original",
-			after = "Modified"
-		)
-	} # Utiliser diffr sur les fichiers nettoyés
-	unlink(c(temp1, temp2))
 	{
 		# variables couleurs / constantes
 		# TODO : rstudioapi::getThemeInfo()
@@ -78,13 +60,14 @@ show_diff <- function(input1, input2) {
 		css <- sprintf(
 			"body, html {
 			  background-color: %s !important;
+			  color: %s;
 			}
 
-			/* table layout */
-			.diffr table.diff { width:100%%; border-collapse:collapse; }
+			/* diffobj table layout */
+			.diffobj-container table { width:100%%; border-collapse:collapse; }
 
 			/* headers */
-			.diffr .diff-header {
+			.diffobj-container .banner {
 			  background: %s;
 			  color: %s;
 			  padding: 8px 12px;
@@ -95,8 +78,8 @@ show_diff <- function(input1, input2) {
 			  border-bottom: 1px solid rgba(255,255,255,0.03);
 			}
 
-			/* small, compact line numbers */
-			.diffr .line-no {
+			/* line numbers */
+			.diffobj-container .line-no {
 			  background: transparent;
 			  color: %s;
 			  padding: 6px 8px;
@@ -106,31 +89,32 @@ show_diff <- function(input1, input2) {
 			}
 
 			/* code cells */
-			.diffr .code {
+			.diffobj-container pre {
 			  padding: 8px 12px;
 			  font-size: 13px;
 			  line-height: 1.5;
 			  white-space: pre-wrap;
 			  color: %s;
 			  background: transparent;
+			  margin: 0;
 			}
 
 			/* deleted chunk: dark muted red with readable text */
-			.diffr .code.replace.before {
+			.diffobj-container .delete {
 			  background: %s;
 			  color: %s;
 			  border-radius: 2px;
 			}
 
 			/* added chunk: dark muted green */
-			.diffr .code.replace.after {
+			.diffobj-container .insert {
 			  background: %s;
 			  color: %s;
 			  border-radius: 2px;
 			}
 
-			/* inserted characters: small pill */
-			.diffr .char-insert {
+			/* diffobj word diffs */
+			.diffobj-container .diffobj-word {
 			  background: %s;
 			  color: %s;
 			  padding: 0 6px;
@@ -141,13 +125,11 @@ show_diff <- function(input1, input2) {
 			}
 
 			/* subtle column separation */
-			.diffr table.diff td { vertical-align: middle; }
-			.diffr table.diff td.code { border-left: 1px solid %s; }
-
-			/* reduce visual noise for empty area */
-			.diffr .diff { margin: 10px 6px; }
+			.diffobj-container table td { vertical-align: middle; }
+			.diffobj-container table td.code { border-left: 1px solid %s; }
 			",
 			bg_body,
+			text_color,
 			header_color, header_text,
 			number_color,
 			text_color,
@@ -156,21 +138,30 @@ show_diff <- function(input1, input2) {
 			insert_bg, insert_text,
 			cell_border
 		)
-
-		# css est prêt — utilisation typique :
-		# htmltools::browsable(htmltools::tagList(htmltools::HTML(css), result))
-		# ou via onRender si tu préfères injecter après rendu :
-		# widget2 <- htmlwidgets::onRender(widget, sprintf("function(el,x){var s=document.createElement('style');s.appendChild(document.createTextNode(%s));document.head.appendChild(s);} ", jsonlite::toJSON(css, auto_unbox=TRUE)))
-
-
-		js <- sprintf("
-	    function(el,x){
-	      var css = %s;
-	      var s = document.createElement('style'); s.type='text/css';
-	      s.appendChild(document.createTextNode(css));
-	      document.head.appendChild(s);
-	    }", jsonlite::toJSON(css, auto_unbox = TRUE))
-
-		htmlwidgets::onRender(widget, js)
-	} # inject CSS after render
+	} # Définir le CSS dark custom
+	{
+		diff_result <- diffobj::diffChr(
+			target = content1_clean,
+			current = content2_clean,
+			mode = "sidebyside",
+			tar.banner = "Original",
+			cur.banner = "Modified",
+			color.mode = "rgb",
+			format = "html",
+			style = list(
+				html.output = "diff.w.style"
+			)
+		)
+	} # Comparer avec diffobj
+	{
+		html_output <- as.character(diff_result)
+		styled_output <- paste0(
+			"<style>", css, "</style>",
+			'<div class="diffobj-container">',
+			html_output,
+			'</div>'
+		)
+		class(styled_output) <- c("html", "character")
+		styled_output
+	} # Enrober le résultat avec le CSS dark
 }
