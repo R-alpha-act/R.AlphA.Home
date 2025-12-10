@@ -5,34 +5,31 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
-      upload_to_s3:
-        description: 'Upload binaries to S3'
+      upload:
+        description: 'Upload binaries to FTP'
         required: false
         default: 'true'
         type: boolean
 
-env:
-  R_VERSION: '4.4'
-  AWS_REGION: eu-west-3
-  S3_BUCKET: ralpha-packages
-
 jobs:
   # ============================================================================
-  # Build Windows Binary
+  # Build Windows Binary (multiple R versions)
   # ============================================================================
   build-windows:
     runs-on: windows-latest
-    outputs:
-      binary_name: ${{ steps.build.outputs.binary_name }}
+    strategy:
+      matrix:
+        r-version: ['4.3', '4.4', '4.5']
+      fail-fast: false
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup R
+      - name: Setup R ${{ matrix.r-version }}
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: ${{ env.R_VERSION }}
+          r-version: ${{ matrix.r-version }}
 
       - name: Install dependencies
         run: |
@@ -50,27 +47,28 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-binary
+          name: windows-R${{ matrix.r-version }}
           path: "*.zip"
           retention-days: 30
 
   # ============================================================================
-  # Build macOS Binary (ARM64 / Apple Silicon)
-  # NOTE: macOS Intel supprimé (runners indisponibles + Macs Intel obsolètes)
+  # Build macOS Binary (ARM64 / Apple Silicon) - multiple R versions
   # ============================================================================
   build-macos-arm:
-    runs-on: macos-latest  # ARM64 runner
-    outputs:
-      binary_name: ${{ steps.build.outputs.binary_name }}
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        r-version: ['4.3', '4.4', '4.5']
+      fail-fast: false
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup R
+      - name: Setup R ${{ matrix.r-version }}
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: ${{ env.R_VERSION }}
+          r-version: ${{ matrix.r-version }}
 
       - name: Install dependencies
         run: |
@@ -89,86 +87,112 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macos-arm-binary
+          name: macos-arm-R${{ matrix.r-version }}
           path: "*.tgz"
           retention-days: 30
 
   # ============================================================================
-  # Upload to S3 and Update Index
+  # Upload to FTP (ralpha.fr/repo) and Update PACKAGES Index
   # ============================================================================
-  upload-to-s3:
+  upload-to-ftp:
     needs: [build-windows, build-macos-arm]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' || github.event.inputs.upload_to_s3 == 'true'
+    if: github.event_name == 'release' || github.event.inputs.upload == 'true'
 
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: binaries/
-
-      - name: Setup AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Get R version components
-        id: r_version
-        run: |
-          # Extract major.minor from R_VERSION (e.g., 4.4 -> 4.4)
-          echo "r_major_minor=${{ env.R_VERSION }}" >> $GITHUB_OUTPUT
-
-      - name: Upload Windows binary to S3
-        run: |
-          BINARY=$(ls binaries/windows-binary/*.zip 2>/dev/null | head -1)
-          if [ -n "$BINARY" ]; then
-            aws s3 cp "$BINARY" "s3://${{ env.S3_BUCKET }}/bin/windows/contrib/${{ steps.r_version.outputs.r_major_minor }}/"
-            echo "Uploaded Windows binary: $BINARY"
-          fi
-
-      - name: Upload macOS ARM binary to S3
-        run: |
-          BINARY=$(ls binaries/macos-arm-binary/*.tgz 2>/dev/null | head -1)
-          if [ -n "$BINARY" ]; then
-            aws s3 cp "$BINARY" "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-arm64/contrib/${{ steps.r_version.outputs.r_major_minor }}/"
-            echo "Uploaded macOS ARM binary: $BINARY"
-          fi
+          path: artifacts/
 
       - name: Setup R for index generation
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: ${{ env.R_VERSION }}
+          r-version: '4.4'
+
+      - name: Organize files into CRAN structure
+        run: |
+          mkdir -p repo
+
+          # Organize Windows binaries
+          for R_VER in 4.3 4.4 4.5; do
+            DIR="artifacts/windows-R${R_VER}"
+            if [ -d "$DIR" ]; then
+              mkdir -p "repo/bin/windows/contrib/${R_VER}"
+              cp "$DIR"/*.zip "repo/bin/windows/contrib/${R_VER}/" 2>/dev/null || true
+            fi
+          done
+
+          # Organize macOS ARM binaries
+          for R_VER in 4.3 4.4 4.5; do
+            DIR="artifacts/macos-arm-R${R_VER}"
+            if [ -d "$DIR" ]; then
+              mkdir -p "repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
+              cp "$DIR"/*.tgz "repo/bin/macosx/big-sur-arm64/contrib/${R_VER}/" 2>/dev/null || true
+            fi
+          done
+
+          echo "=== Repository structure ==="
+          find repo -type f | head -50
 
       - name: Generate PACKAGES index files
         run: |
-          # Create temp directories and sync from S3
-          mkdir -p temp/windows temp/macos-arm
+          for R_VER in 4.3 4.4 4.5; do
+            echo "=== Generating PACKAGES for R ${R_VER} ==="
 
-          aws s3 sync "s3://${{ env.S3_BUCKET }}/bin/windows/contrib/${{ steps.r_version.outputs.r_major_minor }}/" temp/windows/ --exclude "PACKAGES*"
-          aws s3 sync "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-arm64/contrib/${{ steps.r_version.outputs.r_major_minor }}/" temp/macos-arm/ --exclude "PACKAGES*"
+            # Windows
+            WIN_DIR="repo/bin/windows/contrib/${R_VER}"
+            if [ -d "$WIN_DIR" ] && ls "$WIN_DIR"/*.zip 1>/dev/null 2>&1; then
+              Rscript -e "tools::write_PACKAGES('${WIN_DIR}', type='win.binary')"
+              echo "  Windows R${R_VER}: $(ls -1 $WIN_DIR/*.zip | wc -l) packages"
+            fi
 
-          # Generate PACKAGES files
-          Rscript -e "tools::write_PACKAGES('temp/windows', type='win.binary')"
-          Rscript -e "tools::write_PACKAGES('temp/macos-arm', type='mac.binary')"
+            # macOS ARM
+            MAC_DIR="repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
+            if [ -d "$MAC_DIR" ] && ls "$MAC_DIR"/*.tgz 1>/dev/null 2>&1; then
+              Rscript -e "tools::write_PACKAGES('${MAC_DIR}', type='mac.binary')"
+              echo "  macOS ARM R${R_VER}: $(ls -1 $MAC_DIR/*.tgz | wc -l) packages"
+            fi
+          done
 
-          # Upload PACKAGES files back to S3
-          aws s3 cp temp/windows/PACKAGES "s3://${{ env.S3_BUCKET }}/bin/windows/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES"
-          aws s3 cp temp/windows/PACKAGES.gz "s3://${{ env.S3_BUCKET }}/bin/windows/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES.gz" 2>/dev/null || true
+      - name: Upload to FTP
+        run: |
+          # Install lftp (more reliable than basic FTP)
+          sudo apt-get update && sudo apt-get install -y lftp
 
-          aws s3 cp temp/macos-arm/PACKAGES "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-arm64/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES"
-          aws s3 cp temp/macos-arm/PACKAGES.gz "s3://${{ env.S3_BUCKET }}/bin/macosx/big-sur-arm64/contrib/${{ steps.r_version.outputs.r_major_minor }}/PACKAGES.gz" 2>/dev/null || true
+          # Create lftp script for mirror upload
+          cat > upload.lftp << 'LFTP_SCRIPT'
+          set ftp:ssl-allow no
+          set net:timeout 30
+          set net:max-retries 3
+          open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
+          cd $FTP_PATH
+          mirror --reverse --delete --verbose repo/ .
+          bye
+          LFTP_SCRIPT
 
-          echo "PACKAGES index files updated"
+          # Execute upload
+          export FTP_HOST="${{ secrets.FTP_HOST }}"
+          export FTP_USER="${{ secrets.FTP_USER }}"
+          export FTP_PASSWORD="${{ secrets.FTP_PASSWORD }}"
+          export FTP_PATH="/"
+
+          lftp -f upload.lftp
+          echo "Upload complete!"
 
       - name: Summary
         run: |
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Platform | Binary |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Windows | ${{ needs.build-windows.outputs.binary_name }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| macOS ARM | ${{ needs.build-macos-arm.outputs.binary_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "### Packages built:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Binaries uploaded to S3 bucket: \`${{ env.S3_BUCKET }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | R Version | Package |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-----------|---------|" >> $GITHUB_STEP_SUMMARY
+          for f in $(find repo -name "*.zip" -o -name "*.tgz" | sort); do
+            PLATFORM=$(echo $f | grep -q windows && echo "Windows" || echo "macOS ARM")
+            R_VER=$(echo $f | grep -oP 'contrib/\K[0-9.]+')
+            PKG=$(basename $f)
+            echo "| $PLATFORM | $R_VER | $PKG |" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Uploaded to: \`https://ralpha.fr/repo\`" >> $GITHUB_STEP_SUMMARY
