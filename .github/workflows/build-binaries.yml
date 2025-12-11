@@ -178,7 +178,7 @@ jobs:
           set net:max-retries 3
           open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
           cd $FTP_PATH
-          mirror --reverse --delete --verbose repo/ .
+          mirror --reverse --verbose repo/ .
           bye
           LFTP_SCRIPT
 
