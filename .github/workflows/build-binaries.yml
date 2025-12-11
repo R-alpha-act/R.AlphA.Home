@@ -22,7 +22,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        r-version: ['4.3', '4.4', '4.5']
+        r-version: ['4.4', '4.5']
       fail-fast: false
 
     steps:
@@ -61,7 +61,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        r-version: ['4.3', '4.4', '4.5']
+        r-version: ['4.4', '4.5']
       fail-fast: false
 
     steps:
@@ -115,12 +115,26 @@ jobs:
           # This step just generates PACKAGES index files, any R version works
           r-version: '4.4'
 
+      - name: Download existing repo from FTP
+        run: |
+          # Install lftp
+          sudo apt-get update && sudo apt-get install -y lftp
+
+          # Download existing repo structure
+          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}; mirror --verbose / existing_repo" || echo "No existing repo or connection failed"
+
       - name: Organize files into CRAN structure
         run: |
           mkdir -p repo
 
-          # Organize Windows binaries
-          for R_VER in 4.3 4.4 4.5; do
+          # Copy existing repo content first (if exists)
+          if [ -d "existing_repo" ]; then
+            echo "=== Merging with existing repo ==="
+            cp -r existing_repo/* repo/ 2>/dev/null || true
+          fi
+
+          # Organize Windows binaries (NEW builds)
+          for R_VER in 4.4 4.5; do
             DIR="artifacts/windows-R${R_VER}"
             if [ -d "$DIR" ]; then
               mkdir -p "repo/bin/windows/contrib/${R_VER}"
@@ -128,8 +142,8 @@ jobs:
             fi
           done
 
-          # Organize macOS ARM binaries
-          for R_VER in 4.3 4.4 4.5; do
+          # Organize macOS ARM binaries (NEW builds)
+          for R_VER in 4.4 4.5; do
             DIR="artifacts/macos-arm-R${R_VER}"
             if [ -d "$DIR" ]; then
               mkdir -p "repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
@@ -140,23 +154,25 @@ jobs:
           echo "=== Repository structure ==="
           find repo -type f | head -50
 
-      - name: Generate PACKAGES index files
+      - name: Generate PACKAGES index files (for ALL packages)
         run: |
-          for R_VER in 4.3 4.4 4.5; do
+          for R_VER in 4.4 4.5; do
             echo "=== Generating PACKAGES for R ${R_VER} ==="
 
-            # Windows
+            # Windows - regenerate index with ALL binaries present
             WIN_DIR="repo/bin/windows/contrib/${R_VER}"
             if [ -d "$WIN_DIR" ] && ls "$WIN_DIR"/*.zip 1>/dev/null 2>&1; then
               Rscript -e "tools::write_PACKAGES('${WIN_DIR}', type='win.binary')"
               echo "  Windows R${R_VER}: $(ls -1 $WIN_DIR/*.zip | wc -l) packages"
+              echo "  Packages: $(ls -1 $WIN_DIR/*.zip | xargs -n1 basename)"
             fi
 
-            # macOS ARM
+            # macOS ARM - regenerate index with ALL binaries present
             MAC_DIR="repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
             if [ -d "$MAC_DIR" ] && ls "$MAC_DIR"/*.tgz 1>/dev/null 2>&1; then
               Rscript -e "tools::write_PACKAGES('${MAC_DIR}', type='mac.binary')"
               echo "  macOS ARM R${R_VER}: $(ls -1 $MAC_DIR/*.tgz | wc -l) packages"
+              echo "  Packages: $(ls -1 $MAC_DIR/*.tgz | xargs -n1 basename)"
             fi
           done
 
