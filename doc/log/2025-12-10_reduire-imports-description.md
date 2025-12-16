@@ -3,8 +3,8 @@ date: 2025-12-10
 type: Refactor
 subject: Réduire imports DESCRIPTION
 fix: Supprimer doublons, Base R inutiles, et packages non utilisés
-short_story: Audit 25 deps → 20 imports → 74 packages récursifs. Suppression doublons (diffr, R6), Base R (stats, utils, tools, grDevices), et purrr non utilisé.
-status: En cours
+short_story: Audit 25 deps → 12 imports (-52%). Sessions 1-5 : doublons, Base R, stringi/stringr éliminés, diffr→diffobj, openxlsx→readxl+writexl, qs/arrow→Suggests. Objectif atteint.
+status: ✅ Terminé
 category: Architecture
 archive_after: 6m
 keywords: [imports, suggests, DESCRIPTION, dépendances, dependencies, CRAN, base R, préfixes, shiny]

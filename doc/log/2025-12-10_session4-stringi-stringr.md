@@ -3,8 +3,8 @@ date: 2025-12-10
 type: Refactor
 subject: Session 4 - Remplacer stringi/stringr par base R
 fix: Éliminer dépendances problématiques stringi (14.79 MB) et stringr
-short_story: Préparation Session 4 - Audit complet des usages stringi/stringr. 32 occurrences dans 6 fichiers. Équivalents base R identifiés.
-status: 📋 Planifié
+short_story: stringi/stringr complètement éliminés. 32 occurrences dans 6 fichiers remplacées par base R (gsub, grepl, regmatches). Voir aussi Session 5 qui a éliminé la chaîne transitive via openxlsx.
+status: ✅ Terminé
 category: Architecture
 archive_after: 6m
 keywords: [stringi, stringr, base R, dependencies, regex, gsub, grepl, regmatches]
