@@ -8,10 +8,15 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
+      force_rebuild:
+        description: 'Force rebuild all platforms (ignore version check)'
+        required: false
+        default: false
+        type: boolean
       upload:
         description: 'Upload binaries to FTP'
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 jobs:
@@ -92,7 +97,7 @@ jobs:
   # ============================================================================
   build-windows:
     needs: check-version
-    if: needs.check-version.outputs.needs_windows == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.check-version.outputs.needs_windows == 'true' || inputs.force_rebuild == true
     runs-on: windows-latest
     strategy:
       matrix:
@@ -155,7 +160,7 @@ jobs:
   # ============================================================================
   build-macos-arm:
     needs: check-version
-    if: needs.check-version.outputs.needs_macos_arm == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.check-version.outputs.needs_macos_arm == 'true' || inputs.force_rebuild == true
     runs-on: macos-latest
     strategy:
       matrix:
@@ -225,7 +230,7 @@ jobs:
   # R 4.4+ users on Intel Mac can use ARM binaries via Rosetta 2
   build-macos-intel:
     needs: check-version
-    if: needs.check-version.outputs.needs_macos_intel == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.check-version.outputs.needs_macos_intel == 'true' || inputs.force_rebuild == true
     runs-on: macos-15-large  # Intel x86_64 runner (paid)
     strategy:
       matrix:
@@ -290,7 +295,7 @@ jobs:
   upload-to-ftp:
     needs: [check-version, build-windows, build-macos-arm, build-macos-intel]
     runs-on: ubuntu-latest
-    # Run if at least one platform needs build, or if manually triggered
+    # Run if at least one platform needs build, or if force_rebuild is true
     if: |
       always() &&
       !cancelled() &&
@@ -298,7 +303,7 @@ jobs:
         needs.check-version.outputs.needs_windows == 'true' ||
         needs.check-version.outputs.needs_macos_arm == 'true' ||
         needs.check-version.outputs.needs_macos_intel == 'true' ||
-        github.event_name == 'workflow_dispatch'
+        inputs.force_rebuild == true
       )
 
     steps:
