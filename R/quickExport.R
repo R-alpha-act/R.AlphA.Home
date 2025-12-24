@@ -28,7 +28,7 @@ quickExport <- function(
 	data_complete <- data %>% cols_pad(nCols, colPrefix)
 	savePath <- saveDir %>% file.path(saveName)
 	writexl::write_xlsx(
-		x = setNames(list(data_complete), sheetName)
+		x = stats::setNames(list(data_complete), sheetName)
 		, path = savePath
 	)
 	message("file written to : \n", savePath)

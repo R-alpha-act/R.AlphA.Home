@@ -3,3 +3,5 @@
 ^LICENSE\.md$
 ^\.github$
 ^dev$
+^doc$
+^__START_HERE\.md$

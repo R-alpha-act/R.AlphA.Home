@@ -2,7 +2,7 @@
 #' @description Imports multiple files into a list, concatenates them into a single
 #' table, and adds an `fName` variable. The function automatically handles type
 #' harmonization when different file types are mixed and supports various formats
-#' including CSV, Excel, RDS, Parquet, Feather, and QS files.
+#' including CSV, Excel, and RDS files.
 #'
 #' The files can be selected either by giving a file list (character vector), or
 #' by specifying a pattern. The function also supports column renaming and file
@@ -73,25 +73,6 @@ importAll <- function(
 		, renameTable = data.frame(oldName = character(), newName = character())
 		, excludePattern = NULL
 ){
-	read_parquet_check <- function(file) {
-		if (!requireNamespace("arrow", quietly = TRUE)) {
-			stop("Le package 'arrow' est requis pour lire les fichiers parquet. Installez-le avec install.packages('arrow')")
-		}
-		arrow::read_parquet(file)
-	}
-	read_feather_check <- function(file) {
-		if (!requireNamespace("arrow", quietly = TRUE)) {
-			stop("Le package 'arrow' est requis pour lire les fichiers feather. Installez-le avec install.packages('arrow')")
-		}
-		arrow::read_feather(file)
-	}
-	qread_check <- function(file) {
-		if (!requireNamespace("qs", quietly = TRUE)) {
-			stop("Le package 'qs' est requis pour lire les fichiers qs. Installez-le avec install.packages('qs')")
-		}
-		qs::qread(file)
-	}
-
 	is_absolute_path <- function(path) {
 		if (length(path) == 0) return(FALSE)
 		# R.utils function
@@ -151,9 +132,6 @@ importAll <- function(
 				, "xlsx"   , function(x) as.data.table(readxl::read_excel(x))
 				, "csv"    , fread
 				, "rds"    , readRDS
-				, "parquet", read_parquet_check
-				, "feather", read_feather_check
-				, "qs", qread_check
 			) %>%
 				as.data.table
 

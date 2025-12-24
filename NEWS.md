@@ -13,16 +13,17 @@ Major effort to reduce and optimize package dependencies for improved stability 
 * `htmlwidgets` - No longer needed after diffr removal
 
 **Dependencies moved to Suggests:**
-* `arrow` - For optional parquet/feather format support
-* `qs` - For optional qs format support
 * `shiny` and `shinyWidgets` - For optional Shiny integration
+
+**Formats removed from `importAll()`:**
+* Parquet, Feather, and QS formats no longer supported (were depending on `arrow` and `qs`)
 
 **Result:** 25 → 12 direct imports (-52%), eliminating problematic `stringi` dependency that caused CI/CD failures on macOS runners.
 
 ## Minor Improvements
 
 * `show_diff()` - Now uses `diffobj` for comparison, with preserved dark theme CSS
-* `importAll()` - Added `requireNamespace()` checks for optional formats (parquet, feather, qs)
+* `importAll()` - Simplified to support CSV, Excel, and RDS formats only
 * `shiny_lum_0_100()` - Added `requireNamespace()` checks, function still works when shiny packages are installed
 
 ## Bug Fixes
