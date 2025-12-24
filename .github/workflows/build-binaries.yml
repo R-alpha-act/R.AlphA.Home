@@ -16,9 +16,61 @@ on:
 
 jobs:
   # ============================================================================
+  # Check if build is needed (compare version with ralpha.fr/repo)
+  # ============================================================================
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      needs_build: ${{ steps.check.outputs.needs_build }}
+      local_version: ${{ steps.check.outputs.local_version }}
+      remote_version: ${{ steps.check.outputs.remote_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if build is needed
+        id: check
+        run: |
+          # Extraire la version locale depuis DESCRIPTION
+          LOCAL_VERSION=$(grep "^Version:" DESCRIPTION | sed 's/Version: //')
+          echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version locale: $LOCAL_VERSION"
+
+          # Extraire le nom du package
+          PKG_NAME=$(grep "^Package:" DESCRIPTION | sed 's/Package: //')
+          echo "📦 Package: $PKG_NAME"
+
+          # Télécharger le fichier PACKAGES depuis ralpha.fr/repo (Windows 4.4 comme référence)
+          PACKAGES_URL="https://ralpha.fr/repo/bin/windows/contrib/4.4/PACKAGES"
+          REMOTE_VERSION=$(curl -sf "$PACKAGES_URL" | grep -A1 "^Package: $PKG_NAME$" | grep "^Version:" | sed 's/Version: //' || echo "not_found")
+          echo "remote_version=$REMOTE_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version sur ralpha.fr/repo: $REMOTE_VERSION"
+
+          # Comparer
+          if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
+            echo "✅ Version $LOCAL_VERSION déjà sur le repo - skip build"
+            echo "needs_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "🔨 Nouvelle version $LOCAL_VERSION (repo: $REMOTE_VERSION) - build needed"
+            echo "needs_build=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Version Check" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Local | ${{ steps.check.outputs.local_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Remote | ${{ steps.check.outputs.remote_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build needed | ${{ steps.check.outputs.needs_build }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
   # Build Windows Binary (multiple R versions)
   # ============================================================================
   build-windows:
+    needs: check-version
+    if: needs.check-version.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     strategy:
       matrix:
@@ -80,6 +132,8 @@ jobs:
   # Build macOS Binary (ARM64 / Apple Silicon) - multiple R versions
   # ============================================================================
   build-macos-arm:
+    needs: check-version
+    if: needs.check-version.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     strategy:
       matrix:
@@ -148,6 +202,8 @@ jobs:
   # NOTE: Intel builds are expensive ($0.12/min) - only build R 4.2
   # R 4.4+ users on Intel Mac can use ARM binaries via Rosetta 2
   build-macos-intel:
+    needs: check-version
+    if: needs.check-version.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: macos-15-large  # Intel x86_64 runner (paid)
     strategy:
       matrix:
@@ -210,9 +266,13 @@ jobs:
   # Upload to FTP (ralpha.fr/repo) and Update PACKAGES Index
   # ============================================================================
   upload-to-ftp:
-    needs: [build-windows, build-macos-arm, build-macos-intel]
+    needs: [check-version, build-windows, build-macos-arm, build-macos-intel]
     runs-on: ubuntu-latest
-    if: (!cancelled()) && (github.event_name == 'release' || github.event_name == 'push' || github.event.inputs.upload == 'true')
+    # Skip si version déjà sur repo (sauf workflow_dispatch)
+    if: |
+      !cancelled() &&
+      (needs.check-version.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch') &&
+      (github.event_name == 'release' || github.event_name == 'push' || github.event.inputs.upload == 'true')
 
     steps:
       - name: Download all artifacts
