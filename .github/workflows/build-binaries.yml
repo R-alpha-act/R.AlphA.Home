@@ -16,61 +16,83 @@ on:
 
 jobs:
   # ============================================================================
-  # Check if build is needed (compare version with ralpha.fr/repo)
+  # Check if build is needed (compare version with ralpha.fr/repo per platform)
   # ============================================================================
   check-version:
     runs-on: ubuntu-latest
     outputs:
-      needs_build: ${{ steps.check.outputs.needs_build }}
       local_version: ${{ steps.check.outputs.local_version }}
-      remote_version: ${{ steps.check.outputs.remote_version }}
+      needs_windows: ${{ steps.check.outputs.needs_windows }}
+      needs_macos_arm: ${{ steps.check.outputs.needs_macos_arm }}
+      needs_macos_intel: ${{ steps.check.outputs.needs_macos_intel }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check if build is needed
+      - name: Check versions per platform
         id: check
         run: |
-          # Extraire la version locale depuis DESCRIPTION
+          # Extraire la version locale et le nom du package
           LOCAL_VERSION=$(grep "^Version:" DESCRIPTION | sed 's/Version: //')
-          echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Version locale: $LOCAL_VERSION"
-
-          # Extraire le nom du package
           PKG_NAME=$(grep "^Package:" DESCRIPTION | sed 's/Package: //')
-          echo "📦 Package: $PKG_NAME"
+          echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Package: $PKG_NAME v$LOCAL_VERSION"
+          echo ""
 
-          # Télécharger le fichier PACKAGES depuis ralpha.fr/repo (Windows 4.4 comme référence)
-          PACKAGES_URL="https://ralpha.fr/repo/bin/windows/contrib/4.4/PACKAGES"
-          REMOTE_VERSION=$(curl -sf "$PACKAGES_URL" | grep -A1 "^Package: $PKG_NAME$" | grep "^Version:" | sed 's/Version: //' || echo "not_found")
-          echo "remote_version=$REMOTE_VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Version sur ralpha.fr/repo: $REMOTE_VERSION"
+          # Fonction pour checker une plateforme
+          check_platform() {
+            local PLATFORM=$1
+            local URL=$2
+            local OUTPUT_VAR=$3
 
-          # Comparer
-          if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
-            echo "✅ Version $LOCAL_VERSION déjà sur le repo - skip build"
-            echo "needs_build=false" >> $GITHUB_OUTPUT
-          else
-            echo "🔨 Nouvelle version $LOCAL_VERSION (repo: $REMOTE_VERSION) - build needed"
-            echo "needs_build=true" >> $GITHUB_OUTPUT
-          fi
+            REMOTE=$(curl -sf "$URL" 2>/dev/null | grep -A1 "^Package: $PKG_NAME$" | grep "^Version:" | sed 's/Version: //' || echo "not_found")
+
+            if [ "$LOCAL_VERSION" = "$REMOTE" ]; then
+              echo "  ✅ $PLATFORM: v$REMOTE (up to date)"
+              echo "${OUTPUT_VAR}=false" >> $GITHUB_OUTPUT
+            else
+              echo "  🔨 $PLATFORM: v$REMOTE → v$LOCAL_VERSION (needs build)"
+              echo "${OUTPUT_VAR}=true" >> $GITHUB_OUTPUT
+            fi
+          }
+
+          echo "🔍 Checking versions on ralpha.fr/repo:"
+          echo ""
+
+          # Windows (check 4.4 as reference)
+          check_platform "Windows" \
+            "https://ralpha.fr/repo/bin/windows/contrib/4.4/PACKAGES" \
+            "needs_windows"
+
+          # macOS ARM (check 4.4 as reference)
+          check_platform "macOS ARM" \
+            "https://ralpha.fr/repo/bin/macosx/big-sur-arm64/contrib/4.4/PACKAGES" \
+            "needs_macos_arm"
+
+          # macOS Intel (check 4.2 - the only version we build)
+          check_platform "macOS Intel" \
+            "https://ralpha.fr/repo/bin/macosx/big-sur-x86_64/contrib/4.2/PACKAGES" \
+            "needs_macos_intel"
 
       - name: Summary
         run: |
           echo "## Version Check" >> $GITHUB_STEP_SUMMARY
-          echo "| | |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Local | ${{ steps.check.outputs.local_version }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Remote | ${{ steps.check.outputs.remote_version }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build needed | ${{ steps.check.outputs.needs_build }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Local version:** ${{ steps.check.outputs.local_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Needs Build |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Windows | ${{ steps.check.outputs.needs_windows }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS ARM | ${{ steps.check.outputs.needs_macos_arm }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS Intel | ${{ steps.check.outputs.needs_macos_intel }} |" >> $GITHUB_STEP_SUMMARY
 
   # ============================================================================
   # Build Windows Binary (multiple R versions)
   # ============================================================================
   build-windows:
     needs: check-version
-    if: needs.check-version.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.check-version.outputs.needs_windows == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     strategy:
       matrix:
@@ -133,7 +155,7 @@ jobs:
   # ============================================================================
   build-macos-arm:
     needs: check-version
-    if: needs.check-version.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.check-version.outputs.needs_macos_arm == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     strategy:
       matrix:
@@ -203,7 +225,7 @@ jobs:
   # R 4.4+ users on Intel Mac can use ARM binaries via Rosetta 2
   build-macos-intel:
     needs: check-version
-    if: needs.check-version.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.check-version.outputs.needs_macos_intel == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: macos-15-large  # Intel x86_64 runner (paid)
     strategy:
       matrix:
@@ -268,11 +290,16 @@ jobs:
   upload-to-ftp:
     needs: [check-version, build-windows, build-macos-arm, build-macos-intel]
     runs-on: ubuntu-latest
-    # Skip si version déjà sur repo (sauf workflow_dispatch)
+    # Run if at least one platform needs build, or if manually triggered
     if: |
+      always() &&
       !cancelled() &&
-      (needs.check-version.outputs.needs_build == 'true' || github.event_name == 'workflow_dispatch') &&
-      (github.event_name == 'release' || github.event_name == 'push' || github.event.inputs.upload == 'true')
+      (
+        needs.check-version.outputs.needs_windows == 'true' ||
+        needs.check-version.outputs.needs_macos_arm == 'true' ||
+        needs.check-version.outputs.needs_macos_intel == 'true' ||
+        github.event_name == 'workflow_dispatch'
+      )
 
     steps:
       - name: Download all artifacts
