@@ -45,7 +45,7 @@ All imported data is converted to data.table format with automatic type harmoniz
 Imports multiple files into a list, concatenates them into a single
 table, and adds an `fName` variable. The function automatically handles type
 harmonization when different file types are mixed and supports various formats
-including CSV, Excel, RDS, Parquet, Feather, and QS files.
+including CSV, Excel, and RDS files.
 
 The files can be selected either by giving a file list (character vector), or
 by specifying a pattern. The function also supports column renaming and file
