@@ -1,3 +1,37 @@
+# R.AlphA.Home 1.1.3
+
+## Dependency Reduction
+
+Major effort to reduce and optimize package dependencies for improved stability and CI/CD reliability.
+
+**Dependencies removed from Imports:**
+* `stringi` and `stringr` - Replaced with base R equivalents (`gsub`, `grepl`, `regmatches`)
+* `openxlsx` - Replaced by `readxl` (read) and `writexl` (write) for xlsx handling
+* `tidyr` - `replace_na()` replaced by `dplyr::coalesce()` (already imported)
+* `diffr` - Replaced by `diffobj` (lighter alternative, 2 deps vs 21)
+* `jsonlite` - No longer needed after diffr removal
+* `htmlwidgets` - No longer needed after diffr removal
+
+**Dependencies moved to Suggests:**
+* `arrow` - For optional parquet/feather format support
+* `qs` - For optional qs format support
+* `shiny` and `shinyWidgets` - For optional Shiny integration
+
+**Result:** 25 → 12 direct imports (-52%), eliminating problematic `stringi` dependency that caused CI/CD failures on macOS runners.
+
+## Minor Improvements
+
+* `show_diff()` - Now uses `diffobj` for comparison, with preserved dark theme CSS
+* `importAll()` - Added `requireNamespace()` checks for optional formats (parquet, feather, qs)
+* `shiny_lum_0_100()` - Added `requireNamespace()` checks, function still works when shiny packages are installed
+
+## Bug Fixes
+
+* Fixed GitHub Actions workflow failures related to `stringi` ICU library dependencies
+* Fixed duplicate entries in DESCRIPTION (diffr, R6 were listed twice)
+
+---
+
 # R.AlphA.Home 1.1.0
 
 ## New Features
