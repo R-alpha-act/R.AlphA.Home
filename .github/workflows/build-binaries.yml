@@ -22,7 +22,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        r-version: ['4.4', '4.5']
+        r-version: ['4.2', '4.4', '4.5']
       fail-fast: false
 
     steps:
@@ -34,11 +34,33 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
 
-      - name: Install dependencies
-        run: |
-          install.packages('remotes')
-          remotes::install_deps(dependencies = TRUE)
-        shell: Rscript {0}
+      # ----------------------------------------------------------------
+      # Cache des dépendances R (r-lib)
+      # ----------------------------------------------------------------
+      # - Clé de cache : OS + R version + hash(DESCRIPTION)
+      # - Premier run : installe tout (~10-20 min), sauvegarde en cache
+      # - Runs suivants : restaure le cache (~30s), skip installation
+      # - Invalidé auto si DESCRIPTION change (nouvelle dépendance)
+      # ----------------------------------------------------------------
+      - name: Install dependencies (with cache)
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 2
+          extra-packages: any::rcmdcheck
+          # pak-version devel : version dev de pak, plus robuste pour R 4.5+
+          # (la version stable peut avoir des bugs avec les nouvelles versions R)
+          pak-version: devel
+          # upgrade TRUE : force la mise à jour des packages même si une
+          # version est déjà installée (évite les conflits de versions)
+          upgrade: 'TRUE'
+          # lockfile false : ne pas utiliser .github/pkg.lock
+          # (le repo client est généré, pas de lockfile versionné)
+          # Sans ça : erreur "cannot open connection" sur pkg.lock inexistant
+          lockfile: false
+          # Utiliser ralpha.fr/repo en priorité (Home à jour) avant CRAN
+          repos: |
+            https://ralpha.fr/repo
+            https://cloud.r-project.org
 
       - name: Build binary package
         id: build
@@ -61,7 +83,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        r-version: ['4.4', '4.5']
+        r-version: ['4.2', '4.4', '4.5']
       fail-fast: false
 
     steps:
@@ -73,11 +95,33 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
 
-      - name: Install dependencies
-        run: |
-          install.packages('remotes')
-          remotes::install_deps(dependencies = TRUE)
-        shell: Rscript {0}
+      # ----------------------------------------------------------------
+      # Cache des dépendances R (r-lib)
+      # ----------------------------------------------------------------
+      # - Clé de cache : OS + R version + hash(DESCRIPTION)
+      # - Premier run : installe tout (~10-20 min), sauvegarde en cache
+      # - Runs suivants : restaure le cache (~30s), skip installation
+      # - Invalidé auto si DESCRIPTION change (nouvelle dépendance)
+      # ----------------------------------------------------------------
+      - name: Install dependencies (with cache)
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 2
+          extra-packages: any::rcmdcheck
+          # pak-version devel : version dev de pak, plus robuste pour R 4.5+
+          # (la version stable peut avoir des bugs avec les nouvelles versions R)
+          pak-version: devel
+          # upgrade TRUE : force la mise à jour des packages même si une
+          # version est déjà installée (évite les conflits de versions)
+          upgrade: 'TRUE'
+          # lockfile false : ne pas utiliser .github/pkg.lock
+          # (le repo client est généré, pas de lockfile versionné)
+          # Sans ça : erreur "cannot open connection" sur pkg.lock inexistant
+          lockfile: false
+          # Utiliser ralpha.fr/repo en priorité (Home à jour) avant CRAN
+          repos: |
+            https://ralpha.fr/repo
+            https://cloud.r-project.org
 
       - name: Build binary package
         id: build
@@ -95,10 +139,76 @@ jobs:
           retention-days: 30
 
   # ============================================================================
+  # Build macOS Binary (Intel x86_64) - multiple R versions
+  # ============================================================================
+  # NOTE: macos-12 retiré (déc 2024), macos-13 retiré (déc 2025)
+  # Pour Intel, utiliser: macos-15-large, macos-14-large, ou macos-15-intel
+  # Apple a arrêté le support Intel — GitHub retirera les runners Intel automne 2027
+  # ============================================================================
+  build-macos-intel:
+    runs-on: macos-15-large  # Intel x86_64 runner
+    strategy:
+      matrix:
+        r-version: ['4.2', '4.4', '4.5']
+      fail-fast: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R ${{ matrix.r-version }}
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r-version }}
+
+      # ----------------------------------------------------------------
+      # Cache des dépendances R (r-lib)
+      # ----------------------------------------------------------------
+      # - Clé de cache : OS + R version + hash(DESCRIPTION)
+      # - Premier run : installe tout (~10-20 min), sauvegarde en cache
+      # - Runs suivants : restaure le cache (~30s), skip installation
+      # - Invalidé auto si DESCRIPTION change (nouvelle dépendance)
+      # ----------------------------------------------------------------
+      - name: Install dependencies (with cache)
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 2
+          extra-packages: any::rcmdcheck
+          # pak-version devel : version dev de pak, plus robuste pour R 4.5+
+          # (la version stable peut avoir des bugs avec les nouvelles versions R)
+          pak-version: devel
+          # upgrade TRUE : force la mise à jour des packages même si une
+          # version est déjà installée (évite les conflits de versions)
+          upgrade: 'TRUE'
+          # lockfile false : ne pas utiliser .github/pkg.lock
+          # (le repo client est généré, pas de lockfile versionné)
+          # Sans ça : erreur "cannot open connection" sur pkg.lock inexistant
+          lockfile: false
+          # Utiliser ralpha.fr/repo en priorité (Home à jour) avant CRAN
+          repos: |
+            https://ralpha.fr/repo
+            https://cloud.r-project.org
+
+      - name: Build binary package
+        id: build
+        run: |
+          R CMD INSTALL --build .
+          BINARY=$(ls *.tgz 2>/dev/null | head -1)
+          echo "binary_name=$BINARY" >> $GITHUB_OUTPUT
+          echo "Built: $BINARY (Intel x86_64)"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-intel-R${{ matrix.r-version }}
+          path: "*.tgz"
+          retention-days: 30
+
+  # ============================================================================
   # Upload to FTP (ralpha.fr/repo) and Update PACKAGES Index
   # ============================================================================
   upload-to-ftp:
-    needs: [build-windows, build-macos-arm]
+    needs: [build-windows, build-macos-arm, build-macos-intel]
     runs-on: ubuntu-latest
     if: (!cancelled()) && (github.event_name == 'release' || github.event_name == 'push' || github.event.inputs.upload == 'true')
 
@@ -134,7 +244,7 @@ jobs:
           fi
 
           # Organize Windows binaries (NEW builds)
-          for R_VER in 4.4 4.5; do
+          for R_VER in 4.2 4.4 4.5; do
             DIR="artifacts/windows-R${R_VER}"
             if [ -d "$DIR" ]; then
               mkdir -p "repo/bin/windows/contrib/${R_VER}"
@@ -143,11 +253,20 @@ jobs:
           done
 
           # Organize macOS ARM binaries (NEW builds)
-          for R_VER in 4.4 4.5; do
+          for R_VER in 4.2 4.4 4.5; do
             DIR="artifacts/macos-arm-R${R_VER}"
             if [ -d "$DIR" ]; then
               mkdir -p "repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
               cp "$DIR"/*.tgz "repo/bin/macosx/big-sur-arm64/contrib/${R_VER}/" 2>/dev/null || true
+            fi
+          done
+
+          # Organize macOS Intel binaries (NEW builds)
+          for R_VER in 4.2 4.4 4.5; do
+            DIR="artifacts/macos-intel-R${R_VER}"
+            if [ -d "$DIR" ]; then
+              mkdir -p "repo/bin/macosx/big-sur-x86_64/contrib/${R_VER}"
+              cp "$DIR"/*.tgz "repo/bin/macosx/big-sur-x86_64/contrib/${R_VER}/" 2>/dev/null || true
             fi
           done
 
@@ -156,7 +275,7 @@ jobs:
 
       - name: Generate PACKAGES index files (for ALL packages)
         run: |
-          for R_VER in 4.4 4.5; do
+          for R_VER in 4.2 4.4 4.5; do
             echo "=== Generating PACKAGES for R ${R_VER} ==="
 
             # Windows - regenerate index with ALL binaries present
@@ -168,11 +287,19 @@ jobs:
             fi
 
             # macOS ARM - regenerate index with ALL binaries present
-            MAC_DIR="repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
-            if [ -d "$MAC_DIR" ] && ls "$MAC_DIR"/*.tgz 1>/dev/null 2>&1; then
-              Rscript -e "tools::write_PACKAGES('${MAC_DIR}', type='mac.binary')"
-              echo "  macOS ARM R${R_VER}: $(ls -1 $MAC_DIR/*.tgz | wc -l) packages"
-              echo "  Packages: $(ls -1 $MAC_DIR/*.tgz | xargs -n1 basename)"
+            MAC_ARM_DIR="repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
+            if [ -d "$MAC_ARM_DIR" ] && ls "$MAC_ARM_DIR"/*.tgz 1>/dev/null 2>&1; then
+              Rscript -e "tools::write_PACKAGES('${MAC_ARM_DIR}', type='mac.binary')"
+              echo "  macOS ARM R${R_VER}: $(ls -1 $MAC_ARM_DIR/*.tgz | wc -l) packages"
+              echo "  Packages: $(ls -1 $MAC_ARM_DIR/*.tgz | xargs -n1 basename)"
+            fi
+
+            # macOS Intel - regenerate index with ALL binaries present
+            MAC_INTEL_DIR="repo/bin/macosx/big-sur-x86_64/contrib/${R_VER}"
+            if [ -d "$MAC_INTEL_DIR" ] && ls "$MAC_INTEL_DIR"/*.tgz 1>/dev/null 2>&1; then
+              Rscript -e "tools::write_PACKAGES('${MAC_INTEL_DIR}', type='mac.binary')"
+              echo "  macOS Intel R${R_VER}: $(ls -1 $MAC_INTEL_DIR/*.tgz | wc -l) packages"
+              echo "  Packages: $(ls -1 $MAC_INTEL_DIR/*.tgz | xargs -n1 basename)"
             fi
           done
 
