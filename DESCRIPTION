@@ -29,8 +29,6 @@ Imports:
     rstudioapi,
     tibble
 Suggests:
-    arrow,
-    qs,
     shiny,
     shinyWidgets,
     testthat (>= 3.0.0)
