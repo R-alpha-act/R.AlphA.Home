@@ -72,7 +72,6 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c(
 	,"endBrEndLine"
 	,"contains_cursor"
 	,"indentLevel"
-	,"ct_proc"
 	,"ct_num"
 	,"tot_num"
 	# ralpha_unfold

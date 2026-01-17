@@ -1,3 +1,19 @@
+# R.AlphA.Home 2.0.0
+
+## Breaking Changes
+
+* `root()` - Now accepts `...` as first parameter for path building. **Positional arguments are now interpreted as path components**, not as `includeFName`. Use `root(includeFName = TRUE)` explicitly to get the full file path.
+
+## New Features
+
+* `root()` - Can now build paths relative to the source file directory: `root("data", "input.csv")` returns the full path to `data/input.csv` relative to the script location.
+
+## Improvements
+
+* `Rtimer` - Removed intermediate columns `ct_proc` and `dt_proc` for cleaner output. Only `diffTime` and `totalTime` are now returned.
+
+---
+
 # R.AlphA.Home 1.1.3
 
 ## Dependency Reduction
