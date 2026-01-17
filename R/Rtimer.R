@@ -44,9 +44,9 @@ Rtimer <- R6Class(
 			if (length(extra_args) > 0) {
 				noName <- is.null(names(extra_args)) || names(extra_args)[1] == ""
 				if (noName) names(extra_args)[1] <- "step"
-				new_entry <- c(extra_args, list(currentTime = Sys.time(), ct_proc = proc.time()[3]))
+				new_entry <- c(extra_args, list(currentTime = Sys.time()))
 			}
-			else new_entry <- list(currentTime = Sys.time(), ct_proc = proc.time()[3])
+			else new_entry <- list(currentTime = Sys.time())
 			private$timer_list <- append(private$timer_list, list(new_entry))
 			invisible(self)
 		},
@@ -58,7 +58,6 @@ Rtimer <- R6Class(
 			timer_table <- rbindlist(private$timer_list, fill = fill)
 			timer_table[, ct_num := as.numeric(currentTime)]
 			timer_table[, dt_num := c(diff(ct_num), 0)]
-			timer_table[, dt_proc := c(diff(ct_proc), 0)]
 			timer_table[, tot_num := cumsum(dt_num)]
 			timer_table[, diffTime := round(dt_num, 3)]
 			timer_table[, totalTime := round(tot_num, 3)]

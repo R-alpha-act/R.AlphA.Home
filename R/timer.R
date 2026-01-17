@@ -84,9 +84,3 @@ timer <- function(timer_table = data.table(), end = FALSE, ...) {
 	} # Compute time differences if `end = TRUE`
 	return(timer_table)
 }
-
-
-
-
-
-

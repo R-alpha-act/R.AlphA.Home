@@ -47,7 +47,7 @@ devtools::install_github("R-alpha-act/R.AlphA.Home")
 - **`lum_0_100()`** - Adjust graphics window brightness for comfortable ggplot2 viewing
 - **`ret_lum()`** - Adjust brightness of hex colors
 - **`shiny_lum_0_100()`** - Set Shiny background and sidebar colors to chosen grey shades
-- **`show_diff()`** - Compare two texts or files with diffr
+- **`show_diff()`** - Compare two texts or files with diffobj
 
 ### 🔧 System and Environment
 - **`root()`** - Get root directory of current source file
@@ -62,14 +62,14 @@ devtools::install_github("R-alpha-act/R.AlphA.Home")
 
 ## Dependencies
 
-The package imports several essential R packages:
-- **Data manipulation**: `data.table`, `dplyr`, `tibble`, `tidyr`
+The package imports 12 essential R packages:
+- **Data manipulation**: `data.table`, `dplyr`, `tibble`
 - **Date/time**: `lubridate`
-- **String operations**: `stringr`, `stringi`
-- **Graphics**: `ggplot2`, `grDevices`
-- **File operations**: `openxlsx`, `R.utils`
-- **Shiny**: `shiny`, `shinyWidgets`
+- **Graphics**: `ggplot2`, `diffobj`
+- **File operations**: `readxl`, `writexl`, `R.utils`
 - **Utilities**: `rstudioapi`, `magrittr`, `R6`
+
+Optional (in Suggests): `shiny`, `shinyWidgets` for Shiny integration.
 
 ## Contributing
 
