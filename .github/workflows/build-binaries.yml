@@ -27,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       local_version: ${{ steps.check.outputs.local_version }}
+      pkg_name: ${{ steps.check.outputs.pkg_name }}
       needs_windows: ${{ steps.check.outputs.needs_windows }}
       needs_macos_arm: ${{ steps.check.outputs.needs_macos_arm }}
       needs_macos_intel: ${{ steps.check.outputs.needs_macos_intel }}
@@ -42,43 +43,60 @@ jobs:
           LOCAL_VERSION=$(grep "^Version:" DESCRIPTION | sed 's/Version: //')
           PKG_NAME=$(grep "^Package:" DESCRIPTION | sed 's/Package: //')
           echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
+          echo "pkg_name=$PKG_NAME" >> $GITHUB_OUTPUT
           echo "📦 Package: $PKG_NAME v$LOCAL_VERSION"
           echo ""
 
-          # Fonction pour checker une plateforme
+          # Fonction pour checker UNE version
+          check_version() {
+            local URL=$1
+            REMOTE=$(curl -sf "$URL" 2>/dev/null | grep -A1 "^Package: $PKG_NAME$" | grep "^Version:" | sed 's/Version: //' || echo "not_found")
+            [ "$LOCAL_VERSION" != "$REMOTE" ] && echo "needs_build" || echo "up_to_date"
+          }
+
+          # Fonction pour checker une plateforme (retourne true si AU MOINS UNE version manque)
           check_platform() {
             local PLATFORM=$1
-            local URL=$2
+            local BASE_URL=$2
             local OUTPUT_VAR=$3
+            shift 3
+            local VERSIONS=("$@")
 
-            REMOTE=$(curl -sf "$URL" 2>/dev/null | grep -A1 "^Package: $PKG_NAME$" | grep "^Version:" | sed 's/Version: //' || echo "not_found")
+            local needs_build=false
+            echo "  $PLATFORM:"
+            for ver in "${VERSIONS[@]}"; do
+              local status=$(check_version "${BASE_URL}/${ver}/PACKAGES")
+              if [ "$status" = "needs_build" ]; then
+                echo "    R $ver: 🔨 needs build"
+                needs_build=true
+              else
+                echo "    R $ver: ✅ up to date"
+              fi
+            done
 
-            if [ "$LOCAL_VERSION" = "$REMOTE" ]; then
-              echo "  ✅ $PLATFORM: v$REMOTE (up to date)"
-              echo "${OUTPUT_VAR}=false" >> $GITHUB_OUTPUT
-            else
-              echo "  🔨 $PLATFORM: v$REMOTE → v$LOCAL_VERSION (needs build)"
-              echo "${OUTPUT_VAR}=true" >> $GITHUB_OUTPUT
-            fi
+            echo "${OUTPUT_VAR}=$needs_build" >> $GITHUB_OUTPUT
           }
 
           echo "🔍 Checking versions on ralpha.fr/repo:"
           echo ""
 
-          # Windows (check 4.4 as reference)
+          # Windows (R 4.4, 4.5)
           check_platform "Windows" \
-            "https://ralpha.fr/repo/bin/windows/contrib/4.4/PACKAGES" \
-            "needs_windows"
+            "https://ralpha.fr/repo/bin/windows/contrib" \
+            "needs_windows" \
+            "4.4" "4.5"
 
-          # macOS ARM (check 4.4 as reference)
+          # macOS ARM (R 4.4, 4.5)
           check_platform "macOS ARM" \
-            "https://ralpha.fr/repo/bin/macosx/big-sur-arm64/contrib/4.4/PACKAGES" \
-            "needs_macos_arm"
+            "https://ralpha.fr/repo/bin/macosx/big-sur-arm64/contrib" \
+            "needs_macos_arm" \
+            "4.4" "4.5"
 
-          # macOS Intel (check 4.2 - the only version we build)
+          # macOS Intel (R 4.2, 4.4, 4.5)
           check_platform "macOS Intel" \
-            "https://ralpha.fr/repo/bin/macosx/big-sur-x86_64/contrib/4.2/PACKAGES" \
-            "needs_macos_intel"
+            "https://ralpha.fr/repo/bin/macosx/big-sur-x86_64/contrib" \
+            "needs_macos_intel" \
+            "4.2" "4.4" "4.5"
 
       - name: Summary
         run: |
@@ -101,47 +119,67 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        r-version: ['4.4', '4.5']  # R 4.2 only on Intel Mac (for compatibility)
+        r-version: ['4.4', '4.5']
       fail-fast: false
 
     steps:
+      # ----------------------------------------------------------------
+      # Check if THIS specific R version needs build (before checkout!)
+      # ----------------------------------------------------------------
+      - name: Check if R ${{ matrix.r-version }} needs build
+        id: version_check
+        shell: bash
+        run: |
+          LOCAL_VERSION="${{ needs.check-version.outputs.local_version }}"
+          PKG_NAME="${{ needs.check-version.outputs.pkg_name }}"
+          URL="https://ralpha.fr/repo/bin/windows/contrib/${{ matrix.r-version }}/PACKAGES"
+
+          REMOTE=$(curl -sf "$URL" 2>/dev/null | grep -A1 "^Package: $PKG_NAME$" | grep "^Version:" | sed 's/Version: //' || echo "not_found")
+
+          if [ "$LOCAL_VERSION" = "$REMOTE" ]; then
+            echo "✅ R ${{ matrix.r-version }}: v$REMOTE already up to date - SKIPPING"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "🔨 R ${{ matrix.r-version }}: v$REMOTE → v$LOCAL_VERSION - will build"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout repository
+        if: steps.version_check.outputs.skip != 'true'
         uses: actions/checkout@v4
 
       - name: Setup R ${{ matrix.r-version }}
+        if: steps.version_check.outputs.skip != 'true'
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.r-version }}
 
       # ----------------------------------------------------------------
+      # Cleanup stale lockfile from cache (if any)
+      # ----------------------------------------------------------------
+      - name: Remove stale lockfile
+        if: steps.version_check.outputs.skip != 'true'
+        run: rm -f .github/pkg.lock
+        shell: bash
+
+      # ----------------------------------------------------------------
       # Cache des dépendances R (r-lib)
       # ----------------------------------------------------------------
-      # - Clé de cache : OS + R version + hash(DESCRIPTION)
-      # - Premier run : installe tout (~10-20 min), sauvegarde en cache
-      # - Runs suivants : restaure le cache (~30s), skip installation
-      # - Invalidé auto si DESCRIPTION change (nouvelle dépendance)
-      # ----------------------------------------------------------------
       - name: Install dependencies (with cache)
+        if: steps.version_check.outputs.skip != 'true'
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          cache-version: 2
-          extra-packages: any::rcmdcheck
-          # pak-version devel : version dev de pak, plus robuste pour R 4.5+
-          # (la version stable peut avoir des bugs avec les nouvelles versions R)
+          cache-version: 4
+          dependencies: '"hard"'
           pak-version: devel
-          # upgrade TRUE : force la mise à jour des packages même si une
-          # version est déjà installée (évite les conflits de versions)
           upgrade: 'TRUE'
-          # lockfile false : ne pas utiliser .github/pkg.lock
-          # (le repo client est généré, pas de lockfile versionné)
-          # Sans ça : erreur "cannot open connection" sur pkg.lock inexistant
           lockfile: false
-          # Utiliser ralpha.fr/repo en priorité (Home à jour) avant CRAN
           repos: |
             https://ralpha.fr/repo
             https://cloud.r-project.org
 
       - name: Build binary package
+        if: steps.version_check.outputs.skip != 'true'
         id: build
         run: |
           R CMD INSTALL --build .
@@ -149,6 +187,7 @@ jobs:
         shell: cmd
 
       - name: Upload artifact
+        if: steps.version_check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: windows-R${{ matrix.r-version }}
@@ -158,53 +197,75 @@ jobs:
   # ============================================================================
   # Build macOS Binary (ARM64 / Apple Silicon) - multiple R versions
   # ============================================================================
+  # NOTE: Utiliser macos-15 explicite (pas macos-latest) pour éviter les
+  # problèmes de cache lors des migrations de runners.
+  # ============================================================================
   build-macos-arm:
     needs: check-version
     if: needs.check-version.outputs.needs_macos_arm == 'true' || inputs.force_rebuild == true
-    runs-on: macos-latest
+    runs-on: macos-15
     strategy:
       matrix:
-        r-version: ['4.4', '4.5']  # R 4.2 only on Intel Mac (for compatibility)
+        r-version: ['4.4', '4.5']
       fail-fast: false
 
     steps:
+      # ----------------------------------------------------------------
+      # Check if THIS specific R version needs build (before checkout!)
+      # ----------------------------------------------------------------
+      - name: Check if R ${{ matrix.r-version }} needs build
+        id: version_check
+        run: |
+          LOCAL_VERSION="${{ needs.check-version.outputs.local_version }}"
+          PKG_NAME="${{ needs.check-version.outputs.pkg_name }}"
+          URL="https://ralpha.fr/repo/bin/macosx/big-sur-arm64/contrib/${{ matrix.r-version }}/PACKAGES"
+
+          REMOTE=$(curl -sf "$URL" 2>/dev/null | grep -A1 "^Package: $PKG_NAME$" | grep "^Version:" | sed 's/Version: //' || echo "not_found")
+
+          if [ "$LOCAL_VERSION" = "$REMOTE" ]; then
+            echo "✅ R ${{ matrix.r-version }}: v$REMOTE already up to date - SKIPPING"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "🔨 R ${{ matrix.r-version }}: v$REMOTE → v$LOCAL_VERSION - will build"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout repository
+        if: steps.version_check.outputs.skip != 'true'
         uses: actions/checkout@v4
 
       - name: Setup R ${{ matrix.r-version }}
+        if: steps.version_check.outputs.skip != 'true'
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.r-version }}
 
       # ----------------------------------------------------------------
+      # Cleanup stale lockfile from cache (if any)
+      # ----------------------------------------------------------------
+      - name: Remove stale lockfile
+        if: steps.version_check.outputs.skip != 'true'
+        run: rm -f .github/pkg.lock
+        shell: bash
+
+      # ----------------------------------------------------------------
       # Cache des dépendances R (r-lib)
       # ----------------------------------------------------------------
-      # - Clé de cache : OS + R version + hash(DESCRIPTION)
-      # - Premier run : installe tout (~10-20 min), sauvegarde en cache
-      # - Runs suivants : restaure le cache (~30s), skip installation
-      # - Invalidé auto si DESCRIPTION change (nouvelle dépendance)
-      # ----------------------------------------------------------------
       - name: Install dependencies (with cache)
+        if: steps.version_check.outputs.skip != 'true'
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          cache-version: 2
-          extra-packages: any::rcmdcheck
-          # pak-version devel : version dev de pak, plus robuste pour R 4.5+
-          # (la version stable peut avoir des bugs avec les nouvelles versions R)
+          cache-version: 4
+          dependencies: '"hard"'
           pak-version: devel
-          # upgrade TRUE : force la mise à jour des packages même si une
-          # version est déjà installée (évite les conflits de versions)
           upgrade: 'TRUE'
-          # lockfile false : ne pas utiliser .github/pkg.lock
-          # (le repo client est généré, pas de lockfile versionné)
-          # Sans ça : erreur "cannot open connection" sur pkg.lock inexistant
           lockfile: false
-          # Utiliser ralpha.fr/repo en priorité (Home à jour) avant CRAN
           repos: |
             https://ralpha.fr/repo
             https://cloud.r-project.org
 
       - name: Build binary package
+        if: steps.version_check.outputs.skip != 'true'
         id: build
         run: |
           R CMD INSTALL --build .
@@ -213,6 +274,7 @@ jobs:
           echo "Built: $BINARY"
 
       - name: Upload artifact
+        if: steps.version_check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: macos-arm-R${{ matrix.r-version }}
@@ -224,57 +286,73 @@ jobs:
   # ============================================================================
   # NOTE: macos-12 retiré (déc 2024), macos-13 retiré (déc 2025)
   # Pour Intel, utiliser: macos-15-large, macos-14-large, ou macos-15-intel
-  # Apple a arrêté le support Intel — GitHub retirera les runners Intel automne 2027
   # ============================================================================
-  # NOTE: Intel builds are expensive ($0.12/min) - only build R 4.2
-  # R 4.4+ users on Intel Mac can use ARM binaries via Rosetta 2
   build-macos-intel:
     needs: check-version
     if: needs.check-version.outputs.needs_macos_intel == 'true' || inputs.force_rebuild == true
     runs-on: macos-15-large  # Intel x86_64 runner (paid)
     strategy:
       matrix:
-        r-version: ['4.2']  # Only 4.2 - saves ~$10/run
+        r-version: ['4.2', '4.4', '4.5']
       fail-fast: false
 
     steps:
+      # ----------------------------------------------------------------
+      # Check if THIS specific R version needs build (before checkout!)
+      # ----------------------------------------------------------------
+      - name: Check if R ${{ matrix.r-version }} needs build
+        id: version_check
+        run: |
+          LOCAL_VERSION="${{ needs.check-version.outputs.local_version }}"
+          PKG_NAME="${{ needs.check-version.outputs.pkg_name }}"
+          URL="https://ralpha.fr/repo/bin/macosx/big-sur-x86_64/contrib/${{ matrix.r-version }}/PACKAGES"
+
+          REMOTE=$(curl -sf "$URL" 2>/dev/null | grep -A1 "^Package: $PKG_NAME$" | grep "^Version:" | sed 's/Version: //' || echo "not_found")
+
+          if [ "$LOCAL_VERSION" = "$REMOTE" ]; then
+            echo "✅ R ${{ matrix.r-version }}: v$REMOTE already up to date - SKIPPING"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "🔨 R ${{ matrix.r-version }}: v$REMOTE → v$LOCAL_VERSION - will build"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout repository
+        if: steps.version_check.outputs.skip != 'true'
         uses: actions/checkout@v4
 
       - name: Setup R ${{ matrix.r-version }}
+        if: steps.version_check.outputs.skip != 'true'
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.r-version }}
 
       # ----------------------------------------------------------------
+      # Cleanup stale lockfile from cache (if any)
+      # ----------------------------------------------------------------
+      - name: Remove stale lockfile
+        if: steps.version_check.outputs.skip != 'true'
+        run: rm -f .github/pkg.lock
+        shell: bash
+
+      # ----------------------------------------------------------------
       # Cache des dépendances R (r-lib)
       # ----------------------------------------------------------------
-      # - Clé de cache : OS + R version + hash(DESCRIPTION)
-      # - Premier run : installe tout (~10-20 min), sauvegarde en cache
-      # - Runs suivants : restaure le cache (~30s), skip installation
-      # - Invalidé auto si DESCRIPTION change (nouvelle dépendance)
-      # ----------------------------------------------------------------
       - name: Install dependencies (with cache)
+        if: steps.version_check.outputs.skip != 'true'
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          cache-version: 2
-          extra-packages: any::rcmdcheck
-          # pak-version devel : version dev de pak, plus robuste pour R 4.5+
-          # (la version stable peut avoir des bugs avec les nouvelles versions R)
+          cache-version: 4
+          dependencies: '"hard"'
           pak-version: devel
-          # upgrade TRUE : force la mise à jour des packages même si une
-          # version est déjà installée (évite les conflits de versions)
           upgrade: 'TRUE'
-          # lockfile false : ne pas utiliser .github/pkg.lock
-          # (le repo client est généré, pas de lockfile versionné)
-          # Sans ça : erreur "cannot open connection" sur pkg.lock inexistant
           lockfile: false
-          # Utiliser ralpha.fr/repo en priorité (Home à jour) avant CRAN
           repos: |
             https://ralpha.fr/repo
             https://cloud.r-project.org
 
       - name: Build binary package
+        if: steps.version_check.outputs.skip != 'true'
         id: build
         run: |
           R CMD INSTALL --build .
@@ -283,6 +361,7 @@ jobs:
           echo "Built: $BINARY (Intel x86_64)"
 
       - name: Upload artifact
+        if: steps.version_check.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: macos-intel-R${{ matrix.r-version }}
@@ -290,20 +369,18 @@ jobs:
           retention-days: 30
 
   # ============================================================================
-  # Upload to FTP (ralpha.fr/repo) and Update PACKAGES Index
+  # Upload to FTP (ralpha.fr/repo) - INCREMENTAL UPLOAD
   # ============================================================================
   upload-to-ftp:
     needs: [check-version, build-windows, build-macos-arm, build-macos-intel]
     runs-on: ubuntu-latest
-    # Run if at least one platform needs build, or if force_rebuild is true
     if: |
       always() &&
       !cancelled() &&
       (
-        needs.check-version.outputs.needs_windows == 'true' ||
-        needs.check-version.outputs.needs_macos_arm == 'true' ||
-        needs.check-version.outputs.needs_macos_intel == 'true' ||
-        inputs.force_rebuild == true
+        needs.build-windows.result == 'success' ||
+        needs.build-macos-arm.result == 'success' ||
+        needs.build-macos-intel.result == 'success'
       )
 
     steps:
@@ -315,127 +392,203 @@ jobs:
       - name: Setup R for index generation
         uses: r-lib/actions/setup-r@v2
         with:
-          # ⚠️ Must be a single version (string), NOT a list!
-          # This step just generates PACKAGES index files, any R version works
           r-version: '4.4'
 
-      - name: Download existing repo from FTP
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Validate FTP credentials
         run: |
-          # Install lftp
-          sudo apt-get update && sudo apt-get install -y lftp
-
-          # Download existing repo structure
-          lftp -c "set ftp:ssl-allow no; open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}; mirror --verbose / existing_repo" || echo "No existing repo or connection failed"
-
-      - name: Organize files into CRAN structure
-        run: |
-          mkdir -p repo
-
-          # Copy existing repo content first (if exists)
-          if [ -d "existing_repo" ]; then
-            echo "=== Merging with existing repo ==="
-            cp -r existing_repo/* repo/ 2>/dev/null || true
+          if [ -z "${{ secrets.FTP_HOST }}" ] || [ -z "${{ secrets.FTP_USER }}" ] || [ -z "${{ secrets.FTP_PASSWORD }}" ]; then
+            echo "❌ ERROR: FTP credentials not configured!"
+            echo "Please set FTP_HOST, FTP_USER, FTP_PASSWORD in GitHub Secrets"
+            exit 1
           fi
+          echo "✅ FTP credentials found"
 
-          # Organize Windows binaries (NEW builds)
-          for R_VER in 4.2 4.4 4.5; do
-            DIR="artifacts/windows-R${R_VER}"
-            if [ -d "$DIR" ]; then
-              mkdir -p "repo/bin/windows/contrib/${R_VER}"
-              cp "$DIR"/*.zip "repo/bin/windows/contrib/${R_VER}/" 2>/dev/null || true
-            fi
-          done
-
-          # Organize macOS ARM binaries (NEW builds)
-          for R_VER in 4.2 4.4 4.5; do
-            DIR="artifacts/macos-arm-R${R_VER}"
-            if [ -d "$DIR" ]; then
-              mkdir -p "repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
-              cp "$DIR"/*.tgz "repo/bin/macosx/big-sur-arm64/contrib/${R_VER}/" 2>/dev/null || true
-            fi
-          done
-
-          # Organize macOS Intel binaries (NEW builds)
-          for R_VER in 4.2 4.4 4.5; do
-            DIR="artifacts/macos-intel-R${R_VER}"
-            if [ -d "$DIR" ]; then
-              mkdir -p "repo/bin/macosx/big-sur-x86_64/contrib/${R_VER}"
-              cp "$DIR"/*.tgz "repo/bin/macosx/big-sur-x86_64/contrib/${R_VER}/" 2>/dev/null || true
-            fi
-          done
-
-          echo "=== Repository structure ==="
-          find repo -type f | head -50
-
-      - name: Generate PACKAGES index files (for ALL packages)
+      - name: Test FTP connection
         run: |
-          for R_VER in 4.2 4.4 4.5; do
-            echo "=== Generating PACKAGES for R ${R_VER} ==="
+          echo "Testing FTP connection..."
+          lftp -c "
+            set ftp:ssl-allow no
+            set net:timeout 30
+            open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
+            pwd
+            bye
+          " && echo "✅ FTP connection OK" || { echo "❌ FTP connection failed"; exit 1; }
 
-            # Windows - regenerate index with ALL binaries present
-            WIN_DIR="repo/bin/windows/contrib/${R_VER}"
-            if [ -d "$WIN_DIR" ] && ls "$WIN_DIR"/*.zip 1>/dev/null 2>&1; then
-              Rscript -e "tools::write_PACKAGES('${WIN_DIR}', type='win.binary')"
-              echo "  Windows R${R_VER}: $(ls -1 $WIN_DIR/*.zip | wc -l) packages"
-              echo "  Packages: $(ls -1 $WIN_DIR/*.zip | xargs -n1 basename)"
+      - name: Upload binaries incrementally
+        run: |
+          echo "=== Incremental Upload to FTP ==="
+
+          upload_binary() {
+            local ARTIFACT_DIR=$1
+            local FTP_PATH=$2
+            local PKG_TYPE=$3
+
+            if [ ! -d "$ARTIFACT_DIR" ]; then
+              echo "  ⏭️  No artifact in $ARTIFACT_DIR"
+              return 0
             fi
 
-            # macOS ARM - regenerate index with ALL binaries present
-            MAC_ARM_DIR="repo/bin/macosx/big-sur-arm64/contrib/${R_VER}"
-            if [ -d "$MAC_ARM_DIR" ] && ls "$MAC_ARM_DIR"/*.tgz 1>/dev/null 2>&1; then
-              Rscript -e "tools::write_PACKAGES('${MAC_ARM_DIR}', type='mac.binary')"
-              echo "  macOS ARM R${R_VER}: $(ls -1 $MAC_ARM_DIR/*.tgz | wc -l) packages"
-              echo "  Packages: $(ls -1 $MAC_ARM_DIR/*.tgz | xargs -n1 basename)"
+            local BINARY=$(ls "$ARTIFACT_DIR"/*.zip "$ARTIFACT_DIR"/*.tgz 2>/dev/null | head -1)
+            if [ -z "$BINARY" ]; then
+              echo "  ⏭️  No binary found in $ARTIFACT_DIR"
+              return 0
             fi
 
-            # macOS Intel - regenerate index with ALL binaries present
-            MAC_INTEL_DIR="repo/bin/macosx/big-sur-x86_64/contrib/${R_VER}"
-            if [ -d "$MAC_INTEL_DIR" ] && ls "$MAC_INTEL_DIR"/*.tgz 1>/dev/null 2>&1; then
-              Rscript -e "tools::write_PACKAGES('${MAC_INTEL_DIR}', type='mac.binary')"
-              echo "  macOS Intel R${R_VER}: $(ls -1 $MAC_INTEL_DIR/*.tgz | wc -l) packages"
-              echo "  Packages: $(ls -1 $MAC_INTEL_DIR/*.tgz | xargs -n1 basename)"
+            local BINARY_NAME=$(basename "$BINARY")
+            echo "  📦 Uploading $BINARY_NAME to $FTP_PATH"
+
+            mkdir -p "temp_index"
+
+            lftp -c "
+              set ftp:ssl-allow no
+              set net:timeout 30
+              set net:max-retries 3
+              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
+              cd $FTP_PATH || exit 0
+              get PACKAGES -o temp_index/PACKAGES.existing
+              bye
+            " 2>/dev/null || echo "    (No existing PACKAGES file)"
+
+            lftp -c "
+              set ftp:ssl-allow no
+              set net:timeout 60
+              set net:max-retries 3
+              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
+              -mkdir $FTP_PATH
+              cd $FTP_PATH
+              put $BINARY
+              bye
+            " || { echo "    ❌ Failed to upload $BINARY_NAME"; return 1; }
+
+            echo "    ✅ Binary uploaded"
+
+            cp "$BINARY" temp_index/
+
+            if [ -f "temp_index/PACKAGES.existing" ]; then
+              Rscript -e "tools::write_PACKAGES('temp_index', type='$PKG_TYPE')"
+              PKG_NAME=$(Rscript --vanilla -e "cat(read.dcf('temp_index/PACKAGES', fields='Package')[1,1])")
+              echo "    Regenerating full PACKAGES index..."
+            else
+              Rscript -e "tools::write_PACKAGES('temp_index', type='$PKG_TYPE')"
             fi
+
+            lftp -c "
+              set ftp:ssl-allow no
+              set net:timeout 30
+              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
+              cd $FTP_PATH
+              put temp_index/PACKAGES
+              put temp_index/PACKAGES.gz
+              put temp_index/PACKAGES.rds
+              bye
+            " || echo "    ⚠️  Failed to upload PACKAGES (non-fatal)"
+
+            echo "    ✅ Index updated"
+            rm -rf temp_index
+            return 0
+          }
+
+          echo ""
+          echo "=== Windows Binaries ==="
+          for R_VER in 4.4 4.5; do
+            echo "  R $R_VER:"
+            upload_binary "artifacts/windows-R${R_VER}" "bin/windows/contrib/${R_VER}" "win.binary"
           done
 
-      - name: Upload to FTP
+          echo ""
+          echo "=== macOS ARM Binaries ==="
+          for R_VER in 4.4 4.5; do
+            echo "  R $R_VER:"
+            upload_binary "artifacts/macos-arm-R${R_VER}" "bin/macosx/big-sur-arm64/contrib/${R_VER}" "mac.binary"
+          done
+
+          echo ""
+          echo "=== macOS Intel Binaries ==="
+          for R_VER in 4.2 4.4 4.5; do
+            echo "  R $R_VER:"
+            upload_binary "artifacts/macos-intel-R${R_VER}" "bin/macosx/big-sur-x86_64/contrib/${R_VER}" "mac.binary"
+          done
+
+          echo ""
+          echo "=== Upload Complete ==="
+
+      - name: Regenerate PACKAGES indexes (full)
         run: |
-          # Install lftp (more reliable than basic FTP)
-          sudo apt-get update && sudo apt-get install -y lftp
+          echo "=== Regenerating all PACKAGES indexes ==="
 
-          # Export credentials first
-          export FTP_HOST="${{ secrets.FTP_HOST }}"
-          export FTP_USER="${{ secrets.FTP_USER }}"
-          export FTP_PASSWORD="${{ secrets.FTP_PASSWORD }}"
-          export FTP_PATH="/"
+          regenerate_index() {
+            local FTP_PATH=$1
+            local PKG_TYPE=$2
+            local EXTENSION=$3
 
-          # Create lftp script (heredoc without quotes allows variable expansion)
-          cat > upload.lftp << LFTP_SCRIPT
-          set ftp:ssl-allow no
-          set net:timeout 30
-          set net:max-retries 3
-          open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
-          cd $FTP_PATH
-          mirror --reverse --verbose repo/ .
-          bye
-          LFTP_SCRIPT
+            mkdir -p "regen_temp"
 
-          # Execute upload
-          lftp -f upload.lftp
-          echo "Upload complete!"
+            echo "  📥 Downloading binaries from $FTP_PATH..."
+            lftp -c "
+              set ftp:ssl-allow no
+              set net:timeout 60
+              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
+              cd $FTP_PATH || exit 0
+              mget *${EXTENSION}
+              lcd regen_temp
+              bye
+            " 2>/dev/null || { echo "    (Directory empty or doesn't exist)"; rm -rf regen_temp; return 0; }
+
+            mv *${EXTENSION} regen_temp/ 2>/dev/null || true
+
+            if ls regen_temp/*${EXTENSION} 1>/dev/null 2>&1; then
+              echo "    Found $(ls regen_temp/*${EXTENSION} | wc -l) packages"
+              Rscript -e "tools::write_PACKAGES('regen_temp', type='$PKG_TYPE')"
+
+              lftp -c "
+                set ftp:ssl-allow no
+                open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
+                cd $FTP_PATH
+                put regen_temp/PACKAGES
+                put regen_temp/PACKAGES.gz
+                put regen_temp/PACKAGES.rds
+                bye
+              "
+              echo "    ✅ Index regenerated"
+            fi
+
+            rm -rf regen_temp
+          }
+
+          for R_VER in 4.4 4.5; do
+            echo "Windows R${R_VER}:"
+            regenerate_index "bin/windows/contrib/${R_VER}" "win.binary" ".zip"
+          done
+
+          for R_VER in 4.4 4.5; do
+            echo "macOS ARM R${R_VER}:"
+            regenerate_index "bin/macosx/big-sur-arm64/contrib/${R_VER}" "mac.binary" ".tgz"
+          done
+
+          for R_VER in 4.2 4.4 4.5; do
+            echo "macOS Intel R${R_VER}:"
+            regenerate_index "bin/macosx/big-sur-x86_64/contrib/${R_VER}" "mac.binary" ".tgz"
+          done
 
       - name: Summary
         run: |
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Packages built:" >> $GITHUB_STEP_SUMMARY
+          echo "### Binaries uploaded:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Platform | R Version | Package |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-----------|---------|" >> $GITHUB_STEP_SUMMARY
-          for f in $(find repo -name "*.zip" -o -name "*.tgz" | sort); do
-            PLATFORM=$(echo $f | grep -q windows && echo "Windows" || echo "macOS ARM")
-            R_VER=$(echo $f | grep -oP 'contrib/\K[0-9.]+')
-            PKG=$(basename $f)
-            echo "| $PLATFORM | $R_VER | $PKG |" >> $GITHUB_STEP_SUMMARY
+
+          for dir in artifacts/*/; do
+            PLATFORM=$(basename "$dir" | sed 's/-R.*//')
+            R_VER=$(basename "$dir" | grep -oE 'R[0-9.]+' | sed 's/R//')
+            for f in "$dir"/*.zip "$dir"/*.tgz; do
+              [ -f "$f" ] && echo "| $PLATFORM | $R_VER | $(basename "$f") |" >> $GITHUB_STEP_SUMMARY
+            done
           done
+
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Uploaded to: \`https://ralpha.fr/repo\`" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Uploaded to: \`https://ralpha.fr/repo\`" >> $GITHUB_STEP_SUMMARY
