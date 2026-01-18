@@ -155,28 +155,15 @@ jobs:
           r-version: ${{ matrix.r-version }}
 
       # ----------------------------------------------------------------
-      # Cleanup stale lockfile from cache (if any)
+      # Install dependencies manually (full control, no lockfile)
       # ----------------------------------------------------------------
-      - name: Remove stale lockfile
+      - name: Install dependencies
         if: steps.version_check.outputs.skip != 'true'
-        run: rm -f .github/pkg.lock
-        shell: bash
-
-      # ----------------------------------------------------------------
-      # Cache des dépendances R (r-lib)
-      # ----------------------------------------------------------------
-      - name: Install dependencies (with cache)
-        if: steps.version_check.outputs.skip != 'true'
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          cache-version: 4
-          dependencies: '"hard"'
-          pak-version: devel
-          upgrade: 'TRUE'
-          lockfile: false
-          repos: |
-            https://ralpha.fr/repo
-            https://cloud.r-project.org
+        run: |
+          options(repos = c(CRAN = "https://cloud.r-project.org"))
+          install.packages("pak")
+          pak::local_install_deps(dependencies = "hard", upgrade = TRUE)
+        shell: Rscript {0}
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
@@ -241,28 +228,15 @@ jobs:
           r-version: ${{ matrix.r-version }}
 
       # ----------------------------------------------------------------
-      # Cleanup stale lockfile from cache (if any)
+      # Install dependencies manually (full control, no lockfile)
       # ----------------------------------------------------------------
-      - name: Remove stale lockfile
+      - name: Install dependencies
         if: steps.version_check.outputs.skip != 'true'
-        run: rm -f .github/pkg.lock
-        shell: bash
-
-      # ----------------------------------------------------------------
-      # Cache des dépendances R (r-lib)
-      # ----------------------------------------------------------------
-      - name: Install dependencies (with cache)
-        if: steps.version_check.outputs.skip != 'true'
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          cache-version: 4
-          dependencies: '"hard"'
-          pak-version: devel
-          upgrade: 'TRUE'
-          lockfile: false
-          repos: |
-            https://ralpha.fr/repo
-            https://cloud.r-project.org
+        run: |
+          options(repos = c(CRAN = "https://cloud.r-project.org"))
+          install.packages("pak")
+          pak::local_install_deps(dependencies = "hard", upgrade = TRUE)
+        shell: Rscript {0}
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
@@ -328,28 +302,15 @@ jobs:
           r-version: ${{ matrix.r-version }}
 
       # ----------------------------------------------------------------
-      # Cleanup stale lockfile from cache (if any)
+      # Install dependencies manually (full control, no lockfile)
       # ----------------------------------------------------------------
-      - name: Remove stale lockfile
+      - name: Install dependencies
         if: steps.version_check.outputs.skip != 'true'
-        run: rm -f .github/pkg.lock
-        shell: bash
-
-      # ----------------------------------------------------------------
-      # Cache des dépendances R (r-lib)
-      # ----------------------------------------------------------------
-      - name: Install dependencies (with cache)
-        if: steps.version_check.outputs.skip != 'true'
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          cache-version: 4
-          dependencies: '"hard"'
-          pak-version: devel
-          upgrade: 'TRUE'
-          lockfile: false
-          repos: |
-            https://ralpha.fr/repo
-            https://cloud.r-project.org
+        run: |
+          options(repos = c(CRAN = "https://cloud.r-project.org"))
+          install.packages("pak")
+          pak::local_install_deps(dependencies = "hard", upgrade = TRUE)
+        shell: Rscript {0}
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
