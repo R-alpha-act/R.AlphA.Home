@@ -223,6 +223,7 @@ ralpha_fold <- function(get_time = getOption("fab_time", default = FALSE)) {
 			arrange(desc(indentLevel), contains_cursor)
 	} # Determine sections to fold
 	lapply(parentSection_full_fold$opnBrPN, foldFromPN) # Perform folding
+	Sys.sleep(getOption("fab_wait_final", default = 0.1)) # Allow async executeCommand() to complete (see R.AlphA.Dev/home_doc/log/2026-01-18_ralpha_fold_generic_error_2.md)
 	{
 		currSection <- cursor_situation
 		newPlace <- if (nrow(currSection)) {

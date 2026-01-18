@@ -222,5 +222,6 @@ ralpha_unfold <- function(){
 	)
 
 	if(active_case != "case_99") executeCommand("expandToMatching")
+	Sys.sleep(getOption("fab_wait_final", default = 0.1)) # Allow async executeCommand() to complete
 	invisible(NULL)
 }
