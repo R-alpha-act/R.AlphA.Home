@@ -1,3 +1,11 @@
+# R.AlphA.Home 2.0.2
+
+## Bug Fixes
+
+* `ralpha_fold()` / `ralpha_unfold()` - Added delay for async `executeCommand` to fix timing issues
+
+---
+
 # R.AlphA.Home 2.0.0
 
 ## Breaking Changes

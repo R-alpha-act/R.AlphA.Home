@@ -154,16 +154,9 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
 
-      # ----------------------------------------------------------------
-      # Install dependencies manually (full control, no lockfile)
-      # ----------------------------------------------------------------
       - name: Install dependencies
         if: steps.version_check.outputs.skip != 'true'
-        run: |
-          options(repos = c(CRAN = "https://cloud.r-project.org"))
-          install.packages("pak")
-          pak::local_install_deps(dependencies = "hard", upgrade = TRUE)
-        shell: Rscript {0}
+        run: Rscript -e "source('https://app.ralpha.fr/ci_install_deps.R')"
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
@@ -227,16 +220,9 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
 
-      # ----------------------------------------------------------------
-      # Install dependencies manually (full control, no lockfile)
-      # ----------------------------------------------------------------
       - name: Install dependencies
         if: steps.version_check.outputs.skip != 'true'
-        run: |
-          options(repos = c(CRAN = "https://cloud.r-project.org"))
-          install.packages("pak")
-          pak::local_install_deps(dependencies = "hard", upgrade = TRUE)
-        shell: Rscript {0}
+        run: Rscript -e "source('https://app.ralpha.fr/ci_install_deps.R')"
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
@@ -301,16 +287,9 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
 
-      # ----------------------------------------------------------------
-      # Install dependencies manually (full control, no lockfile)
-      # ----------------------------------------------------------------
       - name: Install dependencies
         if: steps.version_check.outputs.skip != 'true'
-        run: |
-          options(repos = c(CRAN = "https://cloud.r-project.org"))
-          install.packages("pak")
-          pak::local_install_deps(dependencies = "hard", upgrade = TRUE)
-        shell: Rscript {0}
+        run: Rscript -e "source('https://app.ralpha.fr/ci_install_deps.R')"
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
