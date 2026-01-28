@@ -5,3 +5,4 @@
 ^dev$
 ^doc$
 ^__START_HERE\.md$
+^cran-comments\.md$
