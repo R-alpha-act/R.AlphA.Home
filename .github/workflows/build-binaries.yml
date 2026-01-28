@@ -123,13 +123,17 @@ jobs:
       fail-fast: false
 
     steps:
-      # ----------------------------------------------------------------
-      # Check if THIS specific R version needs build (before checkout!)
-      # ----------------------------------------------------------------
       - name: Check if R ${{ matrix.r-version }} needs build
         id: version_check
         shell: bash
         run: |
+          # Force rebuild bypass
+          if [ "${{ inputs.force_rebuild }}" = "true" ]; then
+            echo "🔨 R ${{ matrix.r-version }}: FORCE REBUILD"
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           LOCAL_VERSION="${{ needs.check-version.outputs.local_version }}"
           PKG_NAME="${{ needs.check-version.outputs.pkg_name }}"
           URL="https://ralpha.fr/repo/bin/windows/contrib/${{ matrix.r-version }}/PACKAGES"
@@ -160,7 +164,6 @@ jobs:
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
-        id: build
         run: |
           R CMD INSTALL --build .
           for %%f in (*.zip) do echo binary_name=%%f >> %GITHUB_OUTPUT%
@@ -174,11 +177,17 @@ jobs:
           path: "*.zip"
           retention-days: 30
 
+      - name: Upload CRAN cache (for mirror)
+        if: steps.version_check.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cran-cache-windows-R${{ matrix.r-version }}
+          path: cran_cache/*.zip
+          if-no-files-found: ignore
+          retention-days: 1
+
   # ============================================================================
   # Build macOS Binary (ARM64 / Apple Silicon) - multiple R versions
-  # ============================================================================
-  # NOTE: Utiliser macos-15 explicite (pas macos-latest) pour éviter les
-  # problèmes de cache lors des migrations de runners.
   # ============================================================================
   build-macos-arm:
     needs: check-version
@@ -190,12 +199,16 @@ jobs:
       fail-fast: false
 
     steps:
-      # ----------------------------------------------------------------
-      # Check if THIS specific R version needs build (before checkout!)
-      # ----------------------------------------------------------------
       - name: Check if R ${{ matrix.r-version }} needs build
         id: version_check
         run: |
+          # Force rebuild bypass
+          if [ "${{ inputs.force_rebuild }}" = "true" ]; then
+            echo "🔨 R ${{ matrix.r-version }}: FORCE REBUILD"
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           LOCAL_VERSION="${{ needs.check-version.outputs.local_version }}"
           PKG_NAME="${{ needs.check-version.outputs.pkg_name }}"
           URL="https://ralpha.fr/repo/bin/macosx/big-sur-arm64/contrib/${{ matrix.r-version }}/PACKAGES"
@@ -226,7 +239,6 @@ jobs:
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
-        id: build
         run: |
           R CMD INSTALL --build .
           BINARY=$(ls *.tgz 2>/dev/null | head -1)
@@ -241,28 +253,38 @@ jobs:
           path: "*.tgz"
           retention-days: 30
 
+      - name: Upload CRAN cache (for mirror)
+        if: steps.version_check.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cran-cache-macos-arm-R${{ matrix.r-version }}
+          path: cran_cache/*.tgz
+          if-no-files-found: ignore
+          retention-days: 1
+
   # ============================================================================
   # Build macOS Binary (Intel x86_64) - multiple R versions
-  # ============================================================================
-  # NOTE: macos-12 retiré (déc 2024), macos-13 retiré (déc 2025)
-  # Pour Intel, utiliser: macos-15-large, macos-14-large, ou macos-15-intel
   # ============================================================================
   build-macos-intel:
     needs: check-version
     if: needs.check-version.outputs.needs_macos_intel == 'true' || inputs.force_rebuild == true
-    runs-on: macos-15-large  # Intel x86_64 runner (paid)
+    runs-on: macos-15-large
     strategy:
       matrix:
         r-version: ['4.2', '4.4', '4.5']
       fail-fast: false
 
     steps:
-      # ----------------------------------------------------------------
-      # Check if THIS specific R version needs build (before checkout!)
-      # ----------------------------------------------------------------
       - name: Check if R ${{ matrix.r-version }} needs build
         id: version_check
         run: |
+          # Force rebuild bypass
+          if [ "${{ inputs.force_rebuild }}" = "true" ]; then
+            echo "🔨 R ${{ matrix.r-version }}: FORCE REBUILD"
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           LOCAL_VERSION="${{ needs.check-version.outputs.local_version }}"
           PKG_NAME="${{ needs.check-version.outputs.pkg_name }}"
           URL="https://ralpha.fr/repo/bin/macosx/big-sur-x86_64/contrib/${{ matrix.r-version }}/PACKAGES"
@@ -293,7 +315,6 @@ jobs:
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
-        id: build
         run: |
           R CMD INSTALL --build .
           BINARY=$(ls *.tgz 2>/dev/null | head -1)
@@ -308,8 +329,17 @@ jobs:
           path: "*.tgz"
           retention-days: 30
 
+      - name: Upload CRAN cache (for mirror)
+        if: steps.version_check.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cran-cache-macos-intel-R${{ matrix.r-version }}
+          path: cran_cache/*.tgz
+          if-no-files-found: ignore
+          retention-days: 1
+
   # ============================================================================
-  # Upload to FTP (ralpha.fr/repo) - INCREMENTAL UPLOAD
+  # Upload to FTP (ralpha.fr/repo)
   # ============================================================================
   upload-to-ftp:
     needs: [check-version, build-windows, build-macos-arm, build-macos-intel]
@@ -329,7 +359,7 @@ jobs:
         with:
           path: artifacts/
 
-      - name: Setup R for index generation
+      - name: Setup R
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: '4.4'
@@ -337,181 +367,13 @@ jobs:
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
-      - name: Validate FTP credentials
-        run: |
-          if [ -z "${{ secrets.FTP_HOST }}" ] || [ -z "${{ secrets.FTP_USER }}" ] || [ -z "${{ secrets.FTP_PASSWORD }}" ]; then
-            echo "❌ ERROR: FTP credentials not configured!"
-            echo "Please set FTP_HOST, FTP_USER, FTP_PASSWORD in GitHub Secrets"
-            exit 1
-          fi
-          echo "✅ FTP credentials found"
-
-      - name: Test FTP connection
-        run: |
-          echo "Testing FTP connection..."
-          lftp -c "
-            set ftp:ssl-allow no
-            set net:timeout 30
-            open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
-            pwd
-            bye
-          " && echo "✅ FTP connection OK" || { echo "❌ FTP connection failed"; exit 1; }
-
-      - name: Upload binaries incrementally
-        run: |
-          echo "=== Incremental Upload to FTP ==="
-
-          upload_binary() {
-            local ARTIFACT_DIR=$1
-            local FTP_PATH=$2
-            local PKG_TYPE=$3
-
-            if [ ! -d "$ARTIFACT_DIR" ]; then
-              echo "  ⏭️  No artifact in $ARTIFACT_DIR"
-              return 0
-            fi
-
-            local BINARY=$(ls "$ARTIFACT_DIR"/*.zip "$ARTIFACT_DIR"/*.tgz 2>/dev/null | head -1)
-            if [ -z "$BINARY" ]; then
-              echo "  ⏭️  No binary found in $ARTIFACT_DIR"
-              return 0
-            fi
-
-            local BINARY_NAME=$(basename "$BINARY")
-            echo "  📦 Uploading $BINARY_NAME to $FTP_PATH"
-
-            mkdir -p "temp_index"
-
-            lftp -c "
-              set ftp:ssl-allow no
-              set net:timeout 30
-              set net:max-retries 3
-              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
-              cd $FTP_PATH || exit 0
-              get PACKAGES -o temp_index/PACKAGES.existing
-              bye
-            " 2>/dev/null || echo "    (No existing PACKAGES file)"
-
-            lftp -c "
-              set ftp:ssl-allow no
-              set net:timeout 60
-              set net:max-retries 3
-              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
-              -mkdir $FTP_PATH
-              cd $FTP_PATH
-              put $BINARY
-              bye
-            " || { echo "    ❌ Failed to upload $BINARY_NAME"; return 1; }
-
-            echo "    ✅ Binary uploaded"
-
-            cp "$BINARY" temp_index/
-
-            if [ -f "temp_index/PACKAGES.existing" ]; then
-              Rscript -e "tools::write_PACKAGES('temp_index', type='$PKG_TYPE')"
-              PKG_NAME=$(Rscript --vanilla -e "cat(read.dcf('temp_index/PACKAGES', fields='Package')[1,1])")
-              echo "    Regenerating full PACKAGES index..."
-            else
-              Rscript -e "tools::write_PACKAGES('temp_index', type='$PKG_TYPE')"
-            fi
-
-            lftp -c "
-              set ftp:ssl-allow no
-              set net:timeout 30
-              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
-              cd $FTP_PATH
-              put temp_index/PACKAGES
-              put temp_index/PACKAGES.gz
-              put temp_index/PACKAGES.rds
-              bye
-            " || echo "    ⚠️  Failed to upload PACKAGES (non-fatal)"
-
-            echo "    ✅ Index updated"
-            rm -rf temp_index
-            return 0
-          }
-
-          echo ""
-          echo "=== Windows Binaries ==="
-          for R_VER in 4.4 4.5; do
-            echo "  R $R_VER:"
-            upload_binary "artifacts/windows-R${R_VER}" "bin/windows/contrib/${R_VER}" "win.binary"
-          done
-
-          echo ""
-          echo "=== macOS ARM Binaries ==="
-          for R_VER in 4.4 4.5; do
-            echo "  R $R_VER:"
-            upload_binary "artifacts/macos-arm-R${R_VER}" "bin/macosx/big-sur-arm64/contrib/${R_VER}" "mac.binary"
-          done
-
-          echo ""
-          echo "=== macOS Intel Binaries ==="
-          for R_VER in 4.2 4.4 4.5; do
-            echo "  R $R_VER:"
-            upload_binary "artifacts/macos-intel-R${R_VER}" "bin/macosx/big-sur-x86_64/contrib/${R_VER}" "mac.binary"
-          done
-
-          echo ""
-          echo "=== Upload Complete ==="
-
-      - name: Regenerate PACKAGES indexes (full)
-        run: |
-          echo "=== Regenerating all PACKAGES indexes ==="
-
-          regenerate_index() {
-            local FTP_PATH=$1
-            local PKG_TYPE=$2
-            local EXTENSION=$3
-
-            mkdir -p "regen_temp"
-
-            echo "  📥 Downloading binaries from $FTP_PATH..."
-            lftp -c "
-              set ftp:ssl-allow no
-              set net:timeout 60
-              open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
-              cd $FTP_PATH || exit 0
-              mget *${EXTENSION}
-              lcd regen_temp
-              bye
-            " 2>/dev/null || { echo "    (Directory empty or doesn't exist)"; rm -rf regen_temp; return 0; }
-
-            mv *${EXTENSION} regen_temp/ 2>/dev/null || true
-
-            if ls regen_temp/*${EXTENSION} 1>/dev/null 2>&1; then
-              echo "    Found $(ls regen_temp/*${EXTENSION} | wc -l) packages"
-              Rscript -e "tools::write_PACKAGES('regen_temp', type='$PKG_TYPE')"
-
-              lftp -c "
-                set ftp:ssl-allow no
-                open -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }}
-                cd $FTP_PATH
-                put regen_temp/PACKAGES
-                put regen_temp/PACKAGES.gz
-                put regen_temp/PACKAGES.rds
-                bye
-              "
-              echo "    ✅ Index regenerated"
-            fi
-
-            rm -rf regen_temp
-          }
-
-          for R_VER in 4.4 4.5; do
-            echo "Windows R${R_VER}:"
-            regenerate_index "bin/windows/contrib/${R_VER}" "win.binary" ".zip"
-          done
-
-          for R_VER in 4.4 4.5; do
-            echo "macOS ARM R${R_VER}:"
-            regenerate_index "bin/macosx/big-sur-arm64/contrib/${R_VER}" "mac.binary" ".tgz"
-          done
-
-          for R_VER in 4.2 4.4 4.5; do
-            echo "macOS Intel R${R_VER}:"
-            regenerate_index "bin/macosx/big-sur-x86_64/contrib/${R_VER}" "mac.binary" ".tgz"
-          done
+      - name: Upload to FTP
+        run: Rscript -e "source('https://app.ralpha.fr/ci_upload_repo.R')"
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          ARTIFACTS_DIR: artifacts
 
       - name: Summary
         run: |
@@ -523,6 +385,7 @@ jobs:
           echo "|----------|-----------|---------|" >> $GITHUB_STEP_SUMMARY
 
           for dir in artifacts/*/; do
+            [[ "$dir" == *"cran-cache"* ]] && continue
             PLATFORM=$(basename "$dir" | sed 's/-R.*//')
             R_VER=$(basename "$dir" | grep -oE 'R[0-9.]+' | sed 's/R//')
             for f in "$dir"/*.zip "$dir"/*.tgz; do
