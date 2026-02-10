@@ -164,6 +164,10 @@ jobs:
         if: steps.version_check.outputs.skip != 'true'
         run: Rscript -e "source('https://app.ralpha.fr/ci_install_deps.R')"
 
+      - name: Upgrade httr2 (cache has old version)
+        if: steps.version_check.outputs.skip != 'true'
+        run: Rscript -e "try(remove.packages('httr2'), silent=TRUE); install.packages('httr2', repos='https://cloud.r-project.org', type='source')"
+
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
         run: |
@@ -240,6 +244,10 @@ jobs:
       - name: Install dependencies
         if: steps.version_check.outputs.skip != 'true'
         run: Rscript -e "source('https://app.ralpha.fr/ci_install_deps.R')"
+
+      - name: Upgrade httr2 (cache has old version)
+        if: steps.version_check.outputs.skip != 'true'
+        run: Rscript -e "try(remove.packages('httr2'), silent=TRUE); install.packages('httr2', repos='https://cloud.r-project.org', type='source')"
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
@@ -318,6 +326,10 @@ jobs:
       - name: Install dependencies
         if: steps.version_check.outputs.skip != 'true'
         run: Rscript -e "source('https://app.ralpha.fr/ci_install_deps.R')"
+
+      - name: Upgrade httr2 (cache has old version)
+        if: steps.version_check.outputs.skip != 'true'
+        run: Rscript -e "try(remove.packages('httr2'), silent=TRUE); install.packages('httr2', repos='https://cloud.r-project.org', type='source')"
 
       - name: Build binary package
         if: steps.version_check.outputs.skip != 'true'
