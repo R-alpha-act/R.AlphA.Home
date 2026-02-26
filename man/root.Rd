@@ -11,7 +11,8 @@ root(..., includeFName = FALSE)
 the directory path. If provided, builds a path using \code{file.path()}.}
 
 \item{includeFName}{Logical. If \code{TRUE}, returns the full file path including
-the filename instead of just the directory. Ignored if \code{...} is provided.}
+the filename instead of just the directory. Ignored if \code{...} is provided.
+Silently ignored when RStudio is not available.}
 }
 \value{
 A character string representing either:
@@ -19,6 +20,7 @@ A character string representing either:
   \item The absolute path of the directory containing the current source file (default)
   \item The full absolute path including the filename (if \code{includeFName = TRUE})
   \item A path built from the root directory and the provided components (if \code{...} given)
+  \item The working directory via \code{getwd()} when outside RStudio
 }
 }
 \description{
@@ -29,11 +31,9 @@ This function is especially useful when the same source code is used by multiple
 each using their own environment with different file paths. It helps avoid writing
 full paths in raw text inside source codes by dynamically retrieving the location
 of the currently active source file in RStudio.
-}
-\note{
-This function requires RStudio and will only work within the RStudio IDE.
-It relies on \code{rstudioapi::getSourceEditorContext()} to retrieve the active
-source file location.
+
+When RStudio is not available (e.g. Rscript, terminal R, CI), falls back to
+\code{getwd()} and silently forces \code{includeFName = FALSE}.
 }
 \examples{
 \dontrun{
