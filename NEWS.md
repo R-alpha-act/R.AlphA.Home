@@ -1,3 +1,13 @@
+# R.AlphA.Home 2.1.0
+
+## New Features
+
+* `RSTheme_dark()` - Apply R.AlphA dark theme to RStudio editor (migrated from R.AlphA.AI)
+* `RSTheme_light()` - Apply a light theme to RStudio editor (placeholder, applies Chrome)
+* `alphaThemes` - Exported dataset containing the R.AlphA theme registry (dark, mid)
+
+---
+
 # R.AlphA.Home 2.0.2
 
 ## Bug Fixes
